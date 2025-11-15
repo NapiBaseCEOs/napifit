@@ -86,34 +86,42 @@ export default function LoginPage() {
 
     try {
       // Mobil platform kontrolü
-      const { isMobilePlatform } = await import("../../../lib/google-oauth-mobile");
-      const isMobile = isMobilePlatform();
-      
-      if (isMobile) {
-        // Mobil'de Capacitor Browser kullan
-        try {
+      try {
+        const { isMobilePlatform, signInWithGoogleMobile } = await import("../../../lib/google-oauth-mobile");
+        const isMobile = isMobilePlatform();
+        
+        if (isMobile) {
+          // Mobil'de Capacitor Browser kullan
           await signInWithGoogleMobile("/onboarding");
-          // Browser açıldı, callback geldiğinde GoogleOAuthHandler işleyecek
-        } catch (mobileError) {
-          console.error("Mobile OAuth error:", mobileError);
-          setGoogleLoading(false);
-          setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+          return; // Browser açıldı, callback geldiğinde GoogleOAuthHandler işleyecek
         }
-      } else {
-        // Web'de normal NextAuth kullan
-        try {
-          const res = await signIn("google", { 
-            callbackUrl: "/onboarding",
-            redirect: true 
-          });
-          
-          // redirect: true olduğu için buraya gelmez, direkt yönlendirilir
-        } catch (webError) {
-          console.error("Web OAuth error:", webError);
-          setGoogleLoading(false);
-          setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
-        }
+      } catch (mobileError) {
+        // Mobil değilse veya hata varsa web'e devam et
+        console.log("Mobile OAuth skipped, using web");
       }
+      
+      // Web'de normal NextAuth kullan
+      // redirect: false ile kontrolü ele alalım
+      const result = await signIn("google", { 
+        callbackUrl: "/onboarding",
+        redirect: false, // Manual redirect
+      });
+      
+      if (result?.error) {
+        setGoogleLoading(false);
+        setError(`Google ile giriş yapılırken hata: ${result.error}`);
+        return;
+      }
+      
+      if (result?.url) {
+        // Başarılı - redirect et
+        window.location.href = result.url;
+        return;
+      }
+      
+      // Beklenmedik durum
+      setGoogleLoading(false);
+      setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
     } catch (err) {
       console.error("Google OAuth error:", err);
       setGoogleLoading(false);
