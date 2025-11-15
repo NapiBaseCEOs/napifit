@@ -39,9 +39,9 @@ async function testDirectOAuth() {
   console.log('║   DIRECT GOOGLE OAUTH DETAILED TEST             ║');
   console.log('╚══════════════════════════════════════════════════╝\n');
 
-  console.log('[1/1] Direct Google OAuth Endpoint (/api/auth/google-direct)...');
+  console.log('[1/1] Direct Google OAuth Endpoint (/api/google-direct)...');
   try {
-    const directRes = await request(`${BASE_URL}/api/auth/google-direct?callbackUrl=/onboarding`, {
+    const directRes = await request(`${BASE_URL}/api/google-direct?callbackUrl=/onboarding`, {
       method: 'GET',
       maxRedirects: 0
     });
