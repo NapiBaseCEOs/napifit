@@ -1,6 +1,6 @@
 {
   "name": "napifit",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -31,7 +31,7 @@
     "ios:open": "npx cap open ios",
     "android:build": "npm run build && npm run cap:sync",
     "ios:build": "npm run build && npm run cap:sync",
-    "cloudflare:build": "npm run build && opennextjs-cloudflare build && node -e \"const fs = require('fs'); if (fs.existsSync('public/_routes.json')) { if (!fs.existsSync('.open-next')) fs.mkdirSync('.open-next', { recursive: true }); fs.copyFileSync('public/_routes.json', '.open-next/_routes.json'); console.log('✓ _routes.json copied to .open-next'); }\"",
+    "cloudflare:build": "npm run build && opennextjs-cloudflare build && node scripts/prepare-cloudflare-output.js",
     "cloudflare:preview": "npm run cloudflare:build && opennextjs-cloudflare preview"
   },
   "dependencies": {
