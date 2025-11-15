@@ -59,16 +59,8 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-          scope: "openid email profile",
-        },
-      },
-      // Cloudflare Pages için callback URL - explicit olarak belirt
-      callbackUrl: `${NEXTAUTH_URL}/api/auth/callback/google`,
+      // Cloudflare Pages için en basit yapılandırma
+      // authorization params kaldırıldı - NextAuth varsayılanlarını kullanır
     }),
     CredentialsProvider({
       name: "credentials",
