@@ -1,0 +1,117 @@
+"use client";
+
+import { useEffect, useState, useImperativeHandle, forwardRef } from "react";
+import { APP_VERSION } from "@/config/version";
+
+const VERSION_STORAGE_KEY = "napifit_version";
+
+export interface UpdateCheckerRef {
+  checkForUpdate: () => void;
+}
+
+const UpdateChecker = forwardRef<UpdateCheckerRef>((props, ref) => {
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [newVersion, setNewVersion] = useState<string | null>(null);
+
+  const checkForUpdate = () => {
+    // LocalStorage'dan mevcut versiyonu al
+    const storedVersion = localStorage.getItem(VERSION_STORAGE_KEY);
+    
+    // Eğer versiyon yoksa veya farklıysa güncelleme bildirimi göster
+    if (storedVersion !== APP_VERSION) {
+      setNewVersion(APP_VERSION);
+      setShowUpdateDialog(true);
+    } else {
+      // Versiyon aynıysa bilgi mesajı göster
+      alert(`Uygulama güncel!\nMevcut versiyon: ${APP_VERSION}`);
+    }
+  };
+
+  // Ref ile dışarıdan erişilebilir hale getir
+  useImperativeHandle(ref, () => ({
+    checkForUpdate,
+  }));
+
+  useEffect(() => {
+    // Sayfa yüklendiğinde otomatik kontrol (sadece ilk yüklemede)
+    if (typeof window !== "undefined") {
+      const storedVersion = localStorage.getItem(VERSION_STORAGE_KEY);
+      
+      // Eğer versiyon yoksa veya farklıysa güncelleme bildirimi göster
+      if (storedVersion !== APP_VERSION) {
+        setNewVersion(APP_VERSION);
+        setShowUpdateDialog(true);
+      }
+    }
+  }, []);
+
+  const handleUpdate = () => {
+    // Versiyonu localStorage'a kaydet
+    localStorage.setItem(VERSION_STORAGE_KEY, APP_VERSION);
+    setShowUpdateDialog(false);
+    // Sayfayı yenile
+    window.location.reload();
+  };
+
+  const handleDismiss = () => {
+    // Versiyonu kaydetme, sadece dialog'u kapat
+    // Böylece kullanıcı versiyon numarasına tıkladığında tekrar sorulabilir
+    setShowUpdateDialog(false);
+  };
+
+  if (!showUpdateDialog) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="max-w-md w-full rounded-2xl border border-gray-800/60 bg-gray-900/95 p-6 shadow-2xl backdrop-blur">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-blue-600">
+              <svg
+                className="h-6 w-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Yeni Güncelleme Mevcut</h3>
+              <p className="text-sm text-gray-400">Versiyon {newVersion}</p>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-300 leading-relaxed">
+            Uygulamanın yeni bir versiyonu mevcut. Güncellemeyi yüklemek ister misiniz?
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleDismiss}
+              className="flex-1 rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
+            >
+              Daha Sonra
+            </button>
+            <button
+              onClick={handleUpdate}
+              className="flex-1 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-purple-500/30 transition-transform active:scale-95"
+            >
+              Güncelle
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+UpdateChecker.displayName = "UpdateChecker";
+
+export default UpdateChecker;
+

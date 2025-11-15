@@ -1,0 +1,24 @@
+name = "napifit"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = ".open-next"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "napifit-db"
+database_id = "de758b90-9098-4b56-bbb5-f9782e9cc259"
+
+[env.production]
+name = "napifit"
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "napifit-db"
+database_id = "de758b90-9098-4b56-bbb5-f9782e9cc259"
+
+[env.preview]
+name = "napifit-preview"
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "napifit-db-preview"
+database_id = ""  # Preview D1 database ID
+
