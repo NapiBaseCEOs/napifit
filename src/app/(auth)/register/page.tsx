@@ -102,10 +102,10 @@ export default function RegisterPage() {
         console.log("Mobile OAuth skipped, using web");
       }
       
-      // Web'de NextAuth signin endpoint'ine direkt yönlendir
-      // Cloudflare Pages için optimize edilmiş yöntem
+      // Web'de direkt Google OAuth URL'i oluşturan endpoint'e yönlendir
+      // NextAuth'un signin endpoint'i yerine direkt Google'a gidiyoruz
       const callbackUrl = encodeURIComponent(`${window.location.origin}/onboarding`);
-      const signInUrl = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
+      const signInUrl = `/api/auth/google-direct?callbackUrl=${callbackUrl}`;
       
       // Direkt redirect - en güvenilir yöntem
       window.location.href = signInUrl;

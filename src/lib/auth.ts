@@ -285,8 +285,6 @@ export const authOptions: NextAuthOptions = {
   secret: AUTH_SECRET,
   debug: true, // Her zaman debug açık - Cloudflare Pages'de log görmek için
   useSecureCookies: NEXTAUTH_URL.startsWith("https://"),
-  // Cloudflare Pages için base URL
-  baseUrl: NEXTAUTH_URL,
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
