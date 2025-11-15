@@ -5,7 +5,9 @@ import Providers from "../components/Providers";
 import CursorGlow from "../components/CursorGlow";
 import GoogleOAuthHandler from "../components/GoogleOAuthHandler";
 import UpdateCheckerProvider from "../components/UpdateCheckerProvider";
+import VersionUpdateBanner from "../components/VersionUpdateBanner";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import ThemeProvider from "../components/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "NapiFit",
@@ -26,14 +28,17 @@ export default function RootLayout({
   return (
     <html lang="tr" className={fontSans.variable}>
       <body className="font-sans">
-        <CursorGlow />
-        <Providers>
-          <GoogleOAuthHandler />
-          <UpdateCheckerProvider>
-            <Header />
-            {children}
-          </UpdateCheckerProvider>
-        </Providers>
+        <ThemeProvider>
+          <CursorGlow />
+          <Providers>
+            <GoogleOAuthHandler />
+            <UpdateCheckerProvider>
+              <VersionUpdateBanner />
+              <Header />
+              {children}
+            </UpdateCheckerProvider>
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );
