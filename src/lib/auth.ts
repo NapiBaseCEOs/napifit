@@ -24,6 +24,13 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
     CredentialsProvider({
       name: "credentials",
@@ -62,8 +69,17 @@ export const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: "/login",
+    error: "/login", // Error code passed in query string as ?error=
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log("🔐 Sign in attempt:", {
+        provider: account?.provider,
+        userId: user?.id,
+        email: user?.email,
+      });
+      return true;
+    },
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;

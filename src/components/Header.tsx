@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { APP_VERSION } from "@/config/version";
 import { useUpdateChecker } from "./UpdateCheckerProvider";
-import ThemeSwitcher from "./ThemeSwitcher";
 
 export default function Header() {
   const router = useRouter();
@@ -84,7 +83,6 @@ export default function Header() {
               </Link>
             </>
           )}
-          <ThemeSwitcher />
           {isAuth ? (
             <button
               onClick={handleSignOut}
