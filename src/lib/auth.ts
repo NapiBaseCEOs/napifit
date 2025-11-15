@@ -6,51 +6,40 @@ import { compare } from "bcryptjs";
 
 // Cloudflare Pages için NEXTAUTH_URL - production'da otomatik olarak ayarlanır
 const getNextAuthUrl = (): string => {
-  // Cloudflare Pages'de environment variable'dan al
   if (process.env.NEXTAUTH_URL) {
     return process.env.NEXTAUTH_URL;
   }
-  
-  // Development'ta localhost
   if (process.env.NODE_ENV === "development") {
     return "http://localhost:3000";
   }
-  
-  // Fallback: Production URL
   return "https://napibase.com";
 };
 
 const NEXTAUTH_URL = getNextAuthUrl();
 
-// Google OAuth credentials kontrolü
+// Google OAuth credentials - zorunlu kontroller
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
 const AUTH_SECRET = process.env.AUTH_SECRET || "";
 
-// Environment variables kontrolü ve logging
+// Server-side environment variable kontrolü ve logging
 if (typeof window === "undefined") {
-  // Sadece server-side'da kontrol et
-  if (process.env.NODE_ENV === "development") {
-    console.log("🔐 NextAuth Configuration:");
-    console.log(`  NEXTAUTH_URL: ${NEXTAUTH_URL}`);
-    console.log(`  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID ? "SET" : "MISSING"}`);
-    console.log(`  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET ? "SET" : "MISSING"}`);
-    console.log(`  AUTH_SECRET: ${AUTH_SECRET ? "SET" : "MISSING"}`);
-  }
+  console.log("🔐 NextAuth Configuration:");
+  console.log(`  NEXTAUTH_URL: ${NEXTAUTH_URL}`);
+  console.log(`  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID ? "SET (" + GOOGLE_CLIENT_ID.substring(0, 10) + "...)" : "❌ MISSING"}`);
+  console.log(`  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET ? "SET" : "❌ MISSING"}`);
+  console.log(`  AUTH_SECRET: ${AUTH_SECRET ? "SET" : "❌ MISSING"}`);
   
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-    console.error("⚠️ Google OAuth credentials missing!");
-    console.error("  GOOGLE_CLIENT_ID:", GOOGLE_CLIENT_ID ? "SET" : "MISSING");
-    console.error("  GOOGLE_CLIENT_SECRET:", GOOGLE_CLIENT_SECRET ? "SET" : "MISSING");
+    console.error("❌ Google OAuth credentials missing! Google login will NOT work.");
   }
   
   if (!AUTH_SECRET) {
-    console.error("⚠️ AUTH_SECRET missing!");
+    console.error("❌ AUTH_SECRET missing! Authentication may not work properly.");
   }
 }
 
 export const authOptions: NextAuthOptions = {
-  // JWT-only mode (Cloudflare Pages için optimize edildi)
   session: { 
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -59,8 +48,7 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
-      // Cloudflare Pages için en basit yapılandırma
-      // authorization params kaldırıldı - NextAuth varsayılanlarını kullanır
+      // NextAuth varsayılanlarını kullan - en basit ve güvenilir yöntem
     }),
     CredentialsProvider({
       name: "credentials",
@@ -128,15 +116,14 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Her zaman girişe izin ver (database hatası olsa bile JWT ile çalışır)
+      console.log("🔐 SignIn callback:", {
+        provider: account?.provider,
+        email: user?.email,
+        name: user?.name,
+      });
+      
+      // Google OAuth - database'e kaydet (opsiyonel)
       if (account?.provider === "google" && user?.email) {
-        console.log("🔐 Google OAuth sign in:", {
-          email: user.email,
-          name: user.name,
-          id: user.id,
-        });
-        
-        // Database'e kaydet (opsiyonel - hata olsa bile giriş yapsın)
         try {
           // D1 Database'i dene önce
           if (typeof globalThis !== 'undefined' && (globalThis as any).DB) {
@@ -160,18 +147,16 @@ export const authOptions: NextAuthOptions = {
                   new Date().toISOString(),
                   new Date().toISOString(),
                   new Date().toISOString(),
-                  0 // false
+                  0
                 ]
               ).catch((err) => {
                 console.log("⚠️ D1 kayıt hatası (devam ediliyor):", err);
               });
               
-              console.log("✅ Google OAuth user created in D1:", user.email);
-            } else {
-              console.log("✅ Google OAuth user exists in D1:", user.email);
+              console.log("✅ Google user created in D1");
             }
           } else {
-            // Fallback: Prisma kullan (development için)
+            // Fallback: Prisma kullan
             const existingUser = await prisma.user.findUnique({
               where: { email: user.email },
             }).catch(() => null);
@@ -185,20 +170,18 @@ export const authOptions: NextAuthOptions = {
                   emailVerified: new Date(),
                 },
               }).catch((err) => {
-                console.log("⚠️ DB kayıt hatası (devam ediliyor):", err);
+                console.log("⚠️ Prisma kayıt hatası (devam ediliyor):", err);
               });
               
-              console.log("✅ Google OAuth user created in Prisma:", user.email);
-            } else {
-              console.log("✅ Google OAuth user exists in Prisma:", user.email);
+              console.log("✅ Google user created in Prisma");
             }
           }
         } catch (error) {
-          // Sessizce devam et - JWT session yeterli
           console.log("⚠️ DB kullanılamadı, JWT-only mode:", error);
         }
       }
       
+      // Her zaman girişe izin ver
       return true;
     },
     async jwt({ token, user, account }) {
@@ -231,7 +214,7 @@ export const authOptions: NextAuthOptions = {
               token.image = dbUser.image || undefined;
             }
           } else {
-            // Fallback: Prisma kullan (development için)
+            // Fallback: Prisma kullan
             const dbUser = await prisma.user.findUnique({
               where: { email: token.email as string },
             });
@@ -259,6 +242,8 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
+      console.log("🔀 Redirect callback:", { url, baseUrl });
+      
       // OAuth error varsa login sayfasına yönlendir
       if (url.includes("error=")) {
         try {
@@ -279,11 +264,11 @@ export const authOptions: NextAuthOptions = {
       // Aynı origin'den geliyorsa olduğu gibi döndür
       try {
         const urlObj = new URL(url);
-        if (urlObj.origin === baseUrl || urlObj.origin === baseUrl.replace(/^https?:/, '')) {
+        if (urlObj.origin === baseUrl) {
           return url;
         }
       } catch {
-        // Invalid URL, baseUrl'e yönlendir
+        // Invalid URL
       }
       
       // Diğer durumlarda baseUrl'e yönlendir
@@ -291,8 +276,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   secret: AUTH_SECRET,
-  debug: process.env.NODE_ENV === "development",
-  // Cloudflare Pages için optimize edilmiş ayarlar
+  debug: true, // Her zaman debug açık - Cloudflare Pages'de log görmek için
   useSecureCookies: NEXTAUTH_URL.startsWith("https://"),
   cookies: {
     sessionToken: {
