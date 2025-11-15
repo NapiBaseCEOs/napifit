@@ -6,11 +6,13 @@ import { hash } from "bcryptjs";
 // export const runtime = 'edge'; // Kaldırıldı
 
 export async function POST(request: Request) {
-  try {
-    // Database bağlantısını test et
-    await prisma.$connect();
-  } catch (dbError) {
-    console.error("Database connection error:", dbError);
+  // Database bağlantısını test et
+  const dbConnected = await prisma.$connect().then(() => true).catch((err) => {
+    console.error("Database connection error:", err);
+    return false;
+  });
+  
+  if (!dbConnected) {
     return NextResponse.json(
       { 
         message: "Veritabanına bağlanılamadı. Lütfen daha sonra tekrar deneyin.",

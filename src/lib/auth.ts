@@ -143,10 +143,19 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
+      // OAuth error varsa login sayfasına yönlendir
+      if (url.includes("error=")) {
+        return `${baseUrl}/login?${url.split("?")[1] || ""}`;
+      }
+      
       // Relative URL'leri baseUrl ile birleştir
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       // Aynı origin'den geliyorsa olduğu gibi döndür
-      if (new URL(url).origin === baseUrl) return url;
+      try {
+        if (new URL(url).origin === baseUrl) return url;
+      } catch {
+        // Invalid URL, baseUrl'e yönlendir
+      }
       // Diğer durumlarda baseUrl'e yönlendir
       return baseUrl;
     },
