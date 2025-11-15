@@ -22,22 +22,30 @@ const getNextAuthUrl = (): string => {
 
 const NEXTAUTH_URL = getNextAuthUrl();
 
-// Environment variables kontrolü
+// Google OAuth credentials kontrolü
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
+const AUTH_SECRET = process.env.AUTH_SECRET || "";
+
+// Environment variables kontrolü ve logging
 if (typeof window === "undefined") {
   // Sadece server-side'da kontrol et
-  const requiredVars = {
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    AUTH_SECRET: process.env.AUTH_SECRET,
-    NEXTAUTH_URL,
-  };
-  
   if (process.env.NODE_ENV === "development") {
-    Object.entries(requiredVars).forEach(([key, value]) => {
-      if (!value) {
-        console.warn(`⚠️ ${key} is missing. OAuth may not work properly.`);
-      }
-    });
+    console.log("🔐 NextAuth Configuration:");
+    console.log(`  NEXTAUTH_URL: ${NEXTAUTH_URL}`);
+    console.log(`  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID ? "SET" : "MISSING"}`);
+    console.log(`  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET ? "SET" : "MISSING"}`);
+    console.log(`  AUTH_SECRET: ${AUTH_SECRET ? "SET" : "MISSING"}`);
+  }
+  
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+    console.error("⚠️ Google OAuth credentials missing!");
+    console.error("  GOOGLE_CLIENT_ID:", GOOGLE_CLIENT_ID ? "SET" : "MISSING");
+    console.error("  GOOGLE_CLIENT_SECRET:", GOOGLE_CLIENT_SECRET ? "SET" : "MISSING");
+  }
+  
+  if (!AUTH_SECRET) {
+    console.error("⚠️ AUTH_SECRET missing!");
   }
 }
 
@@ -49,8 +57,8 @@ export const authOptions: NextAuthOptions = {
   },
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           prompt: "consent",
@@ -59,8 +67,8 @@ export const authOptions: NextAuthOptions = {
           scope: "openid email profile",
         },
       },
-      // Cloudflare Pages için callback URL
-      checks: ["pkce", "state"],
+      // Cloudflare Pages için callback URL - explicit olarak belirt
+      callbackUrl: `${NEXTAUTH_URL}/api/auth/callback/google`,
     }),
     CredentialsProvider({
       name: "credentials",
@@ -130,6 +138,12 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       // Her zaman girişe izin ver (database hatası olsa bile JWT ile çalışır)
       if (account?.provider === "google" && user?.email) {
+        console.log("🔐 Google OAuth sign in:", {
+          email: user.email,
+          name: user.name,
+          id: user.id,
+        });
+        
         // Database'e kaydet (opsiyonel - hata olsa bile giriş yapsın)
         try {
           // D1 Database'i dene önce
@@ -159,6 +173,10 @@ export const authOptions: NextAuthOptions = {
               ).catch((err) => {
                 console.log("⚠️ D1 kayıt hatası (devam ediliyor):", err);
               });
+              
+              console.log("✅ Google OAuth user created in D1:", user.email);
+            } else {
+              console.log("✅ Google OAuth user exists in D1:", user.email);
             }
           } else {
             // Fallback: Prisma kullan (development için)
@@ -177,11 +195,15 @@ export const authOptions: NextAuthOptions = {
               }).catch((err) => {
                 console.log("⚠️ DB kayıt hatası (devam ediliyor):", err);
               });
+              
+              console.log("✅ Google OAuth user created in Prisma:", user.email);
+            } else {
+              console.log("✅ Google OAuth user exists in Prisma:", user.email);
             }
           }
         } catch (error) {
           // Sessizce devam et - JWT session yeterli
-          console.log("⚠️ DB kullanılamadı, JWT-only mode");
+          console.log("⚠️ DB kullanılamadı, JWT-only mode:", error);
         }
       }
       
@@ -250,6 +272,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const urlObj = new URL(url, baseUrl);
           const error = urlObj.searchParams.get("error");
+          console.error("⚠️ OAuth redirect error:", error);
           return `${baseUrl}/login?error=${error || "OAuthSignin"}`;
         } catch {
           return `${baseUrl}/login?error=OAuthSignin`;
@@ -275,7 +298,7 @@ export const authOptions: NextAuthOptions = {
       return baseUrl;
     },
   },
-  secret: process.env.AUTH_SECRET,
+  secret: AUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
   // Cloudflare Pages için optimize edilmiş ayarlar
   useSecureCookies: NEXTAUTH_URL.startsWith("https://"),
