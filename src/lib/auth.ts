@@ -1,7 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { compare } from "bcryptjs";
 
@@ -83,16 +82,13 @@ export const authOptions: NextAuthOptions = {
       
       // Google OAuth ile giriş yapılıyorsa, kullanıcıyı veritabanına kaydet
       if (account?.provider === "google" && user?.email) {
+        // Database'e kaydetmeyi dene ama hata olursa yine de giriş yapsın
         try {
-          await prisma.$connect();
-          
-          // Kullanıcı var mı kontrol et
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email },
-          });
+          }).catch(() => null);
           
           if (!existingUser) {
-            // Yeni kullanıcı oluştur
             await prisma.user.create({
               data: {
                 email: user.email,
@@ -100,14 +96,13 @@ export const authOptions: NextAuthOptions = {
                 image: user.image || null,
                 emailVerified: new Date(),
               },
+            }).catch((err) => {
+              console.log("⚠️ DB kayıt hatası (JWT ile devam):", err.message);
             });
-            console.log("✅ New Google user created:", user.email);
-          } else {
-            console.log("✅ Existing Google user logged in:", user.email);
           }
         } catch (error) {
-          console.error("❌ Database error during Google sign in:", error);
-          // Hata olsa bile girişe izin ver (JWT kullanıyoruz)
+          // Sessizce devam et - JWT session yeterli
+          console.log("⚠️ DB kullanılamadı, JWT-only mode");
         }
       }
       
