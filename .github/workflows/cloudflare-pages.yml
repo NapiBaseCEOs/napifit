@@ -35,10 +35,11 @@ jobs:
         env:
           # SQLite için dummy URL (sadece build için gerekli, production'da D1 binding kullanılır)
           DATABASE_URL: "file:./dev.db"
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          # Build sırasında environment variables gerekmez, sadece uyarı vermemesi için
+          AUTH_SECRET: "dummy-for-build"
+          GOOGLE_CLIENT_ID: "dummy-for-build"
+          GOOGLE_CLIENT_SECRET: "dummy-for-build"
+          NEXTAUTH_URL: "https://napifit.pages.dev"
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -48,4 +49,5 @@ jobs:
           projectName: napifit
           directory: .open-next
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Production environment variables Cloudflare Pages dashboard'dan eklenir
 
