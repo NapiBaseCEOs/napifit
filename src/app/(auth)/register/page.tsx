@@ -102,28 +102,16 @@ export default function RegisterPage() {
         console.log("Mobile OAuth skipped, using web");
       }
       
-      // Web'de normal NextAuth kullan
-      // redirect: false ile kontrolü ele alalım
-      const result = await signIn("google", { 
-        callbackUrl: "/onboarding",
-        redirect: false, // Manual redirect
-      });
+      // Web'de NextAuth signin endpoint'ine direkt yönlendir
+      // Cloudflare Pages için optimize edilmiş yöntem
+      const callbackUrl = encodeURIComponent(`${window.location.origin}/onboarding`);
+      const signInUrl = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
       
-      if (result?.error) {
-        setGoogleLoading(false);
-        setError(`Google ile giriş yapılırken hata: ${result.error}`);
-        return;
-      }
+      // Direkt redirect - en güvenilir yöntem
+      window.location.href = signInUrl;
       
-      if (result?.url) {
-        // Başarılı - redirect et
-        window.location.href = result.url;
-        return;
-      }
-      
-      // Beklenmedik durum
-      setGoogleLoading(false);
-      setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+      // Loading state'i koru (redirect olacak)
+      // setGoogleLoading(false); // Redirect olacak, bunu yapmaya gerek yok
     } catch (err) {
       console.error("Google OAuth error:", err);
       setGoogleLoading(false);

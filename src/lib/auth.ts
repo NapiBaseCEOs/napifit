@@ -247,8 +247,13 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       // OAuth error varsa login sayfasına yönlendir
       if (url.includes("error=")) {
-        const error = new URL(url, baseUrl).searchParams.get("error");
-        return `${baseUrl}/login?error=${error || "OAuthSignin"}`;
+        try {
+          const urlObj = new URL(url, baseUrl);
+          const error = urlObj.searchParams.get("error");
+          return `${baseUrl}/login?error=${error || "OAuthSignin"}`;
+        } catch {
+          return `${baseUrl}/login?error=OAuthSignin`;
+        }
       }
       
       // Relative URL'leri baseUrl ile birleştir
@@ -259,7 +264,7 @@ export const authOptions: NextAuthOptions = {
       // Aynı origin'den geliyorsa olduğu gibi döndür
       try {
         const urlObj = new URL(url);
-        if (urlObj.origin === baseUrl) {
+        if (urlObj.origin === baseUrl || urlObj.origin === baseUrl.replace(/^https?:/, '')) {
           return url;
         }
       } catch {
