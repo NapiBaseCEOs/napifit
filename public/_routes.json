@@ -2,8 +2,10 @@
   "version": 1,
   "include": ["/*"],
   "exclude": [
+    "/_next/static/*",
     "/_next/image*",
-    "/favicon.ico"
+    "/favicon.ico",
+    "/BUILD_ID"
   ]
 }
 

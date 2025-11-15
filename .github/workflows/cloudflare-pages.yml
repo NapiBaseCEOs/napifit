@@ -44,13 +44,10 @@ jobs:
           GOOGLE_CLIENT_SECRET: "dummy-for-build"
           NEXTAUTH_URL: "https://napifit.pages.dev"
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: napifit
-          directory: .open-next
-          # gitHubToken kaldırıldı - permissions ile çözüldü
+      - name: Deploy to Cloudflare Pages with Wrangler
+        run: npx wrangler pages deploy .open-next --project-name=napifit --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # Production environment variables Cloudflare Pages dashboard'dan eklenir
 
