@@ -5,13 +5,16 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { compare } from "bcryptjs";
 
-// Environment variables kontrolü
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  console.warn("⚠️ Google OAuth credentials missing. Google login will not work.");
-}
+// Environment variables kontrolü (sadece runtime'da, build sırasında değil)
+// Cloudflare Pages build sırasında env vars yok, runtime'da olacak
+if (typeof window === "undefined" && process.env.NODE_ENV !== "production") {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    console.warn("⚠️ Google OAuth credentials missing. Google login will not work.");
+  }
 
-if (!process.env.AUTH_SECRET) {
-  console.warn("⚠️ AUTH_SECRET missing. Authentication may not work properly.");
+  if (!process.env.AUTH_SECRET) {
+    console.warn("⚠️ AUTH_SECRET missing. Authentication may not work properly.");
+  }
 }
 
 export const authOptions: NextAuthOptions = {
