@@ -10,6 +10,8 @@ export default function ThemeSwitcher() {
   useEffect(() => {
     const theme = getStoredTheme();
     setCurrentTheme(theme);
+    // Temayı hemen uygula
+    import("@/lib/theme").then((mod) => mod.applyTheme(theme));
   }, []);
 
   const handleThemeChange = (theme: Theme) => {

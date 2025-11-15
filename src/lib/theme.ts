@@ -32,12 +32,20 @@ export function applyTheme(theme: Theme): void {
   if (typeof window === "undefined") return;
   
   const root = document.documentElement;
+  const body = document.body;
   
-  // Önceki tema class'larını temizle
+  // Önceki tema class'larını temizle (hem html hem body'den)
   root.classList.remove("theme-dark", "theme-darker", "theme-light");
+  body.classList.remove("theme-dark", "theme-darker", "theme-light");
   
-  // Yeni temayı uygula
+  // Yeni temayı uygula (hem html hem body'ye)
   root.classList.add(`theme-${theme}`);
+  body.classList.add(`theme-${theme}`);
+  
+  // Data attribute ile de işaretle (CSS için ek selector)
+  root.setAttribute("data-theme", theme);
+  
+  console.log(`✅ Theme applied: ${theme}`);
 }
 
 export function getThemeColors(theme: Theme) {
