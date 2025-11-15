@@ -105,7 +105,7 @@ export default function RegisterPage() {
       // Web'de direkt Google OAuth URL'i oluşturan endpoint'e yönlendir
       // NextAuth'un signin endpoint'i yerine direkt Google'a gidiyoruz
       const callbackUrl = encodeURIComponent(`${window.location.origin}/onboarding`);
-      const signInUrl = `/api/auth/google-direct?callbackUrl=${callbackUrl}`;
+      const signInUrl = `/api/google-direct?callbackUrl=${callbackUrl}`;
       
       // Direkt redirect - en güvenilir yöntem
       window.location.href = signInUrl;
