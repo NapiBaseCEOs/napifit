@@ -3,10 +3,14 @@ import { NextResponse } from "next/server";
 // Cloudflare Pages için Web Crypto API kullan
 async function generateRandomBytes(length: number): Promise<string> {
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    // Web Crypto API kullan
+    // Web Crypto API kullan (Cloudflare Pages)
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
-    return Buffer.from(array).toString('base64url');
+    // base64url encoding (Web API ile)
+    return btoa(String.fromCharCode(...array))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
   }
   
   // Node.js fallback
@@ -14,8 +18,34 @@ async function generateRandomBytes(length: number): Promise<string> {
     const { randomBytes } = await import('crypto');
     return randomBytes(length).toString('base64url');
   } catch {
-    // Fallback: timestamp + random
-    return Buffer.from(`${Date.now()}-${Math.random()}`).toString('base64url').substring(0, length);
+    // Fallback: timestamp + random (simple)
+    const randomStr = `${Date.now()}-${Math.random()}-${Math.random()}`;
+    return btoa(randomStr)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '')
+      .substring(0, length);
+  }
+}
+
+// Cloudflare Pages için base64url encoding
+function base64UrlEncode(str: string): string {
+  try {
+    // Web API ile encode
+    return btoa(str)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+  } catch {
+    // Fallback: Node.js Buffer
+    try {
+      return Buffer.from(str).toString('base64url');
+    } catch {
+      // Son fallback: basit encoding
+      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => {
+        return '%' + c.charCodeAt(0).toString(16);
+      });
+    }
   }
 }
 
@@ -42,7 +72,7 @@ export async function GET(request: Request) {
       callbackUrl: callbackUrl.startsWith("/") ? `${NEXTAUTH_URL}${callbackUrl}` : callbackUrl,
       csrfToken 
     };
-    const state = Buffer.from(JSON.stringify(stateData)).toString('base64url');
+    const state = base64UrlEncode(JSON.stringify(stateData));
     
     // Google OAuth URL'ini manuel olarak oluştur
     const params = new URLSearchParams({
