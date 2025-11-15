@@ -12,6 +12,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +51,6 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: napifit
           directory: .open-next
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # gitHubToken kaldırıldı - permissions ile çözüldü
           # Production environment variables Cloudflare Pages dashboard'dan eklenir
 
