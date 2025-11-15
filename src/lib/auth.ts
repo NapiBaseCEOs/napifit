@@ -18,7 +18,9 @@ if (typeof window === "undefined" && process.env.NODE_ENV !== "production") {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // Cloudflare D1 ile Prisma Adapter sorunlu olduğu için kaldırıldı
+  // Google OAuth artık sadece JWT ile çalışacak (adapter olmadan)
+  // adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   providers: [
     GoogleProvider({
@@ -78,6 +80,37 @@ export const authOptions: NextAuthOptions = {
         userId: user?.id,
         email: user?.email,
       });
+      
+      // Google OAuth ile giriş yapılıyorsa, kullanıcıyı veritabanına kaydet
+      if (account?.provider === "google" && user?.email) {
+        try {
+          await prisma.$connect();
+          
+          // Kullanıcı var mı kontrol et
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+          });
+          
+          if (!existingUser) {
+            // Yeni kullanıcı oluştur
+            await prisma.user.create({
+              data: {
+                email: user.email,
+                name: user.name || "",
+                image: user.image || null,
+                emailVerified: new Date(),
+              },
+            });
+            console.log("✅ New Google user created:", user.email);
+          } else {
+            console.log("✅ Existing Google user logged in:", user.email);
+          }
+        } catch (error) {
+          console.error("❌ Database error during Google sign in:", error);
+          // Hata olsa bile girişe izin ver (JWT kullanıyoruz)
+        }
+      }
+      
       return true;
     },
     async jwt({ token, user, account }) {
