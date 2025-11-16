@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../../lib/auth";
 import { prisma } from "../../../lib/prisma";
 import { redirect } from "next/navigation";
+import HealthForms from "../../../components/HealthForms";
 
 export default async function HealthPage() {
   const session = await getServerSession(authOptions);
@@ -174,6 +175,9 @@ export default async function HealthPage() {
             </div>
           </div>
         </div>
+
+        {/* Add Forms */}
+        <HealthForms />
 
         {/* Info Card */}
         <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6 shadow-lg">

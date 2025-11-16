@@ -91,13 +91,15 @@ try {
 
   // 5. Commit yap
   console.log('💾 5. Commit yapılıyor...');
-  const commitMessage = `feat: Versiyon ${newVersion} - Tasarım iyileştirmeleri
+  const commitMessage = `feat: Versiyon ${newVersion} - Tam özellikli sağlık takip sistemi
 
-- Arka plan kontrastı artırıldı (daha koyu, yazılar okunabilir)
-- Header menü yeni tasarıma uyarlandı (yeşil/turuncu renkler)
-- Gradient opacity değerleri düşürüldü (daha koyu arka plan)
-- Tüm sayfalara koyu arka plan eklendi (#0a0a0a)
-- Header hover efektleri ve modern butonlar
+- Egzersiz takibi API ve UI eklendi (CRUD işlemleri)
+- Beslenme takibi API ve UI eklendi (çoklu yemek desteği)
+- Sağlık metrikleri API ve UI eklendi
+- Dashboard'a bugünkü egzersizler ve yakılan kalori eklendi
+- HealthForms component'i ile kapsamlı form sistemi
+- Tüm API route'larda error handling ve validation
+- Dashboard UI iyileştirmeleri ve responsive tasarım
 - Versiyon: ${newVersion}`;
 
   try {

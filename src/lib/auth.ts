@@ -90,13 +90,13 @@ export const authOptions: NextAuthOptions = {
               // Bu yüzden direkt db.prepare kullan
               try {
                 const stmt = db.prepare('SELECT id, email, password, name, image FROM User WHERE email = ?').bind(credentials.email);
-                const user = await stmt.first<{ 
+                const user = await stmt.first() as { 
                   id: string; 
                   email: string; 
                   password: string; 
                   name: string | null; 
                   image: string | null 
-                }>();
+                } | null;
                 
                 if (!user || !user.password) return null;
                 
@@ -162,7 +162,7 @@ export const authOptions: NextAuthOptions = {
             try {
               // Mevcut kullanıcıyı kontrol et
               const stmt = db.prepare('SELECT id FROM User WHERE email = ?').bind(user.email);
-              const existingUser = await stmt.first<{ id: string }>();
+              const existingUser = await stmt.first() as { id: string } | null;
               
               if (!existingUser) {
                 // Yeni kullanıcı oluştur
@@ -239,11 +239,11 @@ export const authOptions: NextAuthOptions = {
           if (db) {
             try {
               const stmt = db.prepare('SELECT id, name, image FROM User WHERE email = ?').bind(token.email as string);
-              const dbUser = await stmt.first<{ 
+              const dbUser = await stmt.first() as { 
                 id: string; 
                 name: string | null; 
                 image: string | null 
-              }>();
+              } | null;
               
               if (dbUser) {
                 token.id = dbUser.id;

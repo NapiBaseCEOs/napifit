@@ -30,32 +30,52 @@ export default async function DashboardPage() {
     },
   });
 
+  if (!user) {
+    redirect("/login");
+  }
+
+  // Onboarding tamamlanmamışsa yönlendir
+  if (!user.onboardingCompleted) {
+    redirect("/onboarding");
+  }
+
   // Bugünkü kalori toplamını al
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const todayMeals = await prisma.meal.findMany({
-    where: {
-      userId: user?.id,
-      createdAt: {
-        gte: today,
-        lt: tomorrow,
+  const [todayMeals, todayWorkouts] = await Promise.all([
+    prisma.meal.findMany({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: today,
+          lt: tomorrow,
+        },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 5,
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 5,
+    }),
+    prisma.workout.findMany({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 5,
+    }),
+  ]);
 
   const todayCalories = todayMeals.reduce((sum, meal) => sum + meal.totalCalories, 0);
-
-  // Onboarding tamamlanmamışsa yönlendir
-  if (!user?.onboardingCompleted) {
-    redirect("/onboarding");
-  }
+  const todayBurnedCalories = todayWorkouts.reduce((sum, workout) => sum + (workout.calories || 0), 0);
 
   // BMI hesapla
   const calculateBMI = (height: number | null, weight: number | null): number | null => {
@@ -88,7 +108,9 @@ export default async function DashboardPage() {
       bmiCategory={bmiCategory}
       weightDifference={weightDifference}
       todayCalories={todayCalories}
+      todayBurnedCalories={todayBurnedCalories}
       todayMeals={todayMeals}
+      todayWorkouts={todayWorkouts}
     />
   );
 }

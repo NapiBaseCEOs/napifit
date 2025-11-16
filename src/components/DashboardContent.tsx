@@ -20,11 +20,21 @@ interface DashboardContentProps {
   bmiCategory: { label: string; color: string };
   weightDifference: number | null;
   todayCalories: number;
+  todayBurnedCalories: number;
   todayMeals: Array<{
     id: string;
     totalCalories: number;
     mealType: string | null;
     foods: any;
+    createdAt: Date;
+  }>;
+  todayWorkouts: Array<{
+    id: string;
+    name: string;
+    type: string;
+    duration: number | null;
+    calories: number | null;
+    distance: number | null;
     createdAt: Date;
   }>;
 }
@@ -35,7 +45,9 @@ export default function DashboardContent({
   bmiCategory,
   weightDifference,
   todayCalories,
+  todayBurnedCalories,
   todayMeals,
+  todayWorkouts,
 }: DashboardContentProps) {
   const getColorClass = (color: string) => {
     switch (color) {
@@ -148,61 +160,135 @@ export default function DashboardContent({
               {todayMeals.length} öğün kaydedildi
             </div>
           </Link>
+
+          {/* Today's Burned Calories Card */}
+          <Link
+            href="/health"
+            className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-fitness-orange/20 via-red-500/20 to-fitness-purple/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-fitness-orange/50 hover:shadow-fitness-orange/30 hover:scale-[1.02]"
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs uppercase tracking-wide text-gray-400">Yakılan Kalori</span>
+              <span className="text-xs text-fitness-orange font-semibold group-hover:text-fitness-orange/80 transition-colors">+ Takip Et →</span>
+            </div>
+            <div className="text-3xl font-bold text-white">{Math.round(todayBurnedCalories)} <span className="text-lg text-fitness-orange">kcal</span></div>
+            <div className="mt-2 text-sm text-gray-400">
+              {todayWorkouts.length} egzersiz kaydedildi
+            </div>
+          </Link>
         </div>
 
-        {/* Today's Meals */}
-        {todayMeals.length > 0 && (
-          <div className="rounded-2xl border border-gray-800/70 bg-gray-900/80 p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Bugünkü Öğünler</h3>
-              <Link
-                href="/health"
-                className="text-sm text-green-400 hover:text-green-300"
-              >
-                + Yeni Ekle
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {todayMeals.map((meal) => {
-                const mealTypeLabels: Record<string, string> = {
-                  breakfast: "Kahvaltı",
-                  lunch: "Öğle",
-                  dinner: "Akşam",
-                  snack: "Atıştırmalık",
-                };
-                const foods = Array.isArray(meal.foods) ? meal.foods : [];
-                return (
-                  <div
-                    key={meal.id}
-                    className="rounded-lg border border-gray-800/70 bg-gray-900/60 p-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-white">
-                          {mealTypeLabels[meal.mealType || ""] || "Öğün"}
+        {/* Today's Activities */}
+        <div className="grid gap-6 sm:grid-cols-2">
+          {/* Today's Meals */}
+          {todayMeals.length > 0 && (
+            <div className="rounded-2xl border border-gray-800/70 bg-gray-900/80 p-6 shadow-lg">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white">Bugünkü Öğünler</h3>
+                <Link
+                  href="/health"
+                  className="text-sm text-green-400 hover:text-green-300"
+                >
+                  + Yeni Ekle
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {todayMeals.map((meal) => {
+                  const mealTypeLabels: Record<string, string> = {
+                    breakfast: "Kahvaltı",
+                    lunch: "Öğle",
+                    dinner: "Akşam",
+                    snack: "Atıştırmalık",
+                  };
+                  const foods = Array.isArray(meal.foods) ? meal.foods : [];
+                  return (
+                    <div
+                      key={meal.id}
+                      className="rounded-lg border border-gray-800/70 bg-gray-900/60 p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-white">
+                            {mealTypeLabels[meal.mealType || ""] || "Öğün"}
+                          </div>
+                          <div className="mt-1 text-sm text-gray-400">
+                            {foods.map((food: any) => food.name).join(", ") || "Yemek"}
+                          </div>
                         </div>
-                        <div className="mt-1 text-sm text-gray-400">
-                          {foods.map((food: any) => food.name).join(", ") || "Yemek"}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-green-400">
-                          {Math.round(meal.totalCalories)} kcal
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(meal.createdAt).toLocaleTimeString("tr-TR", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                        <div className="text-right">
+                          <div className="font-bold text-green-400">
+                            {Math.round(meal.totalCalories)} kcal
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(meal.createdAt).toLocaleTimeString("tr-TR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Today's Workouts */}
+          {todayWorkouts.length > 0 && (
+            <div className="rounded-2xl border border-gray-800/70 bg-gray-900/80 p-6 shadow-lg">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white">Bugünkü Egzersizler</h3>
+                <Link
+                  href="/health"
+                  className="text-sm text-fitness-orange hover:text-fitness-orange/80"
+                >
+                  + Yeni Ekle
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {todayWorkouts.map((workout) => {
+                  const typeLabels: Record<string, string> = {
+                    cardio: "Kardiyovasküler",
+                    strength: "Güç",
+                    flexibility: "Esneklik",
+                    sports: "Spor",
+                    other: "Diğer",
+                  };
+                  return (
+                    <div
+                      key={workout.id}
+                      className="rounded-lg border border-gray-800/70 bg-gray-900/60 p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-white">{workout.name}</div>
+                          <div className="mt-1 text-sm text-gray-400">
+                            {typeLabels[workout.type] || workout.type}
+                            {workout.duration && ` • ${workout.duration} dk`}
+                            {workout.distance && ` • ${workout.distance} km`}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {workout.calories && (
+                            <div className="font-bold text-fitness-orange">
+                              {Math.round(workout.calories)} kcal
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-500">
+                            {new Date(workout.createdAt).toLocaleTimeString("tr-TR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Profile Info */}
         <div className="grid gap-6 sm:grid-cols-2">
