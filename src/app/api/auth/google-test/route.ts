@@ -4,7 +4,21 @@ import { authOptions } from "@/lib/auth";
 export async function GET() {
   const googleProvider = authOptions.providers.find(p => p.id === "google");
   
-  const info = {
+  const info: {
+    hasGoogleProvider: boolean;
+    googleProviderId: string | null;
+    googleProviderName: string | null;
+    clientId: string;
+    clientSecret: string;
+    nextAuthUrl: string;
+    callbackUrl: string;
+    signInUrl: string;
+    authSecret: string;
+    googleAuthorization?: {
+      url: string | null;
+      params: any;
+    };
+  } = {
     hasGoogleProvider: !!googleProvider,
     googleProviderId: googleProvider?.id || null,
     googleProviderName: googleProvider?.name || null,
