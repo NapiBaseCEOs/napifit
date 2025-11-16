@@ -1,20 +1,26 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { getDB, queryOne, execute } from "@/lib/d1";
-// Turso client dynamic import ile kullanılacak (build-time bundle sorunlarını önler)
+import { queryOne as tursoQueryOne, execute as tursoExecute, testConnection as tursoTestConnection } from "@/lib/turso";
 
-// Database öncelik sırası: D1 > Turso > Prisma
+// Database öncelik sırası: Turso > D1 > Prisma
 
 export async function POST(request: Request) {
-  // 1. D1 Database bağlantısını test et
-  const db = getDB(request);
+  // 1. Turso Database bağlantısını test et (Vercel production için)
+  const tursoAvailable = await tursoTestConnection();
+  if (tursoAvailable) {
+    console.log('✅ Using Turso database');
+    return await registerWithTurso(request);
+  }
   
+  // 2. D1 Database bağlantısını test et (Cloudflare için)
+  const db = getDB(request);
   if (db) {
     console.log('✅ Using D1 database');
     return await registerWithD1(request);
   }
   
-  // 2. Prisma'ya fallback yap (development için)
+  // 3. Prisma'ya fallback yap (development için)
   try {
     const { prisma } = await import("../../../lib/prisma");
     const dbConnected = await prisma.$connect().then(() => true).catch(() => false);
@@ -121,6 +127,101 @@ async function registerWithD1(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Register error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Beklenmeyen bir hata oluştu";
+    
+    return NextResponse.json(
+      { 
+        message: errorMessage,
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Turso ile kayıt
+async function registerWithTurso(request: Request) {
+  try {
+    const body = await request.json();
+    const { firstName, lastName, dateOfBirth, email, password } = body as { 
+      firstName?: string; 
+      lastName?: string; 
+      dateOfBirth?: string; 
+      email?: string; 
+      password?: string 
+    };
+    
+    // Validasyon
+    if (!firstName || !firstName.trim()) {
+      return NextResponse.json({ message: "Ad zorunludur" }, { status: 400 });
+    }
+    if (!lastName || !lastName.trim()) {
+      return NextResponse.json({ message: "Soyad zorunludur" }, { status: 400 });
+    }
+    if (!dateOfBirth) {
+      return NextResponse.json({ message: "Doğum tarihi zorunludur" }, { status: 400 });
+    }
+    if (!email || !password) {
+      return NextResponse.json({ message: "Email ve şifre zorunludur" }, { status: 400 });
+    }
+    
+    // Doğum tarihi validasyonu
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+    
+    if (actualAge < 18) {
+      return NextResponse.json({ message: "18 yaşından küçükler kayıt olamaz" }, { status: 400 });
+    }
+
+    // Turso: Email kontrolü
+    const existingUser = await tursoQueryOne<{ id: string }>(
+      'SELECT id FROM User WHERE email = ?',
+      [email]
+    );
+    
+    if (existingUser) {
+      return NextResponse.json({ message: "Bu email zaten kayıtlı" }, { status: 409 });
+    }
+
+    // Password hash
+    const passwordHash = await hash(password, 10);
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+    const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    
+    // Turso: Kullanıcı oluştur
+    const success = await tursoExecute(
+      `INSERT INTO User (id, email, password, name, firstName, lastName, dateOfBirth, createdAt, updatedAt, onboardingCompleted) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        userId,
+        email,
+        passwordHash,
+        fullName,
+        firstName.trim(),
+        lastName.trim(),
+        birthDate.toISOString(),
+        new Date().toISOString(),
+        new Date().toISOString(),
+        0 // false
+      ]
+    );
+
+    if (!success) {
+      return NextResponse.json(
+        { 
+          message: "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+          error: "DATABASE_ERROR"
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Register error (Turso):", error);
     const errorMessage = error instanceof Error ? error.message : "Beklenmeyen bir hata oluştu";
     
     return NextResponse.json(
