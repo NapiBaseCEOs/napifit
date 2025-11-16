@@ -268,6 +268,13 @@ export const authOptions: NextAuthOptions = {
           const urlObj = new URL(url, baseUrl);
           const error = urlObj.searchParams.get("error");
           console.error("⚠️ OAuth redirect error:", error);
+          
+          // callbackUrl varsa koru
+          const callbackUrl = urlObj.searchParams.get("callbackUrl");
+          if (callbackUrl) {
+            return `${baseUrl}/login?callbackUrl=${encodeURIComponent(callbackUrl)}&error=${error || "OAuthSignin"}`;
+          }
+          
           return `${baseUrl}/login?error=${error || "OAuthSignin"}`;
         } catch {
           return `${baseUrl}/login?error=OAuthSignin`;
@@ -286,7 +293,14 @@ export const authOptions: NextAuthOptions = {
           return url;
         }
       } catch {
-        // Invalid URL
+        // Invalid URL - baseUrl'e yönlendir
+        return baseUrl;
+      }
+      
+      // Google OAuth callback'i ise onboarding'e yönlendir
+      if (url.includes("accounts.google.com") || url.includes("google")) {
+        // Bu durumda URL zaten Google'a ait, olduğu gibi döndür
+        return url;
       }
       
       // Diğer durumlarda baseUrl'e yönlendir
