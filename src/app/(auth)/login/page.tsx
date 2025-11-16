@@ -11,7 +11,7 @@ function ErrorHandler() {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
-  useState(() => {
+  useEffect(() => {
     const errorParam = searchParams.get("error");
     const registered = searchParams.get("registered");
 
@@ -28,7 +28,7 @@ function ErrorHandler() {
         setError("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
       }
     }
-  });
+  }, [searchParams]);
 
   return error ? (
     <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
