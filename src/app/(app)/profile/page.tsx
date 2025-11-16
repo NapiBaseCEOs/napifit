@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import ProfileEditForm from "@/components/profile/ProfileEditForm";
 
 export default async function ProfilePage() {
   const supabase = createSupabaseServerClient();
@@ -46,7 +47,7 @@ export default async function ProfilePage() {
   const bmi = calculateBMI(user.height, user.weight);
 
   return (
-    <main className="min-h-screen px-4 py-8 sm:px-6 bg-[#0a0a0a]">
+    <main className="min-h-screen px-4 py-8 sm:px-6 bg-[#03060f]">
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -184,6 +185,18 @@ export default async function ProfilePage() {
             </Link>
           </div>
         </div>
+
+        <ProfileEditForm
+          profile={{
+            name: user.name ?? "",
+            height: user.height ?? null,
+            weight: user.weight ?? null,
+            age: user.age ?? null,
+            gender: (user.gender as "male" | "female" | "other" | null) ?? null,
+            targetWeight: user.targetWeight ?? null,
+            dailySteps: user.dailySteps ?? null,
+          }}
+        />
       </div>
     </main>
   );

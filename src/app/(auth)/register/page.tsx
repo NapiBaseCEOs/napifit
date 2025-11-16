@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendFeedback, setResendFeedback] = useState<string | null>(null);
+  const [hasConsented, setHasConsented] = useState(false);
 
   const passwordPolicy = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
@@ -41,7 +42,7 @@ export default function RegisterPage() {
     return "Harika! Şifreniz güçlü görünüyor.";
   }, [password]);
 
-  const isFormDisabled = loading || googleLoading || Boolean(successMessage);
+  const isFormDisabled = loading || googleLoading || Boolean(successMessage) || !hasConsented;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +77,11 @@ export default function RegisterPage() {
       }
     } else if (age < 18) {
       setError("18 yaşından küçükler kayıt olamaz");
+      return;
+    }
+
+    if (!hasConsented) {
+      setError("Devam edebilmek için şartları kabul etmelisin.");
       return;
     }
 
@@ -336,6 +342,26 @@ export default function RegisterPage() {
               />
               <p className="text-xs text-gray-500">{passwordHint}</p>
             </div>
+            <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+              <input
+                id="consent"
+                type="checkbox"
+                checked={hasConsented}
+                onChange={(event) => setHasConsented(event.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-white/30 bg-transparent text-primary-400 focus:ring-primary-400/40"
+              />
+              <label htmlFor="consent" className="text-xs text-gray-300 leading-relaxed">
+                Kaydol butonuna basarak{" "}
+                <Link href="/terms" className="text-primary-200 underline">
+                  Kullanım Şartları
+                </Link>{" "}
+                ve{" "}
+                <Link href="/privacy" className="text-primary-200 underline">
+                  Gizlilik Politikasını
+                </Link>{" "}
+                okuduğunu ve Supabase üzerinde veri saklanmasını kabul ettiğini onaylıyorsun.
+              </label>
+            </div>
             <button
               type="submit"
               disabled={isFormDisabled}
@@ -369,6 +395,9 @@ export default function RegisterPage() {
               </>
             )}
           </button>
+          <p className="text-center text-xs text-gray-400">
+            Google ile devam ederek Google&apos;ın sizinle paylaştığı temel profil verilerini Supabase üzerinde saklamamıza izin veriyorsunuz.
+          </p>
           {successMessage && (
             <button
               type="button"
