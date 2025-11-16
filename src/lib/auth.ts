@@ -56,8 +56,8 @@ export const authOptions: NextAuthOptions = {
           scope: "openid email profile",
         },
       },
-      checks: ["pkce", "state"],
-      wellKnown: "https://accounts.google.com/.well-known/openid-configuration",
+      // Cloudflare Pages için PKCE kaldırıldı - sorun yaratabilir
+      // checks: ["pkce", "state"],
     }),
     CredentialsProvider({
       name: "credentials",

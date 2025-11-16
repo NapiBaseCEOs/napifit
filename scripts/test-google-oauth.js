@@ -40,10 +40,10 @@ async function testGoogleOAuth() {
   console.log('║   GOOGLE OAUTH TEST - NAPIFIT v0.1.37           ║');
   console.log('╚══════════════════════════════════════════════════╝\n');
 
-  // Test 1: Auth Check
-  console.log('[1/5] Auth Configuration Check...');
+  // Test 1: Config Check
+  console.log('[1/5] Configuration Check...');
   try {
-    const check = await request(`${BASE_URL}/api/auth/check`);
+    const check = await request(`${BASE_URL}/api/config`);
     if (check.status === 200) {
       const json = JSON.parse(check.data);
       console.log('  ✓ Auth endpoint accessible');
@@ -54,15 +54,17 @@ async function testGoogleOAuth() {
       
       if (json.config.googleClientId === 'NOT_SET' || json.config.googleClientSecret === 'NOT_SET') {
         console.log('  ✗ Google OAuth credentials NOT SET!');
+        console.log('  ⚠️  Cloudflare Pages Environment Variables kontrol edin!');
         return;
       }
     } else {
       console.log(`  ✗ Auth check failed: ${check.status}`);
-      return;
+      console.log(`    Response: ${check.data.substring(0, 200)}`);
+      // Devam et, diğer testleri yap
     }
   } catch (err) {
     console.log(`  ✗ Auth check error: ${err.message}`);
-    return;
+    // Devam et, diğer testleri yap
   }
 
   // Test 2: Providers Check
