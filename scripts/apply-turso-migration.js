@@ -12,6 +12,13 @@ const authToken = process.env.TURSO_AUTH_TOKEN;
 
 if (!databaseUrl) {
   console.error('❌ TURSO_DATABASE_URL environment variable not set');
+  console.error('💡 Lütfen TURSO_DATABASE_URL environment variable\'ını ayarlayın');
+  process.exit(1);
+}
+
+if (!authToken) {
+  console.error('❌ TURSO_AUTH_TOKEN environment variable not set');
+  console.error('💡 Lütfen TURSO_AUTH_TOKEN environment variable\'ını ayarlayın');
   process.exit(1);
 }
 
