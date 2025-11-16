@@ -8,6 +8,7 @@ import Spinner from "../../../components/icons/Spinner";
 import { useSession, useSessionContext, useSupabaseClient } from "@supabase/auth-helpers-react";
 import type { Database } from "@/lib/supabase/types";
 import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
+import { AuthError } from "@supabase/supabase-js";
 
 function ErrorHandler() {
   const searchParams = useSearchParams();
@@ -38,6 +39,9 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendFeedback, setResendFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoading) return;
@@ -50,6 +54,8 @@ export default function LoginPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setInfoMessage(null);
+    setResendFeedback(null);
     setLoading(true);
     
     try {
@@ -85,9 +91,43 @@ export default function LoginPage() {
       router.refresh();
     } catch (err) {
       console.error("Login error:", err);
-      setError("Geçersiz email veya şifre ya da Supabase bağlantı hatası.");
+      if (err instanceof AuthError) {
+        if (err.message.toLowerCase().includes("email not confirmed")) {
+          setError("E-posta adresin doğrulanmamış görünüyor.");
+          setInfoMessage("Doğrulama mailini teslim almadıysan aşağıdan yeniden gönderebilirsin.");
+        } else {
+          setError(err.message || "Geçersiz email veya şifre.");
+        }
+      } else {
+        setError("Geçersiz email veya şifre ya da Supabase bağlantı hatası.");
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      setResendFeedback("Lütfen önce e-posta alanını doldur.");
+      return;
+    }
+    try {
+      setResendLoading(true);
+      setResendFeedback(null);
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      });
+      if (resendError) {
+        throw resendError;
+      }
+      setResendFeedback(`${email} adresine yeni doğrulama bağlantısı gönderildi.`);
+    } catch (err) {
+      const message =
+        err instanceof AuthError ? err.message : "Doğrulama maili gönderilemedi. Bir süre sonra tekrar deneyin.";
+      setResendFeedback(message);
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -159,6 +199,11 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+          {infoMessage && (
+            <div className="mb-4 p-4 bg-primary-500/10 border border-primary-500/30 rounded-xl text-primary-200 text-sm">
+              {infoMessage}
+            </div>
+          )}
 
           <form onSubmit={onSubmit} className="space-y-6">
             <div>
@@ -207,6 +252,22 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {infoMessage && (
+            <div className="mt-4 space-y-2">
+              <button
+                type="button"
+                disabled={resendLoading}
+                onClick={handleResendVerification}
+                className="w-full rounded-xl border border-primary-500/40 bg-primary-500/10 px-4 py-3 text-sm font-semibold text-primary-200 hover:bg-primary-500/20 transition disabled:opacity-50"
+              >
+                {resendLoading ? "Gönderiliyor..." : "Doğrulama E-postasını Yeniden Gönder"}
+              </button>
+              {resendFeedback && (
+                <p className="text-xs text-gray-400 text-center">{resendFeedback}</p>
+              )}
+            </div>
+          )}
+
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -234,6 +295,15 @@ export default function LoginPage() {
                 </>
               )}
             </button>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-gray-800/60 bg-gray-900/60 p-4 space-y-2 text-sm text-gray-400">
+            <p className="text-gray-200 font-semibold">İpucu</p>
+            <ul className="space-y-1">
+              <li>• Doğrulama maili spam klasörüne düşmüş olabilir.</li>
+              <li>• E-postan doğrulandıktan sonra giriş otomatik tamamlanır.</li>
+              <li>• Google ile girişte doğrulama gerekmez.</li>
+            </ul>
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-400">

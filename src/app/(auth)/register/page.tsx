@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
@@ -20,6 +20,24 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const completedFields = useMemo(() => {
+    return [firstName, lastName, dateOfBirth, email, password].filter(Boolean).length;
+  }, [firstName, lastName, dateOfBirth, email, password]);
+
+  const formProgress = Math.min(100, Math.round((completedFields / 5) * 100));
+
+  const passwordHint = useMemo(() => {
+    if (!password) return "En az 6 karakter, tercihen rakam + harf kombinasyonu.";
+    if (password.length < 6) return "Daha güçlü bir şifre için minimum 6 karakter girin.";
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return "Bir büyük harf ve rakam eklerseniz çok daha güvenli olur.";
+    }
+    return "Harika! Şifreniz güçlü görünüyor.";
+  }, [password]);
+
+  const isFormDisabled = loading || googleLoading || Boolean(successMessage);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +75,7 @@ export default function RegisterPage() {
     }
     
     setLoading(true);
+    setSuccessMessage(null);
     try {
       const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
 
@@ -92,12 +111,9 @@ export default function RegisterPage() {
         });
       }
 
-      if (data.session) {
-        router.push("/onboarding");
-        router.refresh();
-      } else {
-        router.push("/login");
-      }
+      setSuccessMessage(
+        `Doğrulama bağlantısı ${email} adresine gönderildi. E-postanı onayladıktan sonra "Giriş Yap" butonuna tıklayabilirsin.`
+      );
     } catch (err) {
       console.error("Register error:", err);
       setError("Kayıt sırasında bir hata oluştu. Lütfen bilgilerinizi kontrol edin.");
@@ -160,7 +176,7 @@ export default function RegisterPage() {
       
       <div className="relative w-full max-w-md">
         <div className="relative z-10 space-y-6 rounded-3xl border border-gray-800/70 bg-gray-900/90 backdrop-blur-xl p-8 shadow-2xl shadow-fitness-orange/10 sm:p-10 animate-fade-up">
-          <div className="space-y-3 text-center">
+            <div className="space-y-3 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-fitness-orange/40 bg-fitness-orange/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-fitness-orange">
               NapiFit Topluluğuna Katıl
             </div>
@@ -171,9 +187,26 @@ export default function RegisterPage() {
               Sağlıklı yaşam yolculuğuna başlamak için hesabını oluştur veya Google ile devam et.
             </p>
           </div>
+          <div className="space-y-3">
+            <div className="w-full h-2 rounded-full bg-gray-800/60 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-fitness-orange via-primary-500 to-primary-400 transition-all duration-300"
+                style={{ width: `${formProgress}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 text-center">
+              Formun %{formProgress}’ini tamamladın. Birkaç alan kaldı!
+            </p>
+          </div>
+
           {error && (
             <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-center text-sm text-red-200">
               {error}
+            </div>
+          )}
+          {successMessage && (
+            <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-center text-sm text-emerald-200">
+              {successMessage}
             </div>
           )}
           <form className="space-y-4" onSubmit={onSubmit}>
@@ -233,7 +266,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-xs uppercase tracking-wide text-gray-400">
+                <label className="block text-xs uppercase tracking-wide text-gray-400">
                 Şifre <span className="text-red-400">*</span>
               </label>
               <input
@@ -245,10 +278,11 @@ export default function RegisterPage() {
                 placeholder="En az 6 karakter"
                 required
               />
+              <p className="text-xs text-gray-500">{passwordHint}</p>
             </div>
             <button
               type="submit"
-              disabled={loading || googleLoading}
+              disabled={isFormDisabled}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fitness-orange to-primary-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-fitness-orange/50 hover:shadow-fitness-orange/70 hover:scale-[1.02] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
             >
               {loading ? (
@@ -279,6 +313,25 @@ export default function RegisterPage() {
               </>
             )}
           </button>
+          {successMessage && (
+            <button
+              type="button"
+              onClick={() => router.push("/login")}
+              className="w-full rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-200 hover:bg-emerald-500/20 transition"
+            >
+              E-postamı Onayladım, Giriş Yap
+            </button>
+          )}
+
+          <div className="mt-6 rounded-2xl border border-gray-800/60 bg-gray-900/70 p-4 space-y-3">
+            <h2 className="text-sm text-gray-200 font-semibold">Neden NapiFit?</h2>
+            <ul className="text-xs text-gray-400 space-y-1.5">
+              <li>• AI destekli sağlık hedefleri ve kişisel öneriler</li>
+              <li>• Haftalık ilerleme raporları ve motivasyon ipuçları</li>
+              <li>• Tek tuşla Google ile giriş ve senkronizasyon</li>
+            </ul>
+          </div>
+
           <p className="text-center text-sm text-gray-400">
             Zaten hesabın var mı? {" "}
             <Link className="font-semibold text-primary-400 hover:text-primary-300 transition-colors" href="/login">
