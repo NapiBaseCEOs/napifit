@@ -71,30 +71,6 @@ function ensureWorkerFile() {
   console.log("✓ .open-next/_worker.js oluşturuldu");
 }
 
-function copyLibsqlPackages() {
-  // @libsql/isomorphic-ws paketini OpenNext build output'a kopyala
-  const serverFunctionsDir = path.join(outputDir, "server-functions", "default", "node_modules");
-  const libsqlIsomorphicWsDir = path.join(serverFunctionsDir, "@libsql", "isomorphic-ws");
-  const sourceLibsqlDir = path.join(rootDir, "node_modules", "@libsql", "isomorphic-ws");
-  
-  if (!fs.existsSync(sourceLibsqlDir)) {
-    console.warn("⚠️ @libsql/isomorphic-ws paketi node_modules'da bulunamadı.");
-    return;
-  }
-
-  if (!fs.existsSync(serverFunctionsDir)) {
-    console.warn("⚠️ .open-next/server-functions/default/node_modules bulunamadı.");
-    return;
-  }
-
-  // @libsql klasörünü oluştur
-  const libsqlDir = path.join(serverFunctionsDir, "@libsql");
-  ensureDir(libsqlDir);
-
-  // @libsql/isomorphic-ws paketini kopyala
-  copyRecursive(sourceLibsqlDir, libsqlIsomorphicWsDir);
-  console.log("✓ @libsql/isomorphic-ws paketi kopyalandı");
-}
 
 function main() {
   if (!fs.existsSync(outputDir)) {
@@ -105,7 +81,6 @@ function main() {
   copyAssetsToRoot();
   copyRoutesFile();
   ensureWorkerFile();
-  copyLibsqlPackages();
 }
 
 main();
