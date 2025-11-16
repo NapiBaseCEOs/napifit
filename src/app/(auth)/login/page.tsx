@@ -180,17 +180,26 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-16 sm:px-6 relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 overflow-hidden bg-[#0a0a0a]">
-        <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-gradient-to-r from-primary-500/15 via-fitness-orange/15 to-transparent blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-gradient-to-r from-fitness-purple/15 via-primary-500/15 to-transparent blur-3xl animate-pulse-slow" />
-      </div>
+    <main className="relative min-h-screen overflow-hidden px-4 py-16 sm:px-6 flex items-center justify-center">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#01040d] via-[#050b1f] to-[#02010b]" />
+      <div className="absolute -left-12 top-16 -z-10 h-72 w-72 rounded-full bg-primary-500/25 blur-[120px] animate-float" />
+      <div className="absolute right-0 bottom-0 -z-10 h-80 w-80 rounded-full bg-fitness-orange/15 blur-[140px]" />
+      <div className="absolute inset-0 -z-10 opacity-30 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),transparent_60%)]" />
 
-      <div className="w-full max-w-md">
-        <div className="bg-gray-900/90 backdrop-blur-xl border border-gray-800 rounded-2xl p-8 shadow-2xl">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Giriş Yap</h1>
-            <p className="text-gray-400">Hesabına erişmek için giriş yap veya Google ile devam et.</p>
+      <div className="w-full max-w-md relative">
+        <div className="absolute -top-12 right-0 hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/80 backdrop-blur">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          Supabase ile güvenli giriş
+        </div>
+        <div className="bg-[#0f1424]/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-[0_20px_80px_rgba(2,6,23,0.6)]">
+          <div className="text-center mb-8 space-y-3">
+            <p className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.4em] text-primary-200">
+              NapiFit
+            </p>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Tekrar Hoş Geldin</h1>
+              <p className="text-gray-400">Hesabına erişmek için giriş yap veya Google ile devam et.</p>
+            </div>
           </div>
 
           <Suspense fallback={null}>
@@ -242,7 +251,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold py-3 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4,#7c3aed)] animate-gradient text-white font-semibold py-3 rounded-2xl transition-all duration-300 shadow-[0_20px_45px_rgba(17,15,45,0.5)] hover:shadow-[0_30px_70px_rgba(124,58,237,0.35)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -284,7 +293,7 @@ export default function LoginPage() {
             <button
               onClick={onGoogle}
               disabled={googleLoading}
-              className="mt-6 w-full bg-white text-gray-900 font-semibold py-3 rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-lg shadow-black/20 hover:shadow-black/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              className="mt-6 w-full border border-white/20 bg-white/95 text-gray-900 font-semibold py-3 rounded-2xl hover:bg-white transition-all duration-300 shadow-[0_15px_40px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
             >
               {googleLoading ? (
                 <>

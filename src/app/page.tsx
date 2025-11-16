@@ -125,22 +125,22 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const [stats, workouts] = await Promise.all([
-    getLandingStats(),
-    getRecentWorkouts(),
-  ]);
+  const [stats, workouts] = await Promise.all([getLandingStats(), getRecentWorkouts()]);
 
   return (
-    <main className="relative min-h-screen px-4 py-16 sm:px-6 lg:px-8 bg-[#050505] overflow-hidden">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-[-10%] left-[25%] h-[550px] w-[550px] rounded-full bg-gradient-to-r from-primary-500/15 via-fitness-orange/15 to-transparent blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-[-15%] right-[20%] h-[600px] w-[600px] rounded-full bg-gradient-to-r from-fitness-purple/15 via-fitness-blue/15 to-transparent blur-3xl animate-pulse-slow" style={{ animationDelay: "1.2s" }} />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.08),transparent_50%)]" />
-      </div>
+    <main className="relative min-h-screen px-4 py-16 sm:px-6 lg:px-8 overflow-hidden">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#01030a] via-[#04081b] to-[#010106]" />
+      <div className="absolute -z-10 top-[-10%] left-[15%] h-[620px] w-[620px] rounded-full bg-primary-500/25 blur-[180px] animate-float" />
+      <div
+        className="absolute -z-10 bottom-[-15%] right-[5%] h-[620px] w-[620px] rounded-full bg-fitness-orange/20 blur-[180px]"
+        style={{ animationDelay: "1.5s" }}
+      />
+      <div className="absolute inset-0 -z-10 opacity-40 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12),transparent_65%)]" />
 
       <div className="mx-auto flex flex-col gap-16 lg:gap-20 max-w-6xl">
         <HeroSection />
         <StatsSection stats={stats} />
+        <SocialProof />
         <ExperienceGrid workouts={workouts} />
         <JourneySection />
         <CallToAction />
@@ -150,45 +150,110 @@ export default async function HomePage() {
 }
 
 function HeroSection() {
+  const perks = [
+    "AI destekli planlar",
+    "Gerçek zamanlı raporlar",
+    "Google & e‑posta ile giriş",
+    "Mobil senkronizasyon",
+  ];
+
   return (
-    <section className="relative flex flex-col items-center text-center gap-6">
-      <div className="inline-flex items-center gap-2 rounded-full border border-primary-500/30 bg-primary-500/10 px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.4em] text-primary-200 shadow-lg shadow-primary-500/20">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500" />
-        </span>
-        NapiFit Platformu
+    <section className="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
+      <div className="space-y-8 text-center lg:text-left">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.4em] text-primary-200 shadow-lg shadow-primary-500/10">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+          </span>
+          Yeni sürüm v0.1.45
+        </div>
+
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-tight">
+          Sağlıklı Yaşamın
+          <br />
+          <span className="bg-gradient-to-r from-primary-400 via-fitness-orange to-fitness-purple bg-clip-text text-transparent">
+            Yeni Başlangıcı
+          </span>
+        </h1>
+
+        <p className="text-lg sm:text-xl text-gray-200 max-w-2xl leading-relaxed mx-auto lg:mx-0">
+          Kişisel antrenman planları, beslenme hatırlatmaları ve sağlık metrikleri tek panelde.
+          <span className="text-primary-200 font-medium"> Veriye dayalı kararlar</span> ve motivasyon artıran bildirimlerle hedeflerini sürekli canlı tut.
+        </p>
+
+        <ul className="grid gap-3 sm:grid-cols-2 text-sm text-gray-300 max-w-2xl mx-auto lg:mx-0">
+          {perks.map((perk) => (
+            <li key={perk} className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2">
+              <span className="h-2 w-2 rounded-full bg-primary-300" />
+              {perk}
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 pt-4">
+          <Link
+            href="/register"
+            className="group relative inline-flex items-center justify-center gap-3 rounded-2xl px-8 py-4 text-base font-semibold text-white shadow-[0_25px_70px_rgba(15,23,42,0.5)] bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4,#7c3aed)] animate-gradient"
+          >
+            Hemen Başla
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white/80 hover:bg-white/10 transition-all duration-300"
+          >
+            Giriş Yap
+          </Link>
+        </div>
+
+        <div className="flex items-center justify-center lg:justify-start gap-4 text-left">
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3">
+            <p className="text-white font-semibold text-2xl">4.9/5</p>
+            <p className="text-xs text-gray-400">Beta kullanıcı memnuniyeti</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">“Günde birkaç dakika ayırarak ilerlememi net görüyorum.”</p>
+            <p className="text-xs text-gray-500 mt-1">Ayşe • Ürün Müdürü</p>
+          </div>
+        </div>
       </div>
 
-      <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-tight">
-        Sağlıklı Yaşamın
-        <br />
-        <span className="bg-gradient-to-r from-primary-400 via-fitness-orange to-fitness-purple bg-clip-text text-transparent">
-          Yeni Başlangıcı
-        </span>
-      </h1>
-
-      <p className="text-lg sm:text-xl text-gray-300 max-w-3xl leading-relaxed">
-        Sağlık metrikleri, egzersiz kaydı ve beslenme takibi tek bir uygulamada.
-        <span className="text-primary-300 font-medium"> Yapay zeka destekli öneriler</span> ve gerçek zamanlı analitiklerle hedeflerinize odaklanın.
-      </p>
-
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-        <Link
-          href="/register"
-          className="group relative inline-flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 px-8 py-4 text-base font-semibold text-white shadow-2xl shadow-primary-500/50 hover:shadow-primary-500/70 hover:scale-105 transition-all duration-300"
-        >
-          Hemen Başla
-          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </Link>
-        <Link
-          href="/login"
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-gray-800 bg-gray-900/40 px-8 py-4 text-base font-semibold text-gray-200 hover:border-primary-500/60 hover:text-primary-300 hover:bg-gray-900/70 transition-all duration-300"
-        >
-          Giriş Yap
-        </Link>
+      <div className="hidden lg:flex flex-col gap-6">
+        <div className="relative rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl shadow-[0_25px_80px_rgba(5,6,20,0.6)]">
+          <p className="text-xs uppercase tracking-[0.4em] text-gray-400 mb-4">Canlı özet</p>
+          <div className="space-y-4">
+            <div>
+              <p className="text-gray-400 text-sm">Aktif hedef</p>
+              <p className="text-white text-2xl font-semibold">“Kış Formu 2025”</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-[#0b1325]/80 p-4 space-y-3">
+              <div className="flex items-center justify-between text-sm text-gray-300">
+                <span>Kalori dengesi</span>
+                <span className="text-primary-200 font-semibold">+320 kcal</span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+                <div className="h-full w-3/4 bg-[linear-gradient(120deg,#f97316,#7c3aed)] animate-gradient" />
+              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>Sabah koşusu</span>
+                <span>35 dk</span>
+              </div>
+            </div>
+            <div className="flex -space-x-3">
+              {["M", "B", "E", "+"].map((initial) => (
+                <span
+                  key={initial}
+                  className="h-10 w-10 rounded-2xl border border-white/10 bg-white/10 flex items-center justify-center text-sm font-semibold text-white"
+                >
+                  {initial}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400">Topluluk arkadaşlarınla aynı hedefte ilerle.</p>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -206,7 +271,10 @@ function StatsSection({ stats }: { stats: LandingStats }) {
   return (
     <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {statItems.map((item) => (
-        <div key={item.label} className="relative rounded-2xl border border-gray-800/60 bg-gray-900/40 p-5 backdrop-blur-lg overflow-hidden">
+        <div
+          key={item.label}
+          className="group relative rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-lg overflow-hidden shadow-[0_15px_45px_rgba(3,4,12,0.45)]"
+        >
           <div className={`absolute inset-0 bg-gradient-to-br ${item.accent} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
           <div className="relative space-y-2">
             <p className="text-gray-400 text-sm uppercase tracking-wide">{item.label}</p>
@@ -215,11 +283,36 @@ function StatsSection({ stats }: { stats: LandingStats }) {
               <span className="text-primary-400">{item.suffix}</span>
             </p>
             <div className="h-1 w-full rounded-full bg-gray-800/80">
-              <div className="h-full rounded-full bg-gradient-to-r from-primary-500 via-fitness-orange to-fitness-purple" style={{ width: `${Math.min(100, item.value / 150)}%` }} />
+              <div
+                className="h-full rounded-full bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4)] animate-gradient"
+                style={{ width: `${Math.min(100, item.value / 150)}%` }}
+              />
             </div>
           </div>
         </div>
       ))}
+    </section>
+  );
+}
+
+function SocialProof() {
+  const logos = ["Supabase", "Vercel", "Capacitor", "Next.js"];
+  return (
+    <section className="rounded-3xl border border-white/10 bg-white/5 p-6 lg:p-10 backdrop-blur-xl shadow-[0_20px_80px_rgba(3,4,12,0.45)] space-y-6">
+      <div className="flex flex-col gap-3 text-center">
+        <p className="text-xs uppercase tracking-[0.4em] text-gray-400">Güvenilir Altyapı</p>
+        <h2 className="text-2xl font-semibold text-white">En sevdiğin platformlarla çalışır</h2>
+        <p className="text-gray-300">
+          NapiFit hem Supabase güvenliği hem de Vercel otomatik deploy sistemi sayesinde dakikalar içinde yayına alınır.
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-300">
+        {logos.map((logo) => (
+          <span key={logo} className="px-4 py-2 rounded-full border border-white/10 bg-white/5">
+            {logo}
+          </span>
+        ))}
+      </div>
     </section>
   );
 }
@@ -256,7 +349,7 @@ function ExperienceGrid({ workouts }: { workouts: RecentWorkout[] }) {
     <section className="grid gap-6 lg:grid-cols-2">
       <div className="space-y-4">
         {featureCards.map((card) => (
-          <div key={card.title} className="group relative rounded-2xl border border-gray-800/70 bg-gray-900/40 p-6 backdrop-blur-lg overflow-hidden transition-colors hover:border-primary-500/40">
+          <div key={card.title} className="group relative rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-lg overflow-hidden transition-colors hover:border-primary-500/40">
             <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${card.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
             <div className="relative flex items-start gap-4">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 text-primary-300">
@@ -273,7 +366,7 @@ function ExperienceGrid({ workouts }: { workouts: RecentWorkout[] }) {
         ))}
       </div>
 
-      <div className="rounded-3xl border border-gray-800/70 bg-gray-950/30 p-6 backdrop-blur-xl shadow-[0_20px_80px_rgba(15,23,42,0.45)] space-y-4">
+      <div className="rounded-3xl border border-white/10 bg-[#0b1325]/80 p-6 backdrop-blur-xl shadow-[0_20px_80px_rgba(15,23,42,0.55)] space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Anlık Aktiviteler</p>
@@ -283,7 +376,7 @@ function ExperienceGrid({ workouts }: { workouts: RecentWorkout[] }) {
         </div>
         <div className="space-y-3">
           {workouts.map((workout) => (
-            <div key={workout.id} className="rounded-2xl border border-gray-800/60 bg-gray-900/40 p-4 flex items-center gap-4">
+            <div key={workout.id} className="rounded-2xl border border-white/10 bg-white/5 p-4 flex items-center gap-4">
               <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary-500/20 to-transparent flex items-center justify-center text-primary-300 font-semibold">
                 {workout.userName.charAt(0)}
               </div>
@@ -332,7 +425,10 @@ function JourneySection() {
   return (
     <section className="grid gap-6 lg:grid-cols-3">
       {steps.map((step, index) => (
-        <div key={step.title} className={`rounded-3xl border ${step.accent} p-6 space-y-3`}>
+        <div
+          key={step.title}
+          className={`rounded-3xl border ${step.accent} p-6 space-y-3 backdrop-blur-xl shadow-[0_20px_60px_rgba(3,4,12,0.45)]`}
+        >
           <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Adım {index + 1}</p>
           <h3 className="text-xl font-semibold text-white">{step.title}</h3>
           <p className="text-sm text-gray-400 leading-relaxed">{step.desc}</p>
@@ -344,25 +440,26 @@ function JourneySection() {
 
 function CallToAction() {
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-gray-800/60 bg-gradient-to-r from-gray-900/80 via-gray-900/30 to-gray-900/80 p-8 text-center">
-      <div className="absolute -left-24 top-1/2 h-56 w-56 rounded-full bg-primary-500/20 blur-3xl" />
-      <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fitness-purple/20 blur-3xl" />
+    <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_top,#1a1038,transparent_70%)] p-8 text-center shadow-[0_30px_90px_rgba(3,4,12,0.6)]">
+      <div className="absolute -left-24 top-1/2 h-56 w-56 rounded-full bg-primary-500/30 blur-3xl" />
+      <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fitness-purple/30 blur-3xl" />
       <div className="relative space-y-4">
         <p className="text-xs uppercase tracking-[0.4em] text-primary-200">Hazırsan Başlayalım</p>
         <h3 className="text-3xl font-semibold text-white">Mobil deneyim, Cloudflare desteği ve AI önerileriyle</h3>
-        <p className="text-gray-400 max-w-2xl mx-auto">
-          NapiFit hem web hem de mobil (Capacitor) deneyimini destekler. Tek tıkla Cloudflare Pages’a entegre edilen uygulama her push sonrası otomatik olarak güncellenir.
+        <p className="text-gray-300 max-w-2xl mx-auto">
+          NapiFit hem web hem de mobil (Capacitor) deneyimini destekler. Tek tıkla Vercel ve Cloudflare entegrasyonlarıyla
+          her push sonrası otomatik olarak yayına çıkar.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <Link
             href="/register"
-            className="rounded-2xl bg-white text-gray-900 px-8 py-4 font-semibold hover:translate-y-0.5 transition-transform"
+            className="rounded-2xl px-8 py-4 font-semibold text-white bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4)] animate-gradient shadow-[0_25px_70px_rgba(15,23,42,0.5)]"
           >
             Topluluğa Katıl
           </Link>
           <Link
             href="/login"
-            className="rounded-2xl border border-white/30 text-white px-8 py-4 font-semibold hover:border-white transition-colors"
+            className="rounded-2xl border border-white/20 text-white px-8 py-4 font-semibold bg-white/5 hover:bg-white/10 transition-colors"
           >
             Hesabın var mı?
           </Link>

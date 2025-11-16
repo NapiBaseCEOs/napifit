@@ -217,14 +217,21 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-16 sm:px-6 relative overflow-hidden">
-      <div className="absolute inset-0 -z-10 overflow-hidden bg-[#0a0a0a]">
-        <div className="absolute top-0 left-0 h-[400px] w-[400px] rounded-full bg-gradient-to-r from-fitness-orange/15 via-primary-500/15 to-transparent blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-gradient-to-r from-fitness-purple/15 via-fitness-blue/15 to-transparent blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
-      </div>
-      
+    <main className="relative min-h-screen flex items-center justify-center px-4 py-16 sm:px-6 overflow-hidden">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#01040d] via-[#040a1a] to-[#02010a]" />
+      <div className="absolute top-0 left-1/3 -z-10 h-[420px] w-[420px] rounded-full bg-primary-500/20 blur-[140px] animate-float" />
+      <div
+        className="absolute bottom-[-10%] right-[5%] -z-10 h-[420px] w-[420px] rounded-full bg-fitness-orange/20 blur-[140px]"
+        style={{ animationDelay: "1s" }}
+      />
+      <div className="absolute inset-0 -z-10 opacity-20 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12),transparent_65%)]" />
+
       <div className="relative w-full max-w-md">
-        <div className="relative z-10 space-y-6 rounded-3xl border border-gray-800/70 bg-gray-900/90 backdrop-blur-xl p-8 shadow-2xl shadow-fitness-orange/10 sm:p-10 animate-fade-up">
+        <div className="absolute -top-12 left-0 hidden sm:flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/80 backdrop-blur">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          24/7 destek ve Supabase koruması
+        </div>
+        <div className="relative z-10 space-y-6 rounded-3xl border border-white/10 bg-[#0f1424]/90 backdrop-blur-2xl p-8 shadow-[0_25px_90px_rgba(3,5,20,0.7)] sm:p-10 animate-fade-up">
             <div className="space-y-3 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-fitness-orange/40 bg-fitness-orange/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-fitness-orange">
               NapiFit Topluluğuna Katıl
@@ -237,9 +244,9 @@ export default function RegisterPage() {
             </p>
           </div>
           <div className="space-y-3">
-            <div className="w-full h-2 rounded-full bg-gray-800/60 overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden border border-white/10">
               <div
-                className="h-full bg-gradient-to-r from-fitness-orange via-primary-500 to-primary-400 transition-all duration-300"
+                className="h-full bg-[linear-gradient(90deg,#f97316,#7c3aed,#06b6d4)] animate-gradient transition-all duration-300"
                 style={{ width: `${formProgress}%` }}
               />
             </div>
@@ -332,7 +339,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isFormDisabled}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fitness-orange to-primary-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-fitness-orange/50 hover:shadow-fitness-orange/70 hover:scale-[1.02] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(120deg,#f97316,#7c3aed,#06b6d4,#f97316)] animate-gradient px-4 py-3 text-sm font-semibold text-white shadow-[0_20px_60px_rgba(9,9,18,0.6)] hover:shadow-[0_30px_80px_rgba(249,115,22,0.35)] hover:translate-y-0.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
             >
               {loading ? (
                 <>
@@ -348,7 +355,7 @@ export default function RegisterPage() {
             type="button"
             onClick={onGoogle}
             disabled={googleLoading || loading}
-            className="flex w-full items-center justify-center gap-3 rounded-xl border-2 border-gray-700 bg-gray-900/60 px-4 py-3 text-sm font-semibold text-gray-200 hover:border-fitness-orange/50 hover:text-fitness-orange hover:bg-gray-900/80 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/90 px-4 py-3 text-sm font-semibold text-gray-900 hover:bg-white transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 shadow-[0_15px_45px_rgba(255,255,255,0.15)]"
           >
             {googleLoading ? (
               <>
@@ -385,7 +392,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <div className="mt-6 rounded-2xl border border-gray-800/60 bg-gray-900/70 p-4 space-y-3">
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
             <h2 className="text-sm text-gray-200 font-semibold">Neden NapiFit?</h2>
             <ul className="text-xs text-gray-400 space-y-1.5">
               <li>• AI destekli sağlık hedefleri ve kişisel öneriler</li>
