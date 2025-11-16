@@ -9,6 +9,7 @@ import VersionUpdateBanner from "../components/VersionUpdateBanner";
 import ThemeProvider from "../components/ThemeProvider";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { hasSupabaseClientEnv } from "@/lib/supabase/config";
 
 export const metadata: Metadata = {
   title: "NapiFit",
@@ -26,17 +27,26 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  let session = null;
+
+  if (hasSupabaseClientEnv) {
+    try {
+      const supabase = createSupabaseServerClient();
+      const {
+        data: { session: activeSession },
+      } = await supabase.auth.getSession();
+      session = activeSession;
+    } catch (error) {
+      console.warn("⚠️ Supabase session fetch skipped:", error);
+    }
+  }
 
   return (
     <html lang="tr" className={fontSans.variable}>
       <body className="font-sans">
         <ThemeProvider>
           <CursorGlow />
-          <SupabaseProvider initialSession={session}>
+          <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
             <GoogleOAuthHandler />
             <UpdateCheckerProvider>
               <VersionUpdateBanner />
