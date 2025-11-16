@@ -102,12 +102,11 @@ export default function RegisterPage() {
         console.log("Mobile OAuth skipped, using web");
       }
       
-      // Web'de direkt Google OAuth URL'i oluşturan endpoint'e yönlendir
-      // NextAuth'un signin endpoint'i yerine direkt Google'a gidiyoruz
+      // Web'de NextAuth'un standart signin endpoint'ini kullan
       const callbackUrl = encodeURIComponent(`${window.location.origin}/onboarding`);
-      const signInUrl = `/api/google-direct?callbackUrl=${callbackUrl}`;
+      const signInUrl = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
       
-      // Direkt redirect - en güvenilir yöntem
+      // Direkt redirect - NextAuth endpoint'i Google'a yönlendirecek
       window.location.href = signInUrl;
       
       // Loading state'i koru (redirect olacak)

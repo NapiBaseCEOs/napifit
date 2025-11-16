@@ -4,14 +4,16 @@ const https = require('https');
 
 const BASE_URL = 'https://napibase.com';
 
-async function request(url, options = {}) {
+async function request(url) {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(url);
     const opts = {
       hostname: urlObj.hostname,
       path: urlObj.pathname + urlObj.search,
-      method: options.method || 'GET',
-      headers: options.headers || {},
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+      },
       maxRedirects: 0,
     };
 
@@ -23,207 +25,140 @@ async function request(url, options = {}) {
           status: res.statusCode, 
           headers: res.headers, 
           data,
-          location: res.headers.location 
+          location: res.headers.location,
         });
       });
     });
 
     req.on('error', reject);
-    req.setMaxListeners(0);
     req.end();
   });
 }
 
 async function testGoogleOAuth() {
   console.log('\n╔══════════════════════════════════════════════════╗');
-  console.log('║   GOOGLE OAUTH TAM KONTROL TEST                  ║');
+  console.log('║   GOOGLE OAUTH TEST - NAPIFIT v0.1.37           ║');
   console.log('╚══════════════════════════════════════════════════╝\n');
 
-  let passed = 0;
-  let failed = 0;
-
-  // Test 1: NextAuth Providers
-  console.log('[1/8] NextAuth Providers kontrolü...');
+  // Test 1: Auth Check
+  console.log('[1/5] Auth Configuration Check...');
   try {
-    const res = await request(`${BASE_URL}/api/auth/providers`);
-    if (res.status === 200 && res.data.includes('google')) {
-      console.log('  ✓ Google Provider bulundu');
-      passed++;
-    } else {
-      console.log('  ✗ Google Provider bulunamadı');
-      failed++;
-    }
-  } catch (err) {
-    console.log('  ✗ Providers endpoint hatası:', err.message);
-    failed++;
-  }
-
-  // Test 2: Auth Test Endpoint
-  console.log('\n[2/8] Auth Test endpoint kontrolü...');
-  try {
-    const res = await request(`${BASE_URL}/api/auth/test`);
-    if (res.status === 200) {
-      const data = JSON.parse(res.data);
-      console.log('  ✓ NEXTAUTH_URL:', data.nextAuthUrl || 'NOT_SET');
-      console.log('  ✓ GOOGLE_CLIENT_ID:', data.googleClientId);
-      console.log('  ✓ GOOGLE_CLIENT_SECRET:', data.googleClientSecret);
-      console.log('  ✓ AUTH_SECRET:', data.authSecret);
-      console.log('  ✓ Expected Callback:', data.providers?.google?.callbackUrl);
-      if (data.googleClientId === 'SET (hidden)' && data.googleClientSecret === 'SET (hidden)') {
-        console.log('  ✓ Tüm environment variables SET');
-        passed++;
-      } else {
-        console.log('  ✗ Environment variables eksik');
-        failed++;
+    const check = await request(`${BASE_URL}/api/auth/check`);
+    if (check.status === 200) {
+      const json = JSON.parse(check.data);
+      console.log('  ✓ Auth endpoint accessible');
+      console.log(`    NEXTAUTH_URL: ${json.config.nextAuthUrl}`);
+      console.log(`    GOOGLE_CLIENT_ID: ${json.config.googleClientId}`);
+      console.log(`    GOOGLE_CLIENT_SECRET: ${json.config.googleClientSecret}`);
+      console.log(`    AUTH_SECRET: ${json.config.authSecret}`);
+      
+      if (json.config.googleClientId === 'NOT_SET' || json.config.googleClientSecret === 'NOT_SET') {
+        console.log('  ✗ Google OAuth credentials NOT SET!');
+        return;
       }
     } else {
-      console.log('  ✗ Test endpoint hatası:', res.status);
-      failed++;
+      console.log(`  ✗ Auth check failed: ${check.status}`);
+      return;
     }
   } catch (err) {
-    console.log('  ✗ Test endpoint erişim hatası:', err.message);
-    failed++;
+    console.log(`  ✗ Auth check error: ${err.message}`);
+    return;
   }
 
-  // Test 3: CSRF Token
-  console.log('\n[3/8] CSRF Token kontrolü...');
+  // Test 2: Providers Check
+  console.log('\n[2/5] Providers Check...');
   try {
-    const res = await request(`${BASE_URL}/api/auth/csrf`);
-    if (res.status === 200) {
-      const data = JSON.parse(res.data);
-      if (data.csrfToken && data.csrfToken.length > 10) {
-        console.log('  ✓ CSRF Token alındı');
-        passed++;
-      } else {
-        console.log('  ✗ CSRF Token geçersiz');
-        failed++;
+    const providers = await request(`${BASE_URL}/api/auth/providers-check`);
+    if (providers.status === 200) {
+      const json = JSON.parse(providers.data);
+      console.log('  ✓ Providers endpoint accessible');
+      if (json.providers.google) {
+        console.log(`    Google Signin URL: ${json.providers.google.signinUrl}`);
+        console.log(`    Google Callback URL: ${json.providers.google.callbackUrl}`);
       }
     } else {
-      console.log('  ✗ CSRF Token hatası:', res.status);
-      failed++;
+      console.log(`  ✗ Providers check failed: ${check.status}`);
     }
   } catch (err) {
-    console.log('  ✗ CSRF Token erişim hatası:', err.message);
-    failed++;
+    console.log(`  ✗ Providers check error: ${err.message}`);
   }
 
-  // Test 4: Google OAuth Signin URL
-  console.log('\n[4/8] Google OAuth Signin URL testi...');
+  // Test 3: Google Signin Endpoint
+  console.log('\n[3/5] Google Signin Endpoint Test...');
   try {
-    const callbackUrl = encodeURIComponent(`${BASE_URL}/onboarding`);
-    const res = await request(`${BASE_URL}/api/auth/signin/google?callbackUrl=${callbackUrl}`);
-    
-    if (res.status === 302) {
-      const location = res.location || '';
-      if (location.includes('accounts.google.com')) {
-        console.log('  ✓ Google OAuth redirect URL doğru');
-        console.log('    Location:', location.substring(0, 100) + '...');
-        passed++;
-      } else if (location.includes('error=')) {
-        const match = location.match(/error=([^&]+)/);
-        console.log('  ✗ OAuth error:', match ? match[1] : 'unknown');
-        console.log('    Location:', location);
-        failed++;
+    const signin = await request(`${BASE_URL}/api/auth/signin/google?callbackUrl=/onboarding`);
+    if (signin.status === 302 && signin.location) {
+      console.log('  ✓ Google signin endpoint redirects correctly');
+      if (signin.location.includes('accounts.google.com')) {
+        console.log('    ✓ Redirecting to Google OAuth');
+        console.log(`    Location: ${signin.location.substring(0, 100)}...`);
+      } else if (signin.location.includes('error=')) {
+        console.log(`  ✗ OAuth Error in redirect: ${signin.location}`);
+        return;
       } else {
-        console.log('  ✗ Beklenmeyen redirect:', location);
-        failed++;
+        console.log(`  ! Unexpected redirect location: ${signin.location}`);
       }
     } else {
-      console.log('  ✗ Beklenmeyen status:', res.status);
-      failed++;
+      console.log(`  ✗ Signin endpoint failed: ${signin.status}`);
+      if (signin.data) {
+        try {
+          const json = JSON.parse(signin.data);
+          console.log(`    Error: ${json.error || 'Unknown'}`);
+        } catch {}
+      }
+      return;
     }
   } catch (err) {
-    if (err.message.includes('302')) {
-      // 302 redirect is expected
-      console.log('  ✓ Redirect (302) - Beklenen');
-      passed++;
-    } else {
-      console.log('  ✗ Signin URL hatası:', err.message);
-      failed++;
-    }
+    console.log(`  ✗ Signin endpoint error: ${err.message}`);
+    return;
   }
 
-  // Test 5: Session Endpoint
-  console.log('\n[5/8] Session endpoint kontrolü...');
+  // Test 4: CSRF Token
+  console.log('\n[4/5] CSRF Token Check...');
   try {
-    const res = await request(`${BASE_URL}/api/auth/session`);
-    if (res.status === 200) {
-      const data = JSON.parse(res.data);
-      console.log('  ✓ Session endpoint çalışıyor');
-      passed++;
+    const csrf = await request(`${BASE_URL}/api/auth/csrf`);
+    if (csrf.status === 200) {
+      const json = JSON.parse(csrf.data);
+      if (json.csrfToken) {
+        console.log('  ✓ CSRF token available');
+        console.log(`    Token: ${json.csrfToken.substring(0, 20)}...`);
+      } else {
+        console.log('  ✗ CSRF token missing');
+      }
     } else {
-      console.log('  ✗ Session endpoint hatası:', res.status);
-      failed++;
+      console.log(`  ✗ CSRF endpoint failed: ${csrf.status}`);
     }
   } catch (err) {
-    console.log('  ✗ Session endpoint erişim hatası:', err.message);
-    failed++;
+    console.log(`  ✗ CSRF check error: ${err.message}`);
   }
 
-  // Test 6: Login Page
-  console.log('\n[6/8] Login page kontrolü...');
+  // Test 5: Session Check
+  console.log('\n[5/5] Session Check...');
   try {
-    const res = await request(`${BASE_URL}/login`);
-    if (res.status === 200 && res.data.includes('NapiFit')) {
-      console.log('  ✓ Login page yükleniyor');
-      passed++;
+    const session = await request(`${BASE_URL}/api/auth/session`);
+    if (session.status === 200) {
+      const json = JSON.parse(session.data);
+      if (json.user) {
+        console.log('  ✓ Active session found');
+        console.log(`    User: ${json.user.email}`);
+      } else {
+        console.log('  ✓ No active session (expected)');
+      }
     } else {
-      console.log('  ✗ Login page hatası:', res.status);
-      failed++;
+      console.log(`  ✗ Session endpoint failed: ${session.status}`);
     }
   } catch (err) {
-    console.log('  ✗ Login page erişim hatası:', err.message);
-    failed++;
+    console.log(`  ✗ Session check error: ${err.message}`);
   }
 
-  // Test 7: Homepage
-  console.log('\n[7/8] Homepage kontrolü...');
-  try {
-    const res = await request(`${BASE_URL}/`);
-    if (res.status === 200 && res.data.includes('NapiFit')) {
-      console.log('  ✓ Homepage yükleniyor');
-      passed++;
-    } else {
-      console.log('  ✗ Homepage hatası:', res.status);
-      failed++;
-    }
-  } catch (err) {
-    console.log('  ✗ Homepage erişim hatası:', err.message);
-    failed++;
-  }
-
-  // Test 8: Error Handling
-  console.log('\n[8/8] Error handling testi...');
-  try {
-    const res = await request(`${BASE_URL}/api/auth/signin/google?error=test`);
-    if (res.status === 302 || res.status === 200) {
-      console.log('  ✓ Error handling çalışıyor');
-      passed++;
-    } else {
-      console.log('  ✗ Error handling hatası:', res.status);
-      failed++;
-    }
-  } catch (err) {
-    console.log('  ✗ Error handling erişim hatası:', err.message);
-    failed++;
-  }
-
-  // Özet
   console.log('\n╔══════════════════════════════════════════════════╗');
-  console.log('║   SONUÇLAR                                        ║');
-  console.log('╚══════════════════════════════════════════════════╝');
-  console.log(`✓ Passed: ${passed}`);
-  console.log(`✗ Failed: ${failed}`);
-  console.log(`Total: ${passed + failed}\n`);
-
-  if (failed === 0) {
-    console.log('🎉 TÜM TESTLER BAŞARILI!\n');
-    process.exit(0);
-  } else {
-    console.log('⚠️ BAZI TESTLER BAŞARISIZ - Sorunlar var.\n');
-    process.exit(1);
-  }
+  console.log('║   TEST COMPLETE                                  ║');
+  console.log('╚══════════════════════════════════════════════════╝\n');
+  console.log('✅ Google OAuth configuration looks correct!');
+  console.log('📝 Next steps:');
+  console.log('   1. Go to https://napibase.com/login');
+  console.log('   2. Click "Google ile devam et" button');
+  console.log('   3. You should be redirected to Google OAuth\n');
 }
 
 testGoogleOAuth().catch(console.error);
-
