@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build && node scripts/vercel-postbuild.js",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "echo 'Skipping prisma generate in postinstall (will run in build)'",
@@ -37,7 +37,7 @@
     "vercel:deploy": "vercel --prod",
     "vercel:dev": "vercel dev",
     "vercel:link": "vercel link",
-    "vercel:setup": "node scripts/auto-setup-vercel.js"
+    "vercel:check": "node scripts/check-vercel-deployment.js"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.0",
