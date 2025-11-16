@@ -117,21 +117,30 @@ export const authOptions: NextAuthOptions = {
           }
           
           // Fallback: Prisma kullan (development için)
-          await prisma.$connect();
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
-          });
+          try {
+            const dbConnected = await prisma.$connect().then(() => true).catch(() => false);
+            if (dbConnected) {
+              const user = await prisma.user.findUnique({
+                where: { email: credentials.email },
+              });
+              
+              if (!user || !user.password) return null;
+              const valid = await compare(credentials.password, user.password);
+              if (!valid) return null;
+              
+              return { 
+                id: user.id, 
+                name: user.name || "", 
+                email: user.email || "", 
+                image: user.image || undefined 
+              };
+            }
+          } catch (prismaError) {
+            console.error("Prisma error in authorize:", prismaError);
+          }
           
-          if (!user || !user.password) return null;
-          const valid = await compare(credentials.password, user.password);
-          if (!valid) return null;
-          
-          return { 
-            id: user.id, 
-            name: user.name || "", 
-            email: user.email || "", 
-            image: user.image || undefined 
-          };
+          // Database bağlantısı yoksa null döndür
+          return null;
         } catch (error) {
           console.error("Error in authorize:", error);
           return null;
@@ -151,7 +160,7 @@ export const authOptions: NextAuthOptions = {
         name: user?.name,
       });
       
-      // Google OAuth - database'e kaydet (opsiyonel)
+      // Google OAuth - database'e kaydet (opsiyonel, hata olsa bile devam et)
       if (account?.provider === "google" && user?.email) {
         try {
           // NextAuth signIn callback'inde request object'e erişim yok
@@ -187,37 +196,41 @@ export const authOptions: NextAuthOptions = {
                 console.log("✅ Google user already exists in D1");
               }
             } catch (d1Error) {
-              console.error("⚠️ D1 kayıt hatası (devam ediliyor):", d1Error);
-              // Fallback to Prisma
-              throw d1Error;
+              console.error("⚠️ D1 kayıt hatası (JWT-only mode devam ediyor):", d1Error);
+              // Hata olsa bile devam et - JWT-only mode
             }
           } else {
             // Fallback: Prisma kullan
-            const existingUser = await prisma.user.findUnique({
-              where: { email: user.email },
-            }).catch(() => null);
-            
-            if (!existingUser) {
-              await prisma.user.create({
-                data: {
-                  email: user.email,
-                  name: user.name || "",
-                  image: user.image || null,
-                  emailVerified: new Date(),
-                },
-              }).catch((err) => {
-                console.log("⚠️ Prisma kayıt hatası (devam ediliyor):", err);
-              });
+            try {
+              const existingUser = await prisma.user.findUnique({
+                where: { email: user.email },
+              }).catch(() => null);
               
-              console.log("✅ Google user created in Prisma");
+              if (!existingUser) {
+                await prisma.user.create({
+                  data: {
+                    email: user.email,
+                    name: user.name || "",
+                    image: user.image || null,
+                    emailVerified: new Date(),
+                  },
+                }).catch((err) => {
+                  console.log("⚠️ Prisma kayıt hatası (JWT-only mode devam ediyor):", err);
+                });
+                
+                console.log("✅ Google user created in Prisma");
+              }
+            } catch (prismaError) {
+              console.log("⚠️ Prisma kullanılamadı (JWT-only mode devam ediyor):", prismaError);
             }
           }
         } catch (error) {
-          console.log("⚠️ DB kullanılamadı, JWT-only mode:", error);
+          // Tüm hataları yakala ama devam et - JWT-only mode
+          console.log("⚠️ DB kullanılamadı, JWT-only mode devam ediyor:", error);
         }
       }
       
-      // Her zaman girişe izin ver
+      // Her durumda true döndür - database hatası olsa bile login'e izin ver
       return true;
     },
     async jwt({ token, user, account }) {
