@@ -121,6 +121,10 @@ async function getRecentWorkouts(): Promise<RecentWorkout[]> {
   }
 }
 
+// Build sırasında database'e erişmeyi önlemek için dynamic export
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function HomePage() {
   const [stats, workouts] = await Promise.all([
     getLandingStats(),
