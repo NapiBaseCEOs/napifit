@@ -41,6 +41,7 @@
     "@capacitor/camera": "^7.0.2",
     "@capacitor/preferences": "^7.0.2",
     "@libsql/client": "^0.15.15",
+    "@libsql/isomorphic-ws": "^0.1.5",
     "@next-auth/prisma-adapter": "1.0.7",
     "@opennextjs/cloudflare": "^1.12.0",
     "@prisma/client": "^6.19.0",
