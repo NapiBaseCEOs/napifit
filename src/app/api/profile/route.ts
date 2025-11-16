@@ -9,6 +9,10 @@ import { getDB, queryOne } from "@/lib/d1";
 // getServerSession NextAuth kullandığı için Edge Runtime'da çalışmaz
 // export const runtime = 'edge'; // Kaldırıldı
 
+// Force dynamic rendering - session ve headers kullanıyoruz
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
