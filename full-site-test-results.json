@@ -1,0 +1,330 @@
+{
+  "timestamp": "2025-11-16T12:54:06.267Z",
+  "siteUrl": "https://napibase.com",
+  "tests": [
+    {
+      "name": "Ana Sayfa",
+      "path": "/",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Login",
+      "path": "/login",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Register",
+      "path": "/register",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Dashboard",
+      "path": "/dashboard",
+      "status": 307,
+      "success": true
+    },
+    {
+      "name": "Health",
+      "path": "/health",
+      "status": 307,
+      "success": true
+    },
+    {
+      "name": "Profile",
+      "path": "/profile",
+      "status": 307,
+      "success": true
+    },
+    {
+      "name": "Config",
+      "path": "/api/config",
+      "status": 200,
+      "success": true,
+      "data": {
+        "config": {
+          "nextAuthUrl": "https://napibase.com",
+          "googleClientId": "SET",
+          "googleClientSecret": "SET",
+          "authSecret": "SET",
+          "expectedCallbackUrl": "https://napibase.com/api/auth/callback/google"
+        }
+      }
+    },
+    {
+      "name": "Test Auth",
+      "path": "/api/test-auth",
+      "status": 200,
+      "success": true,
+      "data": {
+        "timestamp": "2025-11-16T12:54:12.554Z",
+        "environment": {
+          "NEXTAUTH_URL": "https://napibase.com",
+          "GOOGLE_CLIENT_ID": "✅ SET",
+          "GOOGLE_CLIENT_SECRET": "✅ SET",
+          "AUTH_SECRET": "✅ SET"
+        },
+        "d1Database": {
+          "available": false,
+          "binding": "❌ Not found",
+          "testQuery": null,
+          "error": "D1 binding not available in request",
+          "globalThis": "❌ Not available"
+        },
+        "requestAnalysis": {
+          "hasEnv": false,
+          "hasContext": false,
+          "hasRuntime": false,
+          "envKeys": []
+        }
+      }
+    },
+    {
+      "name": "DB Test",
+      "path": "/api/db-test",
+      "status": 200,
+      "success": true,
+      "data": {
+        "dbAvailable": false,
+        "dbType": null,
+        "bindingLocations": {
+          "requestEnvDB": false,
+          "requestCfDB": false,
+          "globalThisDB": false,
+          "globalThisEnvDB": false,
+          "processEnvDB": false,
+          "requestKeys": []
+        },
+        "testConnection": false,
+        "error": "D1 database binding not found in any location"
+      }
+    },
+    {
+      "name": "DB Debug",
+      "path": "/api/db-debug",
+      "status": 200,
+      "success": true,
+      "data": {
+        "timestamp": "2025-11-16T12:54:13.772Z",
+        "requestInfo": {
+          "hasRequest": true,
+          "requestType": "object",
+          "requestConstructor": "bound NextRequest"
+        },
+        "bindingLocations": {
+          "requestEnvDB": "NOT_FOUND",
+          "requestEnvType": "undefined",
+          "requestContextEnvDB": "NOT_FOUND",
+          "requestRuntimeEnvDB": "NOT_FOUND",
+          "requestCfDB": "NOT_FOUND",
+          "globalThisDB": "NOT_FOUND",
+          "globalThisEnvDB": "NOT_FOUND",
+          "globalThisCloudflare": "NOT_FOUND",
+          "globalThisNextRuntime": "NOT_FOUND",
+          "processEnvDB": "NOT_FOUND"
+        },
+        "requestProperties": {
+          "clone": {
+            "exists": true,
+            "type": "function",
+            "hasDB": "NO"
+          },
+          "redirect": {
+            "exists": true,
+            "type": "string",
+            "hasDB": "NO"
+          },
+          "fetcher": {
+            "exists": true,
+            "type": "object",
+            "hasDB": "NO"
+          },
+          "signal": {
+            "exists": true,
+            "type": "object",
+            "hasDB": "NO"
+          },
+          "cf": {
+            "exists": true,
+            "type": "undefined",
+            "hasDB": "NO"
+          },
+          "integrity": {
+            "exists": true,
+            "type": "string",
+            "hasDB": "NO"
+          },
+          "keepalive": {
+            "exists": true,
+            "type": "boolean",
+            "hasDB": "NO"
+          },
+          "bodyUsed": {
+            "exists": true,
+            "type": "boolean",
+            "hasDB": "NO"
+          },
+          "arrayBuffer": {
+            "exists": true,
+            "type": "function",
+            "hasDB": "NO"
+          },
+          "bytes": {
+            "exists": true,
+            "type": "function",
+            "hasDB": "NO"
+          },
+          "text": {
+            "exists": true,
+            "type": "function",
+            "hasDB": "NO"
+          },
+          "json": {
+            "exists": true,
+            "type": "function",
+            "hasDB": "NO"
+          },
+          "formData": {
+            "exists": true,
+            "type": "function",
+            "hasDB": "NO"
+          },
+          "blob": {
+            "exists": true,
+            "type": "function",
+            "hasDB": "NO"
+          }
+        },
+        "dbAvailable": false,
+        "dbType": null,
+        "dbMethods": [],
+        "testQuery": null,
+        "error": "D1 database binding not found in any location",
+        "recommendation": "Check Cloudflare Pages Settings > Bindings > D1 Database binding is configured with name \"DB\""
+      }
+    },
+    {
+      "name": "NextAuth Providers",
+      "path": "/api/auth/providers",
+      "status": 200,
+      "success": true,
+      "data": {
+        "google": {
+          "id": "google",
+          "name": "Google",
+          "type": "oauth",
+          "signinUrl": "https://napibase.com/api/auth/signin/google",
+          "callbackUrl": "https://napibase.com/api/auth/callback/google"
+        },
+        "credentials": {
+          "id": "credentials",
+          "name": "credentials",
+          "type": "credentials",
+          "signinUrl": "https://napibase.com/api/auth/signin/credentials",
+          "callbackUrl": "https://napibase.com/api/auth/callback/credentials"
+        }
+      }
+    },
+    {
+      "name": "NextAuth Signin",
+      "path": "/api/auth/signin",
+      "status": 302,
+      "success": true,
+      "data": null
+    },
+    {
+      "name": "Workouts List",
+      "path": "/api/workouts",
+      "status": 401,
+      "success": true,
+      "data": {
+        "message": "Yetkisiz erişim"
+      }
+    },
+    {
+      "name": "Meals List",
+      "path": "/api/meals",
+      "status": 401,
+      "success": true,
+      "data": {
+        "message": "Yetkisiz erişim"
+      }
+    },
+    {
+      "name": "Health Metrics List",
+      "path": "/api/health-metrics",
+      "status": 401,
+      "success": true,
+      "data": {
+        "message": "Yetkisiz erişim"
+      }
+    },
+    {
+      "name": "Env: NEXTAUTH_URL",
+      "success": true
+    },
+    {
+      "name": "Env: GOOGLE_CLIENT_ID",
+      "success": true
+    },
+    {
+      "name": "Env: GOOGLE_CLIENT_SECRET",
+      "success": true
+    },
+    {
+      "name": "Env: AUTH_SECRET",
+      "success": true
+    },
+    {
+      "name": "D1 Database Available",
+      "success": false,
+      "warning": true
+    },
+    {
+      "name": "Google Provider",
+      "success": true
+    },
+    {
+      "name": "Credentials Provider",
+      "success": true
+    },
+    {
+      "name": "Profile API",
+      "path": "/api/profile",
+      "status": 503,
+      "success": false
+    },
+    {
+      "name": "Workouts API",
+      "path": "/api/workouts",
+      "status": 401,
+      "success": true
+    },
+    {
+      "name": "Meals API",
+      "path": "/api/meals",
+      "status": 401,
+      "success": true
+    },
+    {
+      "name": "Health Metrics API",
+      "path": "/api/health-metrics",
+      "status": 401,
+      "success": true
+    },
+    {
+      "name": "Manifest",
+      "path": "/manifest.webmanifest",
+      "status": 200,
+      "success": true
+    }
+  ],
+  "summary": {
+    "total": 27,
+    "passed": 25,
+    "failed": 1,
+    "warnings": 2
+  }
+}

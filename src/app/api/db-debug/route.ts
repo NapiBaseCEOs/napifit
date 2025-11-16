@@ -20,11 +20,23 @@ export async function GET(request: Request) {
               exists: key in req,
               type: typeof req[key],
               hasDB: req[key]?.DB ? 'YES' : 'NO',
+              value: typeof req[key] === 'object' && req[key] !== null ? Object.keys(req[key]).slice(0, 10) : req[key],
             };
           } catch {
             requestProperties[key] = { exists: true, type: 'unknown', error: 'cannot access' };
           }
         }
+      }
+      
+      // Özel olarak env property'sini kontrol et
+      if (req.env) {
+        requestProperties.env = {
+          exists: true,
+          type: typeof req.env,
+          keys: Object.keys(req.env),
+          hasDB: !!req.env.DB,
+          DBType: typeof req.env.DB,
+        };
       }
     } catch (e) {
       requestProperties.error = String(e);
@@ -42,6 +54,8 @@ export async function GET(request: Request) {
       // Request context (OpenNext Cloudflare adapter)
       requestEnvDB: req.env?.DB ? 'FOUND' : 'NOT_FOUND',
       requestEnvType: typeof req.env,
+      requestEnvExists: !!req.env,
+      requestEnvKeys: req.env ? Object.keys(req.env) : [],
       requestContextEnvDB: req.context?.env?.DB ? 'FOUND' : 'NOT_FOUND',
       requestRuntimeEnvDB: req.runtime?.env?.DB ? 'FOUND' : 'NOT_FOUND',
       requestCfDB: req.cf?.DB ? 'FOUND' : 'NOT_FOUND',
@@ -61,6 +75,7 @@ export async function GET(request: Request) {
     dbMethods: [],
     testQuery: null,
     error: null,
+    recommendation: 'D1 binding Cloudflare Pages\'de yapılandırılmış görünüyor. OpenNext Cloudflare adapter\'ın binding\'i request object\'ine inject etme şeklini kontrol edin.',
   };
   
   // D1 binding'i al
