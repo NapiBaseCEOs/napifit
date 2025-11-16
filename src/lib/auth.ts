@@ -232,22 +232,28 @@ export const authOptions: NextAuthOptions = {
       // Google OAuth sonrası database'den kullanıcı bilgilerini güncelle
       if (account?.provider === "google" && token.email) {
         try {
-          // D1 Database'i dene önce
-          if (typeof globalThis !== 'undefined' && (globalThis as any).DB) {
-            const { queryOne } = await import("./d1");
-            const dbUser = await queryOne<{ 
-              id: string; 
-              name: string | null; 
-              image: string | null 
-            }>(
-              'SELECT id, name, image FROM User WHERE email = ?',
-              [token.email as string]
-            ).catch(() => null);
-            
-            if (dbUser) {
-              token.id = dbUser.id;
-              token.name = dbUser.name || "";
-              token.image = dbUser.image || undefined;
+          // NextAuth JWT callback'inde request object'e erişim yok
+          // globalThis'ten D1 binding'i kontrol et
+          const db = (globalThis as any)?.DB || (globalThis as any)?.env?.DB || (globalThis as any)?.__env?.DB;
+          
+          if (db) {
+            try {
+              const stmt = db.prepare('SELECT id, name, image FROM User WHERE email = ?').bind(token.email as string);
+              const dbUser = await stmt.first<{ 
+                id: string; 
+                name: string | null; 
+                image: string | null 
+              }>();
+              
+              if (dbUser) {
+                token.id = dbUser.id;
+                token.name = dbUser.name || "";
+                token.image = dbUser.image || undefined;
+              }
+            } catch (d1Error) {
+              console.error("D1 query error in JWT callback:", d1Error);
+              // Fallback to Prisma
+              throw d1Error;
             }
           } else {
             // Fallback: Prisma kullan
