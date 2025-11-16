@@ -36,26 +36,18 @@ yarn-error.log*
 next-env.d.ts
 
 # prisma
-/prisma/*.db
-/prisma/*.db-journal
-dev.db
-dev.db-journal
-*.db
-*.db-journal
-
-# capacitor
-android/
-ios/
-.capacitor/
-
-# cloudflare
-.open-next/
-.wrangler/
+/dev.db
+/dev.db-journal
+/prisma/dev.db
+/prisma/dev.db-journal
 
 # IDE
-.idea/
-.vscode/
+.vscode
+.idea
 *.swp
 *.swo
 *~
 
+# OS
+.DS_Store
+Thumbs.db

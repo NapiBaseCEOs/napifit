@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, useSessionContext } from "@supabase/auth-helpers-react";
 import Spinner from "../../components/icons/Spinner";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const session = useSession();
+  const { isLoading } = useSessionContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
@@ -23,7 +24,7 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     const checkOnboarding = async () => {
-      if (status === "authenticated" && session) {
+      if (session) {
         try {
           const res = await fetch("/api/profile");
           if (res.ok) {
@@ -40,30 +41,25 @@ export default function OnboardingPage() {
       setCheckingOnboarding(false);
     };
 
-    if (status === "loading") {
-      return; // Hala yükleniyor, bekle
+    if (isLoading) {
+      return;
     }
-    
-    if (status === "unauthenticated") {
+
+    if (!session) {
       setCheckingOnboarding(false);
       router.push("/login");
       return;
     }
     
     checkOnboarding();
-  }, [status, session, router]);
+  }, [session, router, isLoading]);
 
-  if (status === "loading" || checkingOnboarding) {
+  if (isLoading || checkingOnboarding) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <Spinner className="h-8 w-8 text-blue-400" />
       </main>
     );
-  }
-
-  if (status === "unauthenticated") {
-    router.push("/login");
-    return null;
   }
 
   const handleInputChange = (field: string, value: string) => {

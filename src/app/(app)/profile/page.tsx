@@ -1,44 +1,40 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../lib/auth";
-import { prisma } from "../../../lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-
-// getServerSession ve Prisma Edge Runtime'da sorun yaratabilir
-// export const runtime = 'edge'; // Kaldırıldı
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   if (!session) redirect("/login");
 
-  let user = null;
-  try {
-    user = await prisma.user.findUnique({
-      where: { email: session.user?.email || "" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        emailVerified: true,
-        createdAt: true,
-        height: true,
-        weight: true,
-        age: true,
-        gender: true,
-        targetWeight: true,
-        dailySteps: true,
-        onboardingCompleted: true,
-      },
-    });
-  } catch (error) {
-    console.error("Profile fetch error:", error);
-  }
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select(
+      "id,email,full_name,avatar_url,created_at,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps"
+    )
+    .eq("id", session.user.id)
+    .single();
 
-  if (!user) {
-    redirect("/login");
-  }
+  if (!profile) redirect("/login");
+
+  const user = {
+    id: profile.id,
+    name: profile.full_name,
+    email: profile.email,
+    image: profile.avatar_url,
+    emailVerified: Boolean((session.user as any).email_confirmed_at),
+    createdAt: new Date(profile.created_at),
+    height: profile.height_cm,
+    weight: profile.weight_kg,
+    age: profile.age,
+    gender: profile.gender,
+    targetWeight: profile.target_weight_kg,
+    dailySteps: profile.daily_steps,
+  };
 
   // BMI hesapla
   const calculateBMI = (height: number | null, weight: number | null): number | null => {
@@ -178,7 +174,7 @@ export default async function ProfilePage() {
               href="/dashboard"
               className="flex items-center justify-center gap-2 rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-3 text-sm font-medium text-gray-300 transition-colors hover:border-gray-600 hover:bg-gray-800 hover:text-white"
             >
-              Dashboard'a Dön
+              Dashboard&apos;a Dön
             </Link>
             <Link
               href="/health"

@@ -71,6 +71,7 @@ function ensureWorkerFile() {
   console.log("✓ .open-next/_worker.js oluşturuldu");
 }
 
+
 function main() {
   if (!fs.existsSync(outputDir)) {
     console.error("❌ .open-next klasörü bulunamadı. Önce `opennextjs-cloudflare build` çalıştırın.");

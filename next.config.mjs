@@ -19,19 +19,8 @@ const nextConfig = {
     ],
     unoptimized: false,
   },
-  // Cloudflare Pages için optimize edilmiş ayarlar
-  output: undefined, // OpenNext otomatik halleder
+  // Vercel için optimize edilmiş ayarlar
   trailingSlash: false,
-  webpack: (config, { isServer }) => {
-    // Cloudflare Pages için crypto modülü fallback
-    if (isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        crypto: false,
-      };
-    }
-    return config;
-  },
 };
 
 export default nextConfig;

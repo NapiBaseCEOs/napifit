@@ -1,27 +1,48 @@
 import { Browser } from "@capacitor/browser";
 import { App } from "@capacitor/app";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function isMobilePlatform(): boolean {
   if (typeof window === "undefined") return false;
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
-export async function signInWithGoogleMobile(callbackUrl: string = "/dashboard"): Promise<void> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-    (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
-  
-  const authUrl = `${baseUrl}/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-  
+export async function signInWithGoogleMobile(redirectTo?: string): Promise<void> {
+  const supabase = createSupabaseBrowserClient();
+  const callbackUrl =
+    redirectTo ||
+    (typeof window !== "undefined"
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/dashboard")}`
+      : undefined);
+
   try {
-    // Capacitor Browser ile aç
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: callbackUrl,
+        skipBrowserRedirect: true,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.url) {
+      throw new Error("Supabase Google OAuth URL alınamadı.");
+    }
+
     await Browser.open({
-      url: authUrl,
+      url: data.url,
       windowName: "_self",
     });
 
-    // Deep link dinleyicisi ekle
-    App.addListener("appUrlOpen", (data: { url: string }) => {
-      if (data.url.includes("/api/auth/callback")) {
+    App.addListener("appUrlOpen", (event) => {
+      if (event.url) {
         Browser.close();
       }
     });

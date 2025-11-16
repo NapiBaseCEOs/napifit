@@ -1,43 +1,64 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../lib/auth";
-import { prisma } from "../../../lib/prisma";
 import { redirect } from "next/navigation";
+import HealthForms from "../../../components/HealthForms";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
 
 export default async function HealthPage() {
-  const session = await getServerSession(authOptions);
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   if (!session) redirect("/login");
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user?.email || "" },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
-  });
+  const userId = session.user.id;
 
-  if (!user) {
-    redirect("/login");
-  }
+  const [{ data: healthMetricsData }, { data: workoutsData }, { data: mealsData }] = await Promise.all([
+    supabase
+      .from("health_metrics")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("workouts")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("meals")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
 
-  // Sağlık metrikleri, egzersizler ve öğünleri al
-  const healthMetrics = await prisma.healthMetric.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
+  const healthMetrics =
+    (healthMetricsData as Database["public"]["Tables"]["health_metrics"]["Row"][] | null)?.map((metric) => ({
+      id: metric.id,
+      weight: metric.weight_kg,
+      bmi: metric.bmi,
+      createdAt: new Date(metric.created_at),
+    })) ?? [];
 
-  const workouts = await prisma.workout.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
+  const workouts =
+    (workoutsData as Database["public"]["Tables"]["workouts"]["Row"][] | null)?.map((workout) => ({
+      id: workout.id,
+      name: workout.name,
+      duration: workout.duration_minutes,
+      calories: workout.calories,
+      createdAt: new Date(workout.created_at),
+    })) ?? [];
 
-  const meals = await prisma.meal.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
+  const meals =
+    (mealsData as Database["public"]["Tables"]["meals"]["Row"][] | null)?.map((meal) => ({
+      id: meal.id,
+      mealType: meal.meal_type,
+      foods: meal.foods,
+      totalCalories: meal.total_calories,
+      createdAt: new Date(meal.created_at),
+    })) ?? [];
 
   return (
     <main className="relative min-h-screen px-4 py-8 sm:px-6 bg-[#0a0a0a]">
@@ -174,6 +195,9 @@ export default async function HealthPage() {
             </div>
           </div>
         </div>
+
+        {/* Add Forms */}
+        <HealthForms />
 
         {/* Info Card */}
         <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6 shadow-lg">

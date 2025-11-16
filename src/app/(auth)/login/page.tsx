@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import GoogleIcon from "../../../components/icons/GoogleIcon";
 import Spinner from "../../../components/icons/Spinner";
+import { useSession, useSessionContext, useSupabaseClient } from "@supabase/auth-helpers-react";
+import type { Database } from "@/lib/supabase/types";
+import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
 
 function ErrorHandler() {
   const searchParams = useSearchParams();
@@ -15,15 +17,7 @@ function ErrorHandler() {
     // URL'den error parametresini al
     const errorParam = searchParams.get("error");
     if (errorParam) {
-      if (errorParam === "OAuthSignin") {
-        setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
-      } else if (errorParam === "OAuthCallback") {
-        setError("Google OAuth callback hatası. Lütfen tekrar deneyin.");
-      } else if (errorParam === "OAuthCreateAccount") {
-        setError("Hesap oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
-      } else {
-        setError("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
-      }
+      setError("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
     }
   }, [searchParams]);
 
@@ -36,11 +30,22 @@ function ErrorHandler() {
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabase = useSupabaseClient<Database>();
+  const session = useSession();
+  const { isLoading } = useSessionContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (session) {
+      router.prefetch("/dashboard");
+      router.prefetch("/onboarding");
+    }
+  }, [session, router, isLoading]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,55 +53,41 @@ export default function LoginPage() {
     setLoading(true);
     
     try {
-      const res = await signIn("credentials", {
-        redirect: false,
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
-      setLoading(false);
-      
-      if (res?.error) {
-        if (res.error.includes("database") || res.error.includes("connection") || res.error.includes("CredentialsSignin")) {
-          setError("Veritabanı bağlantı hatası veya geçersiz bilgiler. Lütfen kontrol edin.");
-        } else {
-          setError("Geçersiz email veya şifre");
-        }
+
+      if (signInError) {
+        throw signInError;
+      }
+
+      const {
+        data: { session: activeSession },
+      } = await supabase.auth.getSession();
+
+      if (!activeSession) {
+        setError("Oturum oluşturulamadı. Lütfen tekrar deneyin.");
         return;
       }
-      
-      if (res?.ok) {
-        try {
-          const profileRes = await fetch("/api/profile", {
-            method: "GET",
-            cache: "no-store",
-          });
-          
-          if (profileRes.ok) {
-            const profile = await profileRes.json();
-            if (!profile.onboardingCompleted) {
-              router.push("/onboarding");
-            } else {
-              router.push("/dashboard");
-            }
-          } else if (profileRes.status === 503) {
-            setError("Veritabanı bağlantı hatası. Bazı özellikler çalışmayabilir.");
-            setTimeout(() => {
-              router.push("/dashboard");
-            }, 2000);
-          } else {
-            router.push("/dashboard");
-          }
-        } catch (err) {
-          console.error("Profile fetch error:", err);
-          router.push("/dashboard");
-        }
-        router.refresh();
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", activeSession.user.id)
+        .single();
+
+      if (!profile?.onboarding_completed) {
+        router.push("/onboarding");
+      } else {
+        router.push("/dashboard");
       }
+      router.refresh();
     } catch (err) {
-      setLoading(false);
       console.error("Login error:", err);
-      setError("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+      setError("Geçersiz email veya şifre ya da Supabase bağlantı hatası.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,31 +97,42 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Mobil platform kontrolü
-      try {
-        const { isMobilePlatform, signInWithGoogleMobile } = await import("../../../lib/google-oauth-mobile");
-        const isMobile = isMobilePlatform();
-        
-        if (isMobile) {
-          await signInWithGoogleMobile("/onboarding");
-          return;
-        }
-      } catch (mobileError) {
-        console.log("Mobile OAuth skipped, using web");
+      const isMobile = isMobilePlatform();
+      const nextParam = "/onboarding";
+      const redirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextParam)}`
+          : undefined;
+
+      if (isMobile && redirectTo) {
+        await signInWithGoogleMobile(redirectTo);
+        return;
       }
-      
-      // Web'de NextAuth'ın kendi signin endpoint'ini kullan
-      // Bu endpoint state formatını ve cookie'leri otomatik yönetir
-      const callbackUrl = encodeURIComponent(`${window.location.origin}/onboarding`);
-      const signInUrl = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
-      
-      // Direkt redirect - NextAuth endpoint'i her şeyi yönetir
-      window.location.href = signInUrl;
-      
+
+      const { error: oauthError, data } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (oauthError) {
+        throw oauthError;
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
       console.error("Google OAuth error:", err);
-      setGoogleLoading(false);
       setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+      return;
+    } finally {
+      setGoogleLoading(false);
     }
   };
 

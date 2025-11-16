@@ -1,61 +1,100 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../lib/auth";
-import { prisma } from "../../../lib/prisma";
 import { redirect } from "next/navigation";
 import DashboardContent from "../../../components/DashboardContent";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
 
-// getServerSession ve Prisma Edge Runtime'da sorun yaratabilir
-// export const runtime = 'edge'; // Kaldırıldı
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  // Kullanıcı profil bilgilerini al
-  const user = await prisma.user.findUnique({
-    where: { email: session.user?.email || "" },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      image: true,
-      height: true,
-      weight: true,
-      age: true,
-      gender: true,
-      targetWeight: true,
-      dailySteps: true,
-      onboardingCompleted: true,
-      createdAt: true,
-    },
-  });
+  if (!session) {
+    redirect("/login");
+  }
 
-  // Bugünkü kalori toplamını al
+  const userId = session.user.id;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select(
+      "id,email,full_name,avatar_url,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,onboarding_completed,created_at"
+    )
+    .eq("id", userId)
+    .single();
+
+  if (!profile) {
+    redirect("/login");
+  }
+
+  if (!profile.onboarding_completed) {
+    redirect("/onboarding");
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const todayMeals = await prisma.meal.findMany({
-    where: {
-      userId: user?.id,
-      createdAt: {
-        gte: today,
-        lt: tomorrow,
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 5,
-  });
+  const [{ data: todayMealsData }, { data: todayWorkoutsData }] = await Promise.all([
+    supabase
+      .from("meals")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("created_at", today.toISOString())
+      .lt("created_at", tomorrow.toISOString())
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("workouts")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("created_at", today.toISOString())
+      .lt("created_at", tomorrow.toISOString())
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ]);
+
+  const todayMeals =
+    (todayMealsData as Database["public"]["Tables"]["meals"]["Row"][] | null)?.map((meal) => ({
+      id: meal.id,
+      foods: meal.foods,
+      mealType: meal.meal_type,
+      totalCalories: meal.total_calories,
+      createdAt: new Date(meal.created_at),
+    })) ?? [];
+
+  const todayWorkouts =
+    (todayWorkoutsData as Database["public"]["Tables"]["workouts"]["Row"][] | null)?.map((workout) => ({
+      id: workout.id,
+      name: workout.name,
+      type: workout.type,
+      duration: workout.duration_minutes,
+      calories: workout.calories,
+      distance: workout.distance_km,
+      createdAt: new Date(workout.created_at),
+    })) ?? [];
+
+  const user = {
+    id: profile.id,
+    name: profile.full_name,
+    email: profile.email,
+    image: profile.avatar_url,
+    height: profile.height_cm,
+    weight: profile.weight_kg,
+    age: profile.age,
+    gender: profile.gender,
+    targetWeight: profile.target_weight_kg,
+    dailySteps: profile.daily_steps,
+    onboardingCompleted: profile.onboarding_completed,
+    createdAt: new Date(profile.created_at),
+  };
 
   const todayCalories = todayMeals.reduce((sum, meal) => sum + meal.totalCalories, 0);
-
-  // Onboarding tamamlanmamışsa yönlendir
-  if (!user?.onboardingCompleted) {
-    redirect("/onboarding");
-  }
+  const todayBurnedCalories = todayWorkouts.reduce((sum, workout) => sum + (workout.calories || 0), 0);
 
   // BMI hesapla
   const calculateBMI = (height: number | null, weight: number | null): number | null => {
@@ -88,7 +127,9 @@ export default async function DashboardPage() {
       bmiCategory={bmiCategory}
       weightDifference={weightDifference}
       todayCalories={todayCalories}
+      todayBurnedCalories={todayBurnedCalories}
       todayMeals={todayMeals}
+      todayWorkouts={todayWorkouts}
     />
   );
 }

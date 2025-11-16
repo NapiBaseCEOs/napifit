@@ -1,11 +1,6 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../../lib/auth";
-import { prisma } from "../../../../lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-
-// getServerSession NextAuth kullandığı için Edge Runtime'da çalışmaz
-// export const runtime = 'edge'; // Kaldırıldı
+import { createSupabaseRouteClient } from "@/lib/supabase/route";
 
 const onboardingSchema = z.object({
   height: z.number().min(100).max(250), // cm
@@ -17,35 +12,46 @@ const onboardingSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ message: "Yetkisiz erişim" }, { status: 401 });
-    }
+  const supabase = createSupabaseRouteClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
+  if (authError || !user) {
+    return NextResponse.json({ message: "Yetkisiz erişim" }, { status: 401 });
+  }
+
+  try {
     const body = await request.json();
     const validatedData = onboardingSchema.parse(body);
 
-    const user = await prisma.user.update({
-      where: { email: session.user.email },
-      data: {
-        height: validatedData.height,
-        weight: validatedData.weight,
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({
+        height_cm: validatedData.height,
+        weight_kg: validatedData.weight,
         age: validatedData.age,
         gender: validatedData.gender,
-        targetWeight: validatedData.targetWeight,
-        dailySteps: validatedData.dailySteps,
-        onboardingCompleted: true,
-      },
-      select: {
-        id: true,
-        onboardingCompleted: true,
-      },
-    });
+        target_weight_kg: validatedData.targetWeight,
+        daily_steps: validatedData.dailySteps,
+        onboarding_completed: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", user.id)
+      .select("id,onboarding_completed")
+      .single();
+
+    if (error || !data) {
+      return NextResponse.json(
+        { message: "Bilgiler kaydedilirken bir hata oluştu", details: error?.message },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       message: "Profil bilgileri kaydedildi",
-      user,
+      user: data,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -59,14 +65,10 @@ export async function POST(request: Request) {
     }
 
     console.error("Onboarding error:", error);
-    
-    // Daha detaylı hata mesajı
-    const errorMessage = error instanceof Error ? error.message : "Bilgiler kaydedilirken hata oluştu";
-    
     return NextResponse.json(
-      { 
-        message: errorMessage,
-        details: process.env.NODE_ENV === "development" ? String(error) : undefined
+      {
+        message: "Bilgiler kaydedilirken hata oluştu",
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined,
       },
       { status: 500 }
     );

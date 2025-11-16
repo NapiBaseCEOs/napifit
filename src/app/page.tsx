@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import type { Database } from "@/lib/supabase/types";
 
 type LandingStats = {
   members: number;
@@ -61,14 +62,17 @@ const fallbackWorkouts: RecentWorkout[] = [
 
 async function getLandingStats(): Promise<LandingStats> {
   try {
-    const [members, workouts, meals, avgStepsAggregate] = await Promise.all([
-      prisma.user.count(),
-      prisma.workout.count(),
-      prisma.meal.count(),
-      prisma.user.aggregate({ _avg: { dailySteps: true } }),
+    const [membersResponse, workoutsResponse, mealsResponse, avgStepsResponse] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("workouts").select("id", { count: "exact", head: true }),
+      supabaseAdmin.from("meals").select("id", { count: "exact", head: true }),
+      supabaseAdmin.rpc("avg_daily_steps"),
     ]);
 
-    const avgDailySteps = Math.round(avgStepsAggregate._avg.dailySteps ?? 8200);
+    const members = membersResponse.count ?? fallbackStats.members;
+    const workouts = workoutsResponse.count ?? fallbackStats.workouts;
+    const meals = mealsResponse.count ?? fallbackStats.meals;
+    const avgDailySteps = Math.round((avgStepsResponse.data as number | null) ?? 8200);
     const streaks = Math.max(50, Math.round(workouts * 0.12));
 
     return {
@@ -86,34 +90,29 @@ async function getLandingStats(): Promise<LandingStats> {
 
 async function getRecentWorkouts(): Promise<RecentWorkout[]> {
   try {
-    const records = await prisma.workout.findMany({
-      take: 3,
-      orderBy: { createdAt: "desc" },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            name: true,
-          },
-        },
-      },
-    });
+    type WorkoutWithProfile = Database["public"]["Tables"]["workouts"]["Row"] & {
+      profiles: { full_name: string | null } | null;
+    };
 
-    if (!records.length) return fallbackWorkouts;
+    const { data, error } = await supabaseAdmin
+      .from("workouts")
+      .select("id,name,type,created_at,calories,duration_minutes,profiles(full_name)")
+      .order("created_at", { ascending: false })
+      .limit(3)
+      .returns<WorkoutWithProfile[]>();
 
-    return records.map((workout) => ({
+    if (error || !data?.length) {
+      return fallbackWorkouts;
+    }
+
+    return data.map((workout) => ({
       id: workout.id,
       name: workout.name,
       type: workout.type,
-      createdAt: workout.createdAt,
-      userName:
-        workout.user.firstName ||
-        workout.user.name ||
-        workout.user.lastName ||
-        "NapiFit üyesi",
+      createdAt: new Date(workout.created_at),
+      userName: workout.profiles?.full_name || "NapiFit üyesi",
       calories: workout.calories,
-      duration: workout.duration,
+      duration: workout.duration_minutes,
     }));
   } catch (error) {
     console.warn("Recent workouts fallback:", error);

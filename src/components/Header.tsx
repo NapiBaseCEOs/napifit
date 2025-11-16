@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
 import LogoMark from "./LogoMark";
 import Spinner from "./icons/Spinner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { APP_VERSION } from "@/config/version";
 import { useUpdateChecker } from "./UpdateCheckerProvider";
+import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import type { Database } from "@/lib/supabase/types";
 
 export default function Header() {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const isAuth = status === "authenticated";
+  const supabase = useSupabaseClient<Database>();
+  const session = useSession();
+  const isAuth = !!session;
   const [signingOut, setSigningOut] = useState(false);
   const [navigatingLogin, setNavigatingLogin] = useState(false);
   const { checkForUpdate } = useUpdateChecker();
@@ -21,7 +23,7 @@ export default function Header() {
     if (signingOut) return;
     setSigningOut(true);
     try {
-      await signOut({ redirect: false });
+      await supabase.auth.signOut();
       router.push("/");
       router.refresh();
     } finally {

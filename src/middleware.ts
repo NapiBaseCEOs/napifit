@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import type { Database } from "@/lib/supabase/types";
 
-/**
- * Middleware - OAuth callback'leri için özel işlem yapmıyoruz
- * NextAuth kendi callback handling'ini yapıyor
- */
-export function middleware(request: NextRequest) {
-  // Normal akışa devam et
-  return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+  const supabase = createMiddlewareClient<Database>({ req: request, res: response });
+  await supabase.auth.getSession();
+  return response;
 }
 
 export const config = {
-  matcher: [],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
 

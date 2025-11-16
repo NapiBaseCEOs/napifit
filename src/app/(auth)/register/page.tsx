@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import GoogleIcon from "../../../components/icons/GoogleIcon";
 import Spinner from "../../../components/icons/Spinner";
-import { signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
+import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
+import type { Database } from "@/lib/supabase/types";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const supabase = useSupabaseClient<Database>();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -55,30 +57,53 @@ export default function RegisterPage() {
     }
     
     setLoading(true);
-    const res = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ firstName, lastName, dateOfBirth, email, password }),
-    });
-    setLoading(false);
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data?.message || "Kayıt başarısız");
-      console.error("Register error:", data);
-      return;
+    try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo:
+            typeof window !== "undefined"
+              ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/onboarding")}`
+              : undefined,
+          data: {
+            full_name: fullName,
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            date_of_birth: dateOfBirth,
+          },
+        },
+      });
+
+      if (signUpError) {
+        throw signUpError;
+      }
+
+      if (data.user) {
+        await supabase.from("profiles").upsert({
+          id: data.user.id,
+          email: data.user.email ?? email,
+          full_name: fullName,
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          date_of_birth: dateOfBirth,
+        });
+      }
+
+      if (data.session) {
+        router.push("/onboarding");
+        router.refresh();
+      } else {
+        router.push("/login");
+      }
+    } catch (err) {
+      console.error("Register error:", err);
+      setError("Kayıt sırasında bir hata oluştu. Lütfen bilgilerinizi kontrol edin.");
+    } finally {
+      setLoading(false);
     }
-    // Kayıt başarılı, otomatik giriş yap
-    const signInRes = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
-    if (signInRes?.ok) {
-      router.push("/onboarding");
-    } else {
-      router.push("/login");
-    }
-    router.refresh();
   };
 
   const onGoogle = async () => {
@@ -88,34 +113,41 @@ export default function RegisterPage() {
 
     try {
       // Mobil platform kontrolü
-      try {
-        const { isMobilePlatform, signInWithGoogleMobile } = await import("../../../lib/google-oauth-mobile");
-        const isMobile = isMobilePlatform();
-        
-        if (isMobile) {
-          // Mobil'de Capacitor Browser kullan
-          await signInWithGoogleMobile("/onboarding");
-          return; // Browser açıldı, callback geldiğinde GoogleOAuthHandler işleyecek
-        }
-      } catch (mobileError) {
-        // Mobil değilse veya hata varsa web'e devam et
-        console.log("Mobile OAuth skipped, using web");
+      const isMobile = isMobilePlatform();
+      const redirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/onboarding")}`
+          : undefined;
+
+      if (isMobile && redirectTo) {
+        await signInWithGoogleMobile(redirectTo);
+        return;
       }
-      
-      // Web'de NextAuth'ın kendi signin endpoint'ini kullan
-      // Bu endpoint state formatını ve cookie'leri otomatik yönetir
-      const callbackUrl = encodeURIComponent(`${window.location.origin}/onboarding`);
-      const signInUrl = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
-      
-      // Direkt redirect - NextAuth endpoint'i her şeyi yönetir
-      window.location.href = signInUrl;
-      
-      // Loading state'i koru (redirect olacak)
-      // setGoogleLoading(false); // Redirect olacak, bunu yapmaya gerek yok
+
+      const { error: oauthError, data } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (oauthError) {
+        throw oauthError;
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
       console.error("Google OAuth error:", err);
-      setGoogleLoading(false);
       setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+      return;
+    } finally {
+      setGoogleLoading(false);
     }
   };
 

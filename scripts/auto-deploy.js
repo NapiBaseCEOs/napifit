@@ -91,13 +91,15 @@ try {
 
   // 5. Commit yap
   console.log('💾 5. Commit yapılıyor...');
-  const commitMessage = `feat: Versiyon ${newVersion} - Tasarım iyileştirmeleri
+  const commitMessage = `feat: Versiyon ${newVersion} - Tam özellikli sağlık takip sistemi
 
-- Arka plan kontrastı artırıldı (daha koyu, yazılar okunabilir)
-- Header menü yeni tasarıma uyarlandı (yeşil/turuncu renkler)
-- Gradient opacity değerleri düşürüldü (daha koyu arka plan)
-- Tüm sayfalara koyu arka plan eklendi (#0a0a0a)
-- Header hover efektleri ve modern butonlar
+- Egzersiz takibi API ve UI eklendi (CRUD işlemleri)
+- Beslenme takibi API ve UI eklendi (çoklu yemek desteği)
+- Sağlık metrikleri API ve UI eklendi
+- Dashboard'a bugünkü egzersizler ve yakılan kalori eklendi
+- HealthForms component'i ile kapsamlı form sistemi
+- Tüm API route'larda error handling ve validation
+- Dashboard UI iyileştirmeleri ve responsive tasarım
 - Versiyon: ${newVersion}`;
 
   try {
@@ -138,6 +140,33 @@ try {
       console.log('✅ Deploy tamamlandı!');
       console.log(`📦 Versiyon: ${newVersion}`);
       console.log('🚀 Cloudflare Pages otomatik deploy edecek (GitHub Actions)\n');
+      
+      // Otomatik test döngüsünü başlat
+      console.log('🧪 Otomatik test döngüsü başlatılıyor...\n');
+      try {
+        const { spawn } = require('child_process');
+        const testProcess = spawn('node', ['scripts/auto-deploy-test-loop.js'], {
+          stdio: 'inherit',
+          shell: true,
+        });
+        
+        testProcess.on('close', (code) => {
+          if (code === 0) {
+            console.log('\n✅ Tüm testler başarılı! Deploy başarıyla tamamlandı.\n');
+          } else {
+            console.log(`\n❌ Testler başarısız oldu (exit code: ${code})\n`);
+            process.exit(code);
+          }
+        });
+        
+        testProcess.on('error', (error) => {
+          console.log(`\n⚠️  Test script'i çalıştırılamadı: ${error.message}`);
+          console.log('💡 Manuel test için: npm run deploy:test\n');
+        });
+      } catch (error) {
+        console.log(`\n⚠️  Test script'i çalıştırılamadı: ${error.message}`);
+        console.log('💡 Manuel test için: npm run deploy:test\n');
+      }
       
     } catch (error) {
       if (error.message.includes('branch')) {

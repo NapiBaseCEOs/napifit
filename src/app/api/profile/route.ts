@@ -1,178 +1,123 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../../lib/auth";
-import { prisma } from "../../../lib/prisma";
 import { NextResponse } from "next/server";
-import { hash } from "bcryptjs";
-
-// getServerSession NextAuth kullandığı için Edge Runtime'da çalışmaz
-// export const runtime = 'edge'; // Kaldırıldı
+import { z } from "zod";
+import { createSupabaseRouteClient } from "@/lib/supabase/route";
 
 export async function GET() {
-  // Database bağlantısını test et (opsiyonel)
-  const dbConnected = await prisma.$connect().then(() => true).catch(() => false);
-  
-  if (!dbConnected) {
-    console.warn("⚠️ Database not connected, returning 503");
-    return NextResponse.json(
-      { 
-        message: "Veritabanına bağlanılamadı. Lütfen daha sonra tekrar deneyin.",
-        error: "DATABASE_CONNECTION_ERROR"
-      },
-      { status: 503 }
-    );
+  const supabase = createSupabaseRouteClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ message: "Yetkisiz erişim" }, { status: 401 });
   }
 
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ message: "Yetkisiz erişim" }, { status: 401 });
-    }
+  const { data: profile, error } = await supabase
+  .from("profiles")
+  .select(
+    "id,email,full_name,avatar_url,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,onboarding_completed,created_at"
+  )
+  .eq("id", user.id)
+  .single();
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        emailVerified: true,
-        createdAt: true,
-        height: true,
-        weight: true,
-        age: true,
-        gender: true,
-        targetWeight: true,
-        dailySteps: true,
-        onboardingCompleted: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ message: "Kullanıcı bulunamadı" }, { status: 404 });
-    }
-
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error("Profile fetch error:", error);
-    
-    // Prisma hatası kontrolü
-    if (error instanceof Error && error.message.includes("Prisma")) {
-      return NextResponse.json(
-        { 
-          message: "Veritabanı hatası. Lütfen daha sonra tekrar deneyin.",
-          error: "DATABASE_ERROR"
-        },
-        { status: 503 }
-      );
-    }
-    
-    return NextResponse.json(
-      { 
-        message: "Profil bilgileri alınırken hata oluştu",
-        error: process.env.NODE_ENV === "development" ? String(error) : undefined
-      },
-      { status: 500 }
-    );
+  if (error || !profile) {
+    return NextResponse.json({ message: "Profil bulunamadı" }, { status: 404 });
   }
+
+  return NextResponse.json({
+    id: profile.id,
+    name: profile.full_name,
+    email: profile.email,
+    image: profile.avatar_url,
+    height: profile.height_cm,
+    weight: profile.weight_kg,
+    age: profile.age,
+    gender: profile.gender,
+    targetWeight: profile.target_weight_kg,
+    dailySteps: profile.daily_steps,
+    onboardingCompleted: profile.onboarding_completed,
+    createdAt: profile.created_at,
+  });
 }
 
+const profileUpdateSchema = z.object({
+  name: z.string().max(200).optional(),
+  height: z.number().min(50).max(260).nullable().optional(),
+  weight: z.number().min(20).max(300).nullable().optional(),
+  age: z.number().min(13).max(120).nullable().optional(),
+  gender: z.enum(["male", "female", "other"]).nullable().optional(),
+  targetWeight: z.number().min(20).max(300).nullable().optional(),
+  dailySteps: z.number().min(0).max(200000).nullable().optional(),
+});
+
 export async function PUT(request: Request) {
+  const supabase = createSupabaseRouteClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ message: "Yetkisiz erişim" }, { status: 401 });
+  }
+
+  const body = await request.json();
+
+  let parsed;
   try {
-    // Database bağlantısını test et
-    await prisma.$connect();
-  } catch (dbError) {
-    console.error("Database connection error:", dbError);
+    parsed = profileUpdateSchema.parse(body);
+  } catch (validationError) {
     return NextResponse.json(
-      { 
-        message: "Veritabanına bağlanılamadı. Lütfen daha sonra tekrar deneyin.",
-        error: "DATABASE_CONNECTION_ERROR"
+      {
+        message: "Geçersiz veri",
+        errors: validationError instanceof z.ZodError ? validationError.errors : undefined,
       },
-      { status: 503 }
+      { status: 400 }
     );
   }
 
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ message: "Yetkisiz erişim" }, { status: 401 });
-    }
+  if (Object.keys(parsed).length === 0) {
+    return NextResponse.json({ message: "Güncellenecek veri yok" }, { status: 400 });
+  }
 
-    const body = await request.json();
-    const { 
-      name, 
-      password, 
-      height, 
-      weight, 
-      age, 
-      gender, 
-      targetWeight, 
-      dailySteps 
-    } = body as { 
-      name?: string; 
-      password?: string;
-      height?: number | null;
-      weight?: number | null;
-      age?: number | null;
-      gender?: string | null;
-      targetWeight?: number | null;
-      dailySteps?: number | null;
-    };
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({
+      full_name: parsed.name,
+      height_cm: parsed.height,
+      weight_kg: parsed.weight,
+      age: parsed.age,
+      gender: parsed.gender,
+      target_weight_kg: parsed.targetWeight,
+      daily_steps: parsed.dailySteps,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id)
+    .select()
+    .single();
 
-    const updateData: any = {};
-    if (name !== undefined) updateData.name = name || null;
-    if (password) {
-      updateData.password = await hash(password, 10);
-    }
-    if (height !== undefined) updateData.height = height;
-    if (weight !== undefined) updateData.weight = weight;
-    if (age !== undefined) updateData.age = age;
-    if (gender !== undefined) updateData.gender = gender || null;
-    if (targetWeight !== undefined) updateData.targetWeight = targetWeight;
-    if (dailySteps !== undefined) updateData.dailySteps = dailySteps;
-
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ message: "Güncellenecek veri yok" }, { status: 400 });
-    }
-
-    const user = await prisma.user.update({
-      where: { email: session.user.email },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        height: true,
-        weight: true,
-        age: true,
-        gender: true,
-        targetWeight: true,
-        dailySteps: true,
-      },
-    });
-
-    return NextResponse.json({ message: "Profil güncellendi", user });
-  } catch (error) {
-    console.error("Profile update error:", error);
-    
-    // Prisma hatası kontrolü
-    if (error instanceof Error && error.message.includes("Prisma")) {
-      return NextResponse.json(
-        { 
-          message: "Veritabanı hatası. Lütfen daha sonra tekrar deneyin.",
-          error: "DATABASE_ERROR"
-        },
-        { status: 503 }
-      );
-    }
-    
+  if (error || !data) {
     return NextResponse.json(
-      { 
-        message: "Profil güncellenirken hata oluştu",
-        error: process.env.NODE_ENV === "development" ? String(error) : undefined
-      },
+      { message: "Profil güncellenirken hata oluştu", error: error?.message },
       { status: 500 }
     );
   }
+
+  return NextResponse.json({
+    message: "Profil güncellendi",
+    user: {
+      id: data.id,
+      name: data.full_name,
+      email: data.email,
+      image: data.avatar_url,
+      height: data.height_cm,
+      weight: data.weight_kg,
+      age: data.age,
+      gender: data.gender,
+      targetWeight: data.target_weight_kg,
+      dailySteps: data.daily_steps,
+    },
+  });
 }
 
