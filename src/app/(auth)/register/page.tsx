@@ -102,11 +102,31 @@ export default function RegisterPage() {
         console.log("Mobile OAuth skipped, using web");
       }
       
-      // Web'de NextAuth'un standart signin endpoint'ini kullan
+      // Web'de önce NextAuth signin endpoint'ini dene
       const callbackUrl = encodeURIComponent(`${window.location.origin}/onboarding`);
-      const signInUrl = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
       
-      // Direkt redirect - NextAuth endpoint'i Google'a yönlendirecek
+      // Önce NextAuth endpoint'ini dene
+      try {
+        const testResponse = await fetch(`/api/auth/signin/google?callbackUrl=${callbackUrl}`, {
+          method: 'GET',
+          redirect: 'manual',
+        });
+        
+        // 302 redirect varsa NextAuth çalışıyor
+        if (testResponse.status === 302 || testResponse.status === 307) {
+          const location = testResponse.headers.get('location');
+          if (location && location.includes('accounts.google.com')) {
+            // NextAuth çalışıyor - direkt redirect et
+            window.location.href = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
+            return;
+          }
+        }
+      } catch (err) {
+        console.log("NextAuth signin test failed, using direct endpoint");
+      }
+      
+      // NextAuth çalışmıyorsa direkt endpoint kullan
+      const signInUrl = `/api/google-direct?callbackUrl=${callbackUrl}`;
       window.location.href = signInUrl;
       
       // Loading state'i koru (redirect olacak)
