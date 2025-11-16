@@ -7,7 +7,15 @@ import { getDB, queryOne, execute } from "@/lib/d1";
 
 export async function POST(request: Request) {
   // D1 Database bağlantısını test et
+  // OpenNext Cloudflare adapter, D1 binding'i request.env.DB üzerinden sağlar
   const db = getDB(request);
+  
+  console.log('🔍 Register API - D1 DB check:', {
+    hasRequest: !!request,
+    hasDB: !!db,
+    requestType: typeof request,
+    requestKeys: request ? Object.keys(request as any).filter(k => !['headers', 'body', 'url'].includes(k)) : [],
+  });
   
   if (!db) {
     // D1 yoksa Prisma'ya fallback yap (development için)

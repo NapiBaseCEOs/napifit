@@ -40,76 +40,59 @@ export interface D1ExecResult {
 // Cloudflare Pages'de runtime'da inject edilir
 // OpenNext Cloudflare adapter D1 binding'i çeşitli yollarla sağlayabilir
 function getD1Database(request?: Request): D1Database | null {
-  if (request) {
-    const req = request as any;
-    
-    // 1. OpenNext Cloudflare adapter'ın runtime context'i
-    // @opennextjs/cloudflare adapter'ı binding'leri getRuntimeContext() üzerinden sağlar
+  if (!request) {
+    // Request yoksa, globalThis'ten dene (fallback)
     if (typeof globalThis !== 'undefined') {
-      try {
-        // Runtime context'i al (OpenNext Cloudflare adapter)
-        const runtimeContext = (globalThis as any).__NEXT_RUNTIME__;
-        if (runtimeContext?.env?.DB) {
-          return runtimeContext.env.DB as D1Database;
-        }
-        
-        // Alternatif: getRuntimeContext fonksiyonu
-        const getRuntimeContext = (globalThis as any).getRuntimeContext;
-        if (typeof getRuntimeContext === 'function') {
-          const context = getRuntimeContext();
-          if (context?.env?.DB) {
-            return context.env.DB as D1Database;
-          }
-        }
-      } catch {}
+      if ((globalThis as any).DB) {
+        return (globalThis as any).DB as D1Database;
+      }
+      if ((globalThis as any).env?.DB) {
+        return (globalThis as any).env.DB as D1Database;
+      }
     }
-    
-    // 2. Request context - OpenNext Cloudflare adapter binding'i request'e ekler
-    // @cloudflare/next-on-pages adapter'ı binding'leri request.env üzerinden sağlar
-    if (req.env?.DB) {
-      return req.env.DB as D1Database;
-    }
-    
-    // 3. Request.context (Next.js Cloudflare adapter)
-    if (req.context?.env?.DB) {
-      return req.context.env.DB as D1Database;
-    }
-    
-    // 4. Request.cf (Cloudflare context)
-    if (req.cf?.DB) {
-      return req.cf.DB as D1Database;
-    }
-    
-    // 5. Request.runtime
-    if (req.runtime?.env?.DB) {
-      return req.runtime.env.DB as D1Database;
-    }
+    return null;
   }
   
-  // 6. Cloudflare Workers/Pages runtime - globalThis.DB (fallback)
+  const req = request as any;
+  
+  // 1. En yaygın: request.env.DB (OpenNext Cloudflare adapter)
+  // OpenNext Cloudflare adapter, D1 binding'i request.env'e ekler
+  if (req.env?.DB) {
+    return req.env.DB as D1Database;
+  }
+  
+  // 2. Request.context.env.DB (alternatif)
+  if (req.context?.env?.DB) {
+    return req.context.env.DB as D1Database;
+  }
+  
+  // 3. Request.runtime.env.DB (alternatif)
+  if (req.runtime?.env?.DB) {
+    return req.runtime.env.DB as D1Database;
+  }
+  
+  // 4. Request.cf.DB (Cloudflare context)
+  if (req.cf?.DB) {
+    return req.cf.DB as D1Database;
+  }
+  
+  // 5. Cloudflare Workers runtime - globalThis.DB (fallback)
   if (typeof globalThis !== 'undefined') {
-    // En yaygın: globalThis.DB (direkt binding)
     if ((globalThis as any).DB) {
       return (globalThis as any).DB as D1Database;
     }
-    
-    // Alternatif: globalThis.env?.DB
     if ((globalThis as any).env?.DB) {
       return (globalThis as any).env.DB as D1Database;
     }
-    
-    // Alternatif: globalThis.cloudflare?.env?.DB
+    if ((globalThis as any).__env?.DB) {
+      return (globalThis as any).__env.DB as D1Database;
+    }
     if ((globalThis as any).cloudflare?.env?.DB) {
       return (globalThis as any).cloudflare.env.DB as D1Database;
     }
-    
-    // Alternatif: process.env.DB
-    if ((globalThis as any).process?.env?.DB) {
-      return (globalThis as any).process.env.DB as D1Database;
-    }
   }
   
-  // 7. Node.js environment (development)
+  // 6. Node.js environment (development - fallback)
   if (typeof process !== 'undefined') {
     if ((process as any).env?.DB) {
       return (process as any).env.DB as D1Database;
