@@ -81,8 +81,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, userId: user.id });
   } catch (error) {
     console.error("Register error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Beklenmeyen bir hata oluştu";
     return NextResponse.json(
-      { message: "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin." },
+      { 
+        message: "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined
+      },
       { status: 500 }
     );
   }
