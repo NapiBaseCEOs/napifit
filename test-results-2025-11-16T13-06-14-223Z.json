@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-11-16T13:06:09.959Z",
+  "siteUrl": "https://napibase.com",
+  "tests": [
+    {
+      "name": "Site Erişilebilirlik",
+      "success": true,
+      "message": "Site erişilebilir"
+    },
+    {
+      "name": "Ana Sayfa",
+      "path": "/",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Login",
+      "path": "/login",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Register",
+      "path": "/register",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Config API",
+      "path": "/api/config",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Test Auth API",
+      "path": "/api/test-auth",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "NextAuth Providers",
+      "path": "/api/auth/providers",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Env: NEXTAUTH_URL",
+      "success": true
+    },
+    {
+      "name": "Env: GOOGLE_CLIENT_ID",
+      "success": true
+    },
+    {
+      "name": "Env: GOOGLE_CLIENT_SECRET",
+      "success": true
+    },
+    {
+      "name": "Env: AUTH_SECRET",
+      "success": true
+    },
+    {
+      "name": "D1 Database Available",
+      "success": false,
+      "warning": true
+    },
+    {
+      "name": "Google Provider",
+      "success": true
+    },
+    {
+      "name": "Credentials Provider",
+      "success": true
+    }
+  ],
+  "summary": {
+    "total": 14,
+    "passed": 13,
+    "failed": 0,
+    "warnings": 1
+  }
+}

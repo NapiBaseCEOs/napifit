@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-11-16T13:07:17.898Z",
+  "siteUrl": "https://napibase.com",
+  "tests": [
+    {
+      "name": "Ana Sayfa - Google Butonu",
+      "success": false,
+      "found": false
+    },
+    {
+      "name": "Ana Sayfa - Kayıt Butonu",
+      "success": true,
+      "found": true
+    },
+    {
+      "name": "Login - Google Butonu",
+      "success": true,
+      "found": true
+    },
+    {
+      "name": "Login - Form",
+      "success": true,
+      "found": true
+    },
+    {
+      "name": "Register - Google Butonu",
+      "success": true,
+      "found": true
+    },
+    {
+      "name": "Register - Form",
+      "success": true,
+      "found": true
+    },
+    {
+      "name": "Google OAuth Endpoint",
+      "success": true,
+      "status": 302,
+      "location": "/login?callbackUrl=https%3A%2F%2Fnapibase.com&error=google"
+    },
+    {
+      "name": "NextAuth - Google Provider",
+      "success": true
+    },
+    {
+      "name": "NextAuth - Credentials Provider",
+      "success": true
+    },
+    {
+      "name": "Register API Endpoint",
+      "success": false,
+      "status": 503
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 8,
+    "failed": 2
+  }
+}
