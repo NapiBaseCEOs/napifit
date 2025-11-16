@@ -36,8 +36,7 @@
     "cloudflare:preview": "npm run cloudflare:build && opennextjs-cloudflare preview",
     "vercel:deploy": "vercel --prod",
     "vercel:dev": "vercel dev",
-    "vercel:link": "vercel link",
-    "vercel:check": "node scripts/check-vercel-deployment.js"
+    "vercel:link": "vercel link"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.0",
