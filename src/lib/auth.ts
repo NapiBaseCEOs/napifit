@@ -26,16 +26,24 @@ const AUTH_SECRET = process.env.AUTH_SECRET || "";
 if (typeof window === "undefined") {
   console.log("🔐 NextAuth Configuration:");
   console.log(`  NEXTAUTH_URL: ${NEXTAUTH_URL}`);
-  console.log(`  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID ? "SET (" + GOOGLE_CLIENT_ID.substring(0, 10) + "...)" : "❌ MISSING"}`);
-  console.log(`  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET ? "SET" : "❌ MISSING"}`);
-  console.log(`  AUTH_SECRET: ${AUTH_SECRET ? "SET" : "❌ MISSING"}`);
+  console.log(`  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID ? "SET (" + GOOGLE_CLIENT_ID.substring(0, 15) + "...)" : "❌ MISSING"}`);
+  console.log(`  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET ? "SET (length: " + GOOGLE_CLIENT_SECRET.length + ")" : "❌ MISSING"}`);
+  console.log(`  AUTH_SECRET: ${AUTH_SECRET ? "SET (length: " + AUTH_SECRET.length + ")" : "❌ MISSING"}`);
   
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
     console.error("❌ Google OAuth credentials missing! Google login will NOT work.");
+    console.error("   Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Cloudflare Pages environment variables.");
   }
   
   if (!AUTH_SECRET) {
     console.error("❌ AUTH_SECRET missing! Authentication may not work properly.");
+  }
+  
+  // Google Provider validation
+  if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
+    console.log("✅ Google Provider will be initialized");
+  } else {
+    console.error("❌ Google Provider will NOT be initialized - missing credentials");
   }
 }
 
@@ -45,20 +53,22 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   providers: [
-    GoogleProvider({
-      clientId: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-          scope: "openid email profile",
+    // Google Provider - sadece credentials varsa ekle
+    ...(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET ? [
+      GoogleProvider({
+        clientId: GOOGLE_CLIENT_ID,
+        clientSecret: GOOGLE_CLIENT_SECRET,
+        authorization: {
+          params: {
+            prompt: "consent",
+            access_type: "offline",
+            response_type: "code",
+            scope: "openid email profile",
+          },
         },
-      },
-      // Cloudflare Pages için PKCE kaldırıldı - sorun yaratabilir
-      // checks: ["pkce", "state"],
-    }),
+        // Cloudflare Pages için basit yapılandırma
+      }),
+    ] : []),
     CredentialsProvider({
       name: "credentials",
       credentials: {

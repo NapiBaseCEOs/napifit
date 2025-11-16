@@ -58,12 +58,16 @@ async function testGoogleOAuth() {
         return;
       }
     } else {
-      console.log(`  ✗ Auth check failed: ${check.status}`);
-      console.log(`    Response: ${check.data.substring(0, 200)}`);
+      console.log(`  ✗ Config check failed: ${check.status}`);
+      if (check.status === 404) {
+        console.log('    ⚠️  Endpoint henüz deploy edilmemiş olabilir. Biraz bekleyip tekrar deneyin.');
+      } else {
+        console.log(`    Response: ${check.data.substring(0, 200)}`);
+      }
       // Devam et, diğer testleri yap
     }
   } catch (err) {
-    console.log(`  ✗ Auth check error: ${err.message}`);
+    console.log(`  ✗ Config check error: ${err.message}`);
     // Devam et, diğer testleri yap
   }
 
@@ -74,12 +78,12 @@ async function testGoogleOAuth() {
     if (providers.status === 200) {
       const json = JSON.parse(providers.data);
       console.log('  ✓ Providers endpoint accessible');
-      if (json.providers.google) {
+      if (json.providers?.google) {
         console.log(`    Google Signin URL: ${json.providers.google.signinUrl}`);
         console.log(`    Google Callback URL: ${json.providers.google.callbackUrl}`);
       }
     } else {
-      console.log(`  ✗ Providers check failed: ${check.status}`);
+      console.log(`  ✗ Providers check failed: ${providers.status}`);
     }
   } catch (err) {
     console.log(`  ✗ Providers check error: ${err.message}`);
