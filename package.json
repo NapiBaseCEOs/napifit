@@ -24,6 +24,7 @@
     "git:commit": "node scripts/git-commit-push.js",
     "git:setup": "node scripts/git-setup.js",
     "deploy": "node scripts/auto-deploy.js",
+    "deploy:test": "node scripts/auto-deploy-test-loop.js",
     "deploy:prepare": "node scripts/prepare-deploy.js",
     "cap:sync": "npx cap sync",
     "cap:copy": "npx cap copy",

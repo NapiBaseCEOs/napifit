@@ -141,6 +141,33 @@ try {
       console.log(`📦 Versiyon: ${newVersion}`);
       console.log('🚀 Cloudflare Pages otomatik deploy edecek (GitHub Actions)\n');
       
+      // Otomatik test döngüsünü başlat
+      console.log('🧪 Otomatik test döngüsü başlatılıyor...\n');
+      try {
+        const { spawn } = require('child_process');
+        const testProcess = spawn('node', ['scripts/auto-deploy-test-loop.js'], {
+          stdio: 'inherit',
+          shell: true,
+        });
+        
+        testProcess.on('close', (code) => {
+          if (code === 0) {
+            console.log('\n✅ Tüm testler başarılı! Deploy başarıyla tamamlandı.\n');
+          } else {
+            console.log(`\n❌ Testler başarısız oldu (exit code: ${code})\n`);
+            process.exit(code);
+          }
+        });
+        
+        testProcess.on('error', (error) => {
+          console.log(`\n⚠️  Test script'i çalıştırılamadı: ${error.message}`);
+          console.log('💡 Manuel test için: npm run deploy:test\n');
+        });
+      } catch (error) {
+        console.log(`\n⚠️  Test script'i çalıştırılamadı: ${error.message}`);
+        console.log('💡 Manuel test için: npm run deploy:test\n');
+      }
+      
     } catch (error) {
       if (error.message.includes('branch')) {
         console.log('   ⚠️  Branch hatası, force push deneniyor...');
