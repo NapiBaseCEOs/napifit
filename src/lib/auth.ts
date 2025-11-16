@@ -56,6 +56,8 @@ export const authOptions: NextAuthOptions = {
           scope: "openid email profile",
         },
       },
+      checks: ["pkce", "state"],
+      wellKnown: "https://accounts.google.com/.well-known/openid-configuration",
     }),
     CredentialsProvider({
       name: "credentials",
