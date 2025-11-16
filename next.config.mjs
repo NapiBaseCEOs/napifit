@@ -29,6 +29,27 @@ const nextConfig = {
         ...config.resolve.fallback,
         crypto: false,
       };
+      
+      // Turso client için external dependencies
+      config.externals = config.externals || [];
+      if (typeof config.externals === 'function') {
+        const originalExternals = config.externals;
+        config.externals = [
+          originalExternals,
+          ({ request }, callback) => {
+            if (request && (
+              request.includes('@libsql/isomorphic-ws') ||
+              request.includes('@libsql/client/web')
+            )) {
+              return callback(null, `commonjs ${request}`);
+            }
+            callback();
+          }
+        ];
+      } else if (Array.isArray(config.externals)) {
+        config.externals.push('@libsql/isomorphic-ws');
+        config.externals.push('@libsql/client/web');
+      }
     }
     return config;
   },
