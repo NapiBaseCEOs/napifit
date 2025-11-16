@@ -3,29 +3,110 @@ import { authOptions } from "../../../lib/auth";
 import { prisma } from "../../../lib/prisma";
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
+import { queryOne as tursoQueryOne, testConnection as tursoTestConnection } from "@/lib/turso";
+import { getDB, queryOne } from "@/lib/d1";
 
 // getServerSession NextAuth kullandığı için Edge Runtime'da çalışmaz
 // export const runtime = 'edge'; // Kaldırıldı
 
-export async function GET() {
-  // Database bağlantısını test et (opsiyonel)
-  const dbConnected = await prisma.$connect().then(() => true).catch(() => false);
-  
-  if (!dbConnected) {
-    console.warn("⚠️ Database not connected, returning 503");
-    return NextResponse.json(
-      { 
-        message: "Veritabanına bağlanılamadı. Lütfen daha sonra tekrar deneyin.",
-        error: "DATABASE_CONNECTION_ERROR"
-      },
-      { status: 503 }
-    );
-  }
-
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ message: "Yetkisiz erişim" }, { status: 401 });
+    }
+
+    // 1. Turso Database kontrolü (Vercel production için)
+    if (process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN) {
+      const tursoAvailable = await tursoTestConnection();
+      if (tursoAvailable) {
+        try {
+          const user = await tursoQueryOne<{
+            id: string;
+            name: string | null;
+            email: string | null;
+            image: string | null;
+            emailVerified: string | null;
+            createdAt: string;
+            height: number | null;
+            weight: number | null;
+            age: number | null;
+            gender: string | null;
+            targetWeight: number | null;
+            dailySteps: number | null;
+            onboardingCompleted: number;
+          }>(
+            `SELECT id, name, email, image, emailVerified, createdAt, height, weight, age, gender, targetWeight, dailySteps, onboardingCompleted 
+             FROM User WHERE email = ?`,
+            [session.user.email]
+          );
+
+          if (user) {
+            return NextResponse.json({
+              ...user,
+              emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
+              createdAt: new Date(user.createdAt),
+              onboardingCompleted: user.onboardingCompleted === 1,
+            });
+          }
+        } catch (tursoError) {
+          console.error("Turso query error in profile GET:", tursoError);
+          // Fallback to D1 or Prisma
+        }
+      }
+    }
+
+    // 2. D1 Database kontrolü (Cloudflare için)
+    const db = getDB(request);
+    if (db) {
+      try {
+        const user = await queryOne<{
+          id: string;
+          name: string | null;
+          email: string | null;
+          image: string | null;
+          emailVerified: string | null;
+          createdAt: string;
+          height: number | null;
+          weight: number | null;
+          age: number | null;
+          gender: string | null;
+          targetWeight: number | null;
+          dailySteps: number | null;
+          onboardingCompleted: number;
+        }>(
+          `SELECT id, name, email, image, emailVerified, createdAt, height, weight, age, gender, targetWeight, dailySteps, onboardingCompleted 
+           FROM User WHERE email = ?`,
+          [session.user.email],
+          request
+        );
+
+        if (user) {
+          return NextResponse.json({
+            ...user,
+            emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
+            createdAt: new Date(user.createdAt),
+            onboardingCompleted: user.onboardingCompleted === 1,
+          });
+        }
+      } catch (d1Error) {
+        console.error("D1 query error in profile GET:", d1Error);
+        // Fallback to Prisma
+      }
+    }
+
+    // 3. Fallback: Prisma kullan (development için)
+    const dbConnected = await prisma.$connect().then(() => true).catch(() => false);
+    
+    if (!dbConnected) {
+      console.warn("⚠️ Database not connected, returning 503");
+      return NextResponse.json(
+        { 
+          message: "Veritabanına bağlanılamadı. Lütfen daha sonra tekrar deneyin.",
+          error: "DATABASE_CONNECTION_ERROR"
+        },
+        { status: 503 }
+      );
     }
 
     const user = await prisma.user.findUnique({
@@ -55,17 +136,6 @@ export async function GET() {
   } catch (error) {
     console.error("Profile fetch error:", error);
     
-    // Prisma hatası kontrolü
-    if (error instanceof Error && error.message.includes("Prisma")) {
-      return NextResponse.json(
-        { 
-          message: "Veritabanı hatası. Lütfen daha sonra tekrar deneyin.",
-          error: "DATABASE_ERROR"
-        },
-        { status: 503 }
-      );
-    }
-    
     return NextResponse.json(
       { 
         message: "Profil bilgileri alınırken hata oluştu",
@@ -77,20 +147,6 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  try {
-    // Database bağlantısını test et
-    await prisma.$connect();
-  } catch (dbError) {
-    console.error("Database connection error:", dbError);
-    return NextResponse.json(
-      { 
-        message: "Veritabanına bağlanılamadı. Lütfen daha sonra tekrar deneyin.",
-        error: "DATABASE_CONNECTION_ERROR"
-      },
-      { status: 503 }
-    );
-  }
-
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -134,6 +190,184 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: "Güncellenecek veri yok" }, { status: 400 });
     }
 
+    // 1. Turso Database kontrolü (Vercel production için)
+    if (process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN) {
+      const tursoAvailable = await tursoTestConnection();
+      if (tursoAvailable) {
+        try {
+          const { execute: tursoExecute, queryOne: tursoQueryOne } = await import("@/lib/turso");
+          
+          // Update query oluştur
+          const setClauses: string[] = [];
+          const values: any[] = [];
+          
+          if (updateData.name !== undefined) {
+            setClauses.push('name = ?');
+            values.push(updateData.name);
+          }
+          if (updateData.password) {
+            setClauses.push('password = ?');
+            values.push(updateData.password);
+          }
+          if (updateData.height !== undefined) {
+            setClauses.push('height = ?');
+            values.push(updateData.height);
+          }
+          if (updateData.weight !== undefined) {
+            setClauses.push('weight = ?');
+            values.push(updateData.weight);
+          }
+          if (updateData.age !== undefined) {
+            setClauses.push('age = ?');
+            values.push(updateData.age);
+          }
+          if (updateData.gender !== undefined) {
+            setClauses.push('gender = ?');
+            values.push(updateData.gender);
+          }
+          if (updateData.targetWeight !== undefined) {
+            setClauses.push('targetWeight = ?');
+            values.push(updateData.targetWeight);
+          }
+          if (updateData.dailySteps !== undefined) {
+            setClauses.push('dailySteps = ?');
+            values.push(updateData.dailySteps);
+          }
+          
+          setClauses.push('updatedAt = ?');
+          values.push(new Date().toISOString());
+          values.push(session.user.email);
+
+          const success = await tursoExecute(
+            `UPDATE User SET ${setClauses.join(', ')} WHERE email = ?`,
+            values
+          );
+
+          if (success) {
+            const user = await tursoQueryOne<{
+              id: string;
+              name: string | null;
+              email: string | null;
+              image: string | null;
+              height: number | null;
+              weight: number | null;
+              age: number | null;
+              gender: string | null;
+              targetWeight: number | null;
+              dailySteps: number | null;
+            }>(
+              `SELECT id, name, email, image, height, weight, age, gender, targetWeight, dailySteps 
+               FROM User WHERE email = ?`,
+              [session.user.email]
+            );
+
+            if (user) {
+              return NextResponse.json({ message: "Profil güncellendi", user });
+            }
+          }
+        } catch (tursoError) {
+          console.error("Turso update error in profile PUT:", tursoError);
+          // Fallback to D1 or Prisma
+        }
+      }
+    }
+
+    // 2. D1 Database kontrolü (Cloudflare için)
+    const db = getDB(request);
+    if (db) {
+      try {
+        const { execute } = await import("@/lib/d1");
+        
+        // Update query oluştur
+        const setClauses: string[] = [];
+        const values: any[] = [];
+        
+        if (updateData.name !== undefined) {
+          setClauses.push('name = ?');
+          values.push(updateData.name);
+        }
+        if (updateData.password) {
+          setClauses.push('password = ?');
+          values.push(updateData.password);
+        }
+        if (updateData.height !== undefined) {
+          setClauses.push('height = ?');
+          values.push(updateData.height);
+        }
+        if (updateData.weight !== undefined) {
+          setClauses.push('weight = ?');
+          values.push(updateData.weight);
+        }
+        if (updateData.age !== undefined) {
+          setClauses.push('age = ?');
+          values.push(updateData.age);
+        }
+        if (updateData.gender !== undefined) {
+          setClauses.push('gender = ?');
+          values.push(updateData.gender);
+        }
+        if (updateData.targetWeight !== undefined) {
+          setClauses.push('targetWeight = ?');
+          values.push(updateData.targetWeight);
+        }
+        if (updateData.dailySteps !== undefined) {
+          setClauses.push('dailySteps = ?');
+          values.push(updateData.dailySteps);
+        }
+        
+        setClauses.push('updatedAt = ?');
+        values.push(new Date().toISOString());
+        values.push(session.user.email);
+
+        const success = await execute(
+          `UPDATE User SET ${setClauses.join(', ')} WHERE email = ?`,
+          values,
+          request
+        );
+
+        if (success) {
+          const user = await queryOne<{
+            id: string;
+            name: string | null;
+            email: string | null;
+            image: string | null;
+            height: number | null;
+            weight: number | null;
+            age: number | null;
+            gender: string | null;
+            targetWeight: number | null;
+            dailySteps: number | null;
+          }>(
+            `SELECT id, name, email, image, height, weight, age, gender, targetWeight, dailySteps 
+             FROM User WHERE email = ?`,
+            [session.user.email],
+            request
+          );
+
+          if (user) {
+            return NextResponse.json({ message: "Profil güncellendi", user });
+          }
+        }
+      } catch (d1Error) {
+        console.error("D1 update error in profile PUT:", d1Error);
+        // Fallback to Prisma
+      }
+    }
+
+    // 3. Fallback: Prisma kullan (development için)
+    try {
+      await prisma.$connect();
+    } catch (dbError) {
+      console.error("Database connection error:", dbError);
+      return NextResponse.json(
+        { 
+          message: "Veritabanına bağlanılamadı. Lütfen daha sonra tekrar deneyin.",
+          error: "DATABASE_CONNECTION_ERROR"
+        },
+        { status: 503 }
+      );
+    }
+
     const user = await prisma.user.update({
       where: { email: session.user.email },
       data: updateData,
@@ -154,17 +388,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: "Profil güncellendi", user });
   } catch (error) {
     console.error("Profile update error:", error);
-    
-    // Prisma hatası kontrolü
-    if (error instanceof Error && error.message.includes("Prisma")) {
-      return NextResponse.json(
-        { 
-          message: "Veritabanı hatası. Lütfen daha sonra tekrar deneyin.",
-          error: "DATABASE_ERROR"
-        },
-        { status: 503 }
-      );
-    }
     
     return NextResponse.json(
       { 
