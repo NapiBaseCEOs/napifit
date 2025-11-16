@@ -301,27 +301,30 @@ export const authOptions: NextAuthOptions = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "lax" as const, // Cloudflare Pages için lax daha uyumlu
         path: "/",
         secure: NEXTAUTH_URL.startsWith("https://"),
+        domain: NEXTAUTH_URL.startsWith("https://") ? ".napibase.com" : undefined, // Cookie domain
       },
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "lax" as const,
         path: "/",
         secure: NEXTAUTH_URL.startsWith("https://"),
+        domain: NEXTAUTH_URL.startsWith("https://") ? ".napibase.com" : undefined,
       },
     },
     csrfToken: {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "lax" as const,
         path: "/",
         secure: NEXTAUTH_URL.startsWith("https://"),
+        domain: NEXTAUTH_URL.startsWith("https://") ? ".napibase.com" : undefined,
       },
     },
   },

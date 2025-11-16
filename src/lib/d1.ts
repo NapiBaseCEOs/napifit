@@ -38,37 +38,57 @@ export interface D1ExecResult {
 
 // Global D1 binding'i al
 // Cloudflare Pages'de runtime'da inject edilir
-// OpenNext Cloudflare adapter D1 binding'i globalThis'e ekler
+// OpenNext Cloudflare adapter D1 binding'i çeşitli yollarla sağlayabilir
 function getD1Database(request?: Request): D1Database | null {
-  // Request context - OpenNext Cloudflare adapter binding'i request'e ekler
-  // @cloudflare/next-on-pages adapter'ı binding'leri request.cf veya request.env üzerinden sağlar
   if (request) {
-    // @cloudflare/next-on-pages adapter'ı binding'leri request.env veya request.cf'de sağlar
     const req = request as any;
     
-    // En yaygın: request.env.DB (OpenNext Cloudflare adapter)
+    // 1. OpenNext Cloudflare adapter'ın runtime context'i
+    // @opennextjs/cloudflare adapter'ı binding'leri getRuntimeContext() üzerinden sağlar
+    if (typeof globalThis !== 'undefined') {
+      try {
+        // Runtime context'i al (OpenNext Cloudflare adapter)
+        const runtimeContext = (globalThis as any).__NEXT_RUNTIME__;
+        if (runtimeContext?.env?.DB) {
+          return runtimeContext.env.DB as D1Database;
+        }
+        
+        // Alternatif: getRuntimeContext fonksiyonu
+        const getRuntimeContext = (globalThis as any).getRuntimeContext;
+        if (typeof getRuntimeContext === 'function') {
+          const context = getRuntimeContext();
+          if (context?.env?.DB) {
+            return context.env.DB as D1Database;
+          }
+        }
+      } catch {}
+    }
+    
+    // 2. Request context - OpenNext Cloudflare adapter binding'i request'e ekler
+    // @cloudflare/next-on-pages adapter'ı binding'leri request.env üzerinden sağlar
     if (req.env?.DB) {
       return req.env.DB as D1Database;
     }
     
-    // Alternatif: request.cf.DB
+    // 3. Request.context (Next.js Cloudflare adapter)
+    if (req.context?.env?.DB) {
+      return req.context.env.DB as D1Database;
+    }
+    
+    // 4. Request.cf (Cloudflare context)
     if (req.cf?.DB) {
       return req.cf.DB as D1Database;
     }
     
-    // Alternatif: request.headers'dan al
-    const dbHeader = request.headers.get('x-d1-db');
-    if (dbHeader && typeof globalThis !== 'undefined') {
-      try {
-        const db = (globalThis as any)[dbHeader];
-        if (db) return db as D1Database;
-      } catch {}
+    // 5. Request.runtime
+    if (req.runtime?.env?.DB) {
+      return req.runtime.env.DB as D1Database;
     }
   }
   
-  // Cloudflare Workers/Pages runtime - globalThis.DB (fallback)
+  // 6. Cloudflare Workers/Pages runtime - globalThis.DB (fallback)
   if (typeof globalThis !== 'undefined') {
-    // En yaygın: globalThis.DB
+    // En yaygın: globalThis.DB (direkt binding)
     if ((globalThis as any).DB) {
       return (globalThis as any).DB as D1Database;
     }
@@ -78,13 +98,18 @@ function getD1Database(request?: Request): D1Database | null {
       return (globalThis as any).env.DB as D1Database;
     }
     
+    // Alternatif: globalThis.cloudflare?.env?.DB
+    if ((globalThis as any).cloudflare?.env?.DB) {
+      return (globalThis as any).cloudflare.env.DB as D1Database;
+    }
+    
     // Alternatif: process.env.DB
     if ((globalThis as any).process?.env?.DB) {
       return (globalThis as any).process.env.DB as D1Database;
     }
   }
   
-  // Node.js environment (development)
+  // 7. Node.js environment (development)
   if (typeof process !== 'undefined') {
     if ((process as any).env?.DB) {
       return (process as any).env.DB as D1Database;
