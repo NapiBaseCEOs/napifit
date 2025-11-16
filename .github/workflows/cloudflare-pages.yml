@@ -42,7 +42,7 @@ jobs:
           AUTH_SECRET: "dummy-for-build"
           GOOGLE_CLIENT_ID: "dummy-for-build"
           GOOGLE_CLIENT_SECRET: "dummy-for-build"
-          NEXTAUTH_URL: "https://napifit.pages.dev"
+          NEXTAUTH_URL: "https://napibase.com"
 
       - name: Deploy to Cloudflare Pages with Wrangler
         run: npx wrangler pages deploy .open-next --project-name=napifit --branch=main
