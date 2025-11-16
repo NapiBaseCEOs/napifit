@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { getDB, queryOne, execute } from "@/lib/d1";
-import { queryOne as tursoQueryOne, execute as tursoExecute, testConnection as tursoTestConnection } from "@/lib/turso";
+// Turso client dynamic import ile kullanılacak (build-time bundle sorunlarını önler)
 
 // Database öncelik sırası: D1 > Turso > Prisma
 
@@ -14,11 +14,17 @@ export async function POST(request: Request) {
     return await registerWithD1(request);
   }
   
-  // 2. Turso Database bağlantısını test et
-  const tursoAvailable = await tursoTestConnection();
-  if (tursoAvailable) {
-    console.log('✅ Using Turso database');
-    return await registerWithTurso(request);
+  // 2. Turso Database bağlantısını test et (dynamic import)
+  try {
+    const { testConnection: tursoTestConnection } = await import("@/lib/turso");
+    const tursoAvailable = await tursoTestConnection();
+    if (tursoAvailable) {
+      console.log('✅ Using Turso database');
+      const { queryOne: tursoQueryOne, execute: tursoExecute } = await import("@/lib/turso");
+      return await registerWithTurso(request, tursoQueryOne, tursoExecute);
+    }
+  } catch (error) {
+    console.log('⚠️ Turso not available:', error);
   }
   
   // 3. Prisma'ya fallback yap (development için)
@@ -141,7 +147,11 @@ async function registerWithD1(request: Request) {
 }
 
 // Turso ile kayıt
-async function registerWithTurso(request: Request) {
+async function registerWithTurso(
+  request: Request,
+  tursoQueryOne: typeof import("@/lib/turso").queryOne,
+  tursoExecute: typeof import("@/lib/turso").execute
+) {
   try {
     const body = await request.json();
     const { firstName, lastName, dateOfBirth, email, password } = body as { 
