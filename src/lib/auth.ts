@@ -151,71 +151,71 @@ export const authOptions: NextAuthOptions = {
         name: user?.name,
       });
       
-            // Google OAuth - database'e kaydet (opsiyonel)
-            if (account?.provider === "google" && user?.email) {
-              try {
-                // NextAuth signIn callback'inde request object'e erişim yok
-                // globalThis'ten D1 binding'i kontrol et
-                const db = (globalThis as any)?.DB || (globalThis as any)?.env?.DB || (globalThis as any)?.__env?.DB;
+      // Google OAuth - database'e kaydet (opsiyonel)
+      if (account?.provider === "google" && user?.email) {
+        try {
+          // NextAuth signIn callback'inde request object'e erişim yok
+          // globalThis'ten D1 binding'i kontrol et
+          const db = (globalThis as any)?.DB || (globalThis as any)?.env?.DB || (globalThis as any)?.__env?.DB;
+          
+          if (db) {
+            try {
+              // Mevcut kullanıcıyı kontrol et
+              const stmt = db.prepare('SELECT id FROM User WHERE email = ?').bind(user.email);
+              const existingUser = await stmt.first<{ id: string }>();
+              
+              if (!existingUser) {
+                // Yeni kullanıcı oluştur
+                const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+                const insertStmt = db.prepare(
+                  `INSERT INTO User (id, email, name, image, emailVerified, createdAt, updatedAt, onboardingCompleted) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+                ).bind(
+                  userId,
+                  user.email,
+                  user.name || "",
+                  user.image || null,
+                  new Date().toISOString(),
+                  new Date().toISOString(),
+                  new Date().toISOString(),
+                  0
+                );
                 
-                if (db) {
-                  try {
-                    // Mevcut kullanıcıyı kontrol et
-                    const stmt = db.prepare('SELECT id FROM User WHERE email = ?').bind(user.email);
-                    const existingUser = await stmt.first<{ id: string }>();
-                    
-                    if (!existingUser) {
-                      // Yeni kullanıcı oluştur
-                      const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-                      const insertStmt = db.prepare(
-                        `INSERT INTO User (id, email, name, image, emailVerified, createdAt, updatedAt, onboardingCompleted) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-                      ).bind(
-                        userId,
-                        user.email,
-                        user.name || "",
-                        user.image || null,
-                        new Date().toISOString(),
-                        new Date().toISOString(),
-                        new Date().toISOString(),
-                        0
-                      );
-                      
-                      await insertStmt.run();
-                      console.log("✅ Google user created in D1");
-                    } else {
-                      console.log("✅ Google user already exists in D1");
-                    }
-                  } catch (d1Error) {
-                    console.error("⚠️ D1 kayıt hatası (devam ediliyor):", d1Error);
-                    // Fallback to Prisma
-                    throw d1Error;
-                  }
-                } else {
-                  // Fallback: Prisma kullan
-                  const existingUser = await prisma.user.findUnique({
-                    where: { email: user.email },
-                  }).catch(() => null);
-                  
-                  if (!existingUser) {
-                    await prisma.user.create({
-                      data: {
-                        email: user.email,
-                        name: user.name || "",
-                        image: user.image || null,
-                        emailVerified: new Date(),
-                      },
-                    }).catch((err) => {
-                      console.log("⚠️ Prisma kayıt hatası (devam ediliyor):", err);
-                    });
-                    
-                    console.log("✅ Google user created in Prisma");
-                  }
-                }
-              } catch (error) {
-                console.log("⚠️ DB kullanılamadı, JWT-only mode:", error);
+                await insertStmt.run();
+                console.log("✅ Google user created in D1");
+              } else {
+                console.log("✅ Google user already exists in D1");
               }
+            } catch (d1Error) {
+              console.error("⚠️ D1 kayıt hatası (devam ediliyor):", d1Error);
+              // Fallback to Prisma
+              throw d1Error;
             }
+          } else {
+            // Fallback: Prisma kullan
+            const existingUser = await prisma.user.findUnique({
+              where: { email: user.email },
+            }).catch(() => null);
+            
+            if (!existingUser) {
+              await prisma.user.create({
+                data: {
+                  email: user.email,
+                  name: user.name || "",
+                  image: user.image || null,
+                  emailVerified: new Date(),
+                },
+              }).catch((err) => {
+                console.log("⚠️ Prisma kayıt hatası (devam ediliyor):", err);
+              });
+              
+              console.log("✅ Google user created in Prisma");
+            }
+          }
+        } catch (error) {
+          console.log("⚠️ DB kullanılamadı, JWT-only mode:", error);
+        }
+      }
       
       // Her zaman girişe izin ver
       return true;
