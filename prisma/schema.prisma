@@ -4,9 +4,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
-  // Turso için: libsql://... veya file:./dev.db (local)
+  // Supabase PostgreSQL için: postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+  // Local development için: postgresql://postgres:password@localhost:5432/napifit
 }
 
 model User {
