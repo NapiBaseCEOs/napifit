@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { estimateWorkoutCalories, hasOpenAIKey } from "@/lib/ai/calorie-estimator";
 
 const workoutSchema = z.object({
   name: z.string().min(1).max(200),
@@ -75,6 +76,24 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = workoutSchema.parse(body);
 
+    let calories = validatedData.calories ?? null;
+
+    if ((calories === null || Number.isNaN(calories)) && hasOpenAIKey) {
+      try {
+        const aiResult = await estimateWorkoutCalories({
+          name: validatedData.name,
+          type: validatedData.type,
+          duration: validatedData.duration ?? null,
+          distance: validatedData.distance ?? null,
+          intensity: null,
+          notes: validatedData.notes ?? null,
+        });
+        calories = aiResult.calories;
+      } catch (aiError) {
+        console.warn("Workout AI estimation failed:", aiError);
+      }
+    }
+
     const { data, error } = await supabase
       .from("workouts")
       .insert({
@@ -82,7 +101,7 @@ export async function POST(request: Request) {
         name: validatedData.name,
         type: validatedData.type,
         duration_minutes: validatedData.duration ?? null,
-        calories: validatedData.calories ?? null,
+        calories: calories ?? null,
         distance_km: validatedData.distance ?? null,
         notes: validatedData.notes ?? null,
       })

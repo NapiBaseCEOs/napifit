@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "../components/Header";
 import CursorGlow from "../components/CursorGlow";
@@ -10,10 +10,51 @@ import ThemeProvider from "../components/ThemeProvider";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { hasSupabaseClientEnv } from "@/lib/supabase/config";
+import MobileInstallPrompt from "@/components/MobileInstallPrompt";
+
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://napifit.vercel.app";
+const metadataBase = new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`);
 
 export const metadata: Metadata = {
-  title: "NapiFit",
-  description: "NapiFit - NapiBase tarafından geliştirilmiş fitness ve sağlık takip uygulaması",
+  metadataBase,
+  applicationName: "NapiFit",
+  title: {
+    default: "NapiFit",
+    template: "%s | NapiFit",
+  },
+  description: "NapiFit - NapiBase tarafından geliştirilmiş Supabase destekli fitness ve sağlık takip uygulaması",
+  category: "health_and_fitness",
+  manifest: "/manifest.webmanifest",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#050b1f" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+  ],
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon.png", sizes: "256x256", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "NapiFit",
+  },
+  formatDetection: { telephone: false },
+  alternates: {
+    canonical: "/",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#050b1f",
 };
 
 const fontSans = Plus_Jakarta_Sans({
@@ -52,6 +93,7 @@ export default async function RootLayout({
               <VersionUpdateBanner />
               <Header />
               {children}
+              <MobileInstallPrompt />
             </UpdateCheckerProvider>
           </SupabaseProvider>
         </ThemeProvider>

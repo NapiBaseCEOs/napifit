@@ -206,6 +206,13 @@ function HeroSection() {
           >
             Giriş Yap
           </Link>
+          <a
+            href="/napifit-logo.png"
+            download
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm font-semibold text-gray-200 hover:text-white hover:border-primary-400/60 hover:bg-white/10 transition-all duration-300"
+          >
+            Logoyu indir (PNG)
+          </a>
         </div>
 
         <div className="flex items-center justify-center lg:justify-start gap-4 text-left">

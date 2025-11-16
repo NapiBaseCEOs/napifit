@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { CalorieAIResponse } from "@/types/ai-calories";
 
 interface HealthFormsProps {
   onSuccess?: () => void;
@@ -39,6 +40,18 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     mealType: "breakfast" as "breakfast" | "lunch" | "dinner" | "snack",
     foods: [{ name: "", calories: "", quantity: "" }],
     notes: "",
+  });
+
+  const [workoutAiLoading, setWorkoutAiLoading] = useState(false);
+  const [mealAiLoading, setMealAiLoading] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<{
+    variant: "workout" | "meal" | null;
+    message: string | null;
+    error: string | null;
+  }>({
+    variant: null,
+    message: null,
+    error: null,
   });
 
   const handleMetricSubmit = async (e: React.FormEvent) => {
@@ -154,7 +167,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         }));
 
       if (foods.length === 0) {
-        throw new Error("En az bir yemek eklemelisiniz");
+        throw new Error("Yiyecek isimlerini ve kalorilerini girin veya 'AI ile kalorileri doldur' butonunu kullanın.");
       }
 
       const totalCalories = foods.reduce((sum, f) => sum + f.calories, 0);
@@ -216,6 +229,126 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     setMealData({ ...mealData, foods: newFoods });
   };
 
+  const handleWorkoutAiEstimate = async () => {
+    if (!workoutData.name.trim()) {
+      setError("Önce egzersiz adını gir veya AI için gerekli alanları doldur.");
+      return;
+    }
+    setWorkoutAiLoading(true);
+    setAiFeedback({ variant: "workout", message: null, error: null });
+    try {
+      const response = await fetch("/api/ai/calories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "workout",
+          workout: {
+            name: workoutData.name.trim(),
+            type: workoutData.type,
+            duration: workoutData.duration ? Number(workoutData.duration) : undefined,
+            distance: workoutData.distance ? Number(workoutData.distance) : undefined,
+            notes: workoutData.notes || undefined,
+          },
+        }),
+      });
+      const data: CalorieAIResponse = await response.json();
+      if (!response.ok) {
+        throw new Error((data as any)?.message || "AI tahmini başarısız oldu");
+      }
+      if (data.mode !== "workout") {
+        throw new Error("Beklenmeyen AI yanıtı");
+      }
+      setWorkoutData((prev) => ({
+        ...prev,
+        calories: data.result.calories ? String(Math.round(data.result.calories)) : "",
+      }));
+      setAiFeedback({
+        variant: "workout",
+        message: `${Math.round(data.result.calories)} kcal tahmini eklendi. ${data.result.explanation}`,
+        error: null,
+      });
+    } catch (err: any) {
+      setAiFeedback({
+        variant: "workout",
+        message: null,
+        error: err.message || "AI tahmini yapılamadı",
+      });
+    } finally {
+      setWorkoutAiLoading(false);
+    }
+  };
+
+  const handleMealAiEstimate = async () => {
+    const foodsToSend = mealData.foods
+      .map((food, index) => ({
+        index,
+        name: food.name.trim(),
+        quantity: food.quantity?.trim() || undefined,
+      }))
+      .filter((food) => food.name);
+
+    if (foodsToSend.length === 0) {
+      setError("Önce en az bir yemek adı giriniz.");
+      return;
+    }
+
+    setMealAiLoading(true);
+    setAiFeedback({ variant: "meal", message: null, error: null });
+
+    try {
+      const response = await fetch("/api/ai/calories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "meal",
+          meal: {
+            mealType: mealData.mealType,
+            notes: mealData.notes || undefined,
+            foods: foodsToSend,
+          },
+        }),
+      });
+      const data: CalorieAIResponse = await response.json();
+      if (!response.ok) {
+        throw new Error((data as any)?.message || "AI tahmini başarısız oldu");
+      }
+      if (data.mode !== "meal") {
+        throw new Error("Beklenmeyen AI yanıtı");
+      }
+
+      const breakdownMap = new Map(
+        data.result.breakdown.map((item) => [item.index, item] as const)
+      );
+
+      setMealData((prev) => ({
+        ...prev,
+        foods: prev.foods.map((food, idx) => {
+          const aiFood = breakdownMap.get(idx);
+          if (!aiFood) return food;
+          return {
+            ...food,
+            calories: String(Math.round(aiFood.calories)),
+            quantity: aiFood.quantity ?? food.quantity,
+          };
+        }),
+      }));
+
+      setAiFeedback({
+        variant: "meal",
+        message: `${Math.round(data.result.totalCalories)} kcal tahmin edildi. ${data.result.explanation}`,
+        error: null,
+      });
+    } catch (err: any) {
+      setAiFeedback({
+        variant: "meal",
+        message: null,
+        error: err.message || "AI tahmini yapılamadı",
+      });
+    } finally {
+      setMealAiLoading(false);
+    }
+  };
+
   return (
     <div className="rounded-2xl border border-gray-800/70 bg-gray-900/80 p-6 shadow-lg">
       {/* Tabs */}
@@ -261,6 +394,16 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       {success && (
         <div className="mb-4 rounded-lg border border-green-500/40 bg-green-500/10 p-3 text-sm text-green-400">
           {success}
+        </div>
+      )}
+      {aiFeedback.variant === activeTab && aiFeedback.message && (
+        <div className="mb-4 rounded-lg border border-primary-500/40 bg-primary-500/10 p-3 text-sm text-primary-100">
+          {aiFeedback.message}
+        </div>
+      )}
+      {aiFeedback.variant === activeTab && aiFeedback.error && (
+        <div className="mb-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-3 text-sm text-yellow-100">
+          {aiFeedback.error}
         </div>
       )}
 
@@ -397,7 +540,17 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-gray-400">Yakılan Kalori</label>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="text-sm text-gray-400">Yakılan Kalori</label>
+                <button
+                  type="button"
+                  onClick={handleWorkoutAiEstimate}
+                  disabled={workoutAiLoading}
+                  className="text-xs text-primary-400 hover:text-primary-300 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {workoutAiLoading ? "Hesaplanıyor..." : "AI ile hesapla"}
+                </button>
+              </div>
               <input
                 type="number"
                 min="0"
@@ -509,8 +662,19 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                 </div>
               ))}
             </div>
-            <div className="mt-2 text-xs text-gray-500">
-              Toplam Kalori: {mealData.foods.reduce((sum, f) => sum + (parseFloat(f.calories) || 0), 0).toFixed(0)} kcal
+            <div className="mt-2 flex flex-col gap-2 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                Toplam Kalori:{" "}
+                {mealData.foods.reduce((sum, f) => sum + (parseFloat(f.calories) || 0), 0).toFixed(0)} kcal
+              </span>
+              <button
+                type="button"
+                onClick={handleMealAiEstimate}
+                disabled={mealAiLoading}
+                className="text-primary-400 hover:text-primary-300 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {mealAiLoading ? "Hesaplanıyor..." : "AI ile kalorileri doldur"}
+              </button>
             </div>
           </div>
           <div>

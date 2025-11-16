@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useImperativeHandle, forwardRef } from "react";
-import { APP_VERSION } from "@/config/version";
+import { APP_VERSION, RELEASE_NOTES } from "@/config/version";
 
 const VERSION_STORAGE_KEY = "napifit_version";
 
@@ -59,6 +59,9 @@ const UpdateChecker = forwardRef<UpdateCheckerRef>((props, ref) => {
     setShowUpdateDialog(false);
   };
 
+  const currentRelease = RELEASE_NOTES.find((note) => note.version === APP_VERSION);
+  const previousReleases = RELEASE_NOTES.filter((note) => note.version !== APP_VERSION).slice(0, 2);
+
   if (!showUpdateDialog) return null;
 
   return (
@@ -88,8 +91,38 @@ const UpdateChecker = forwardRef<UpdateCheckerRef>((props, ref) => {
           </div>
           
           <p className="text-sm text-gray-300 leading-relaxed">
-            Uygulamanın yeni bir versiyonu mevcut. Güncellemeyi yüklemek ister misiniz?
+            Uygulamanın yeni bir versiyonu mevcut. Güncellemeyi yüklemeden önce bu sürümde seni nelerin beklediğine göz at.
           </p>
+
+          {currentRelease && (
+            <div className="rounded-2xl border border-primary-500/30 bg-primary-500/10 px-4 py-3 space-y-2">
+              <div className="flex items-center justify-between text-sm text-primary-100">
+                <span>{currentRelease.title}</span>
+                <span className="text-xs text-primary-200">{currentRelease.date}</span>
+              </div>
+              <ul className="list-disc list-inside text-xs text-gray-100 space-y-1">
+                {currentRelease.highlights.map((highlight) => (
+                  <li key={highlight}>{highlight}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {previousReleases.length > 0 && (
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 space-y-1">
+              <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Önceki sürümler</p>
+              <ul className="text-xs text-gray-300 space-y-1">
+                {previousReleases.map((release) => (
+                  <li key={release.version} className="flex flex-col">
+                    <span className="font-semibold text-white">
+                      {release.version} · {release.title}
+                    </span>
+                    <span className="text-gray-400">{release.highlights[0]}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <button

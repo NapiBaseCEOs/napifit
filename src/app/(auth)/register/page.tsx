@@ -271,7 +271,7 @@ export default function RegisterPage() {
               {successMessage}
             </div>
           )}
-          <form className="space-y-4" onSubmit={onSubmit}>
+          <form className="space-y-4" onSubmit={onSubmit} autoComplete="on">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="block text-xs uppercase tracking-wide text-gray-400">
@@ -281,6 +281,9 @@ export default function RegisterPage() {
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
+                  autoComplete="given-name"
+                  autoCapitalize="words"
+                  enterKeyHint="next"
                   className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
                   placeholder="Adınız"
                   required
@@ -294,6 +297,8 @@ export default function RegisterPage() {
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
+                  autoComplete="family-name"
+                  autoCapitalize="words"
                   className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
                   placeholder="Soyadınız"
                   required
@@ -309,6 +314,7 @@ export default function RegisterPage() {
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
                 max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                autoComplete="bday"
                 className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
                 required
               />
@@ -322,6 +328,9 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
                 className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
                 placeholder="ornek@mail.com"
                 required
@@ -336,6 +345,8 @@ export default function RegisterPage() {
                 value={password}
                 minLength={8}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                enterKeyHint="done"
                 className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
                 placeholder="En az 8 karakter, büyük harf ve rakam içerir"
                 required

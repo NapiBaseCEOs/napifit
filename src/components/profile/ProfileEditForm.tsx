@@ -3,6 +3,16 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
+const FIELD_LABELS = {
+  name: "Ad soyad",
+  height: "Boy",
+  weight: "Kilo",
+  age: "Yaş",
+  gender: "Cinsiyet",
+  targetWeight: "Hedef kilo",
+  dailySteps: "Günlük adım",
+} as const;
+
 type EditableProfile = {
   name: string | null;
   height: number | null;
@@ -38,17 +48,28 @@ export default function ProfileEditForm({ profile }: Props) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const isDirty = useMemo(() => {
-    return (
-      formData.name !== (profile.name ?? "") ||
-      formData.height !== (profile.height?.toString() ?? "") ||
-      formData.weight !== (profile.weight?.toString() ?? "") ||
-      formData.age !== (profile.age?.toString() ?? "") ||
-      formData.gender !== (profile.gender ?? "") ||
-      formData.targetWeight !== (profile.targetWeight?.toString() ?? "") ||
-      formData.dailySteps !== (profile.dailySteps?.toString() ?? "")
-    );
+  const changeSummary = useMemo(() => {
+    const changes: { label: string; value: string }[] = [];
+    (Object.keys(formData) as (keyof typeof formData)[]).forEach((key) => {
+      const previous = profile[key];
+      const current = formData[key];
+      const previousText = previous == null ? "" : previous.toString();
+      if (current !== (previousText ?? "")) {
+        const valueText =
+          key === "gender" && current
+            ? current === "male"
+              ? "Erkek"
+              : current === "female"
+                ? "Kadın"
+                : "Diğer"
+            : current || "—";
+        changes.push({ label: FIELD_LABELS[key], value: valueText });
+      }
+    });
+    return changes;
   }, [formData, profile]);
+
+  const isDirty = changeSummary.length > 0;
 
   const handleChange = (field: keyof typeof formData) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, [field]: event.target.value }));
@@ -204,6 +225,20 @@ export default function ProfileEditForm({ profile }: Props) {
             />
           </div>
         </div>
+
+        {changeSummary.length > 0 && (
+          <div className="rounded-2xl border border-primary-500/30 bg-primary-500/10 px-4 py-3 space-y-2">
+            <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Güncellenecek alanlar</p>
+            <ul className="text-sm text-white/90 space-y-1">
+              {changeSummary.map((change) => (
+                <li key={change.label} className="flex justify-between gap-4">
+                  <span className="text-gray-300">{change.label}</span>
+                  <span className="font-semibold text-white">{change.value}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {error && (
           <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">{error}</div>

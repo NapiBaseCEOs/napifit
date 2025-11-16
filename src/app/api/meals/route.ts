@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { estimateMealCalories, hasOpenAIKey } from "@/lib/ai/calorie-estimator";
 
 const mealSchema = z.object({
   imageUrl: z.string().url().optional().nullable(),
   foods: z.array(z.object({
     name: z.string(),
-    calories: z.number().min(0),
+    calories: z.number().min(0).optional(),
     quantity: z.string().optional(),
   })),
-  totalCalories: z.number().min(0).max(50000),
+  totalCalories: z.number().min(0).max(50000).optional(),
   mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]).optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
   recommendations: z.any().optional().nullable(),
@@ -89,13 +90,60 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = mealSchema.parse(body);
 
+    let foods = validatedData.foods;
+    let totalCalories = validatedData.totalCalories ?? null;
+
+    const requiresAi =
+      hasOpenAIKey &&
+      (totalCalories === null || foods.some((food) => typeof food.calories !== "number"));
+
+    if (requiresAi) {
+      try {
+        const aiResult = await estimateMealCalories({
+          mealType: validatedData.mealType ?? null,
+          notes: validatedData.notes ?? null,
+          foods: foods.map((food, index) => ({
+            index,
+            name: food.name,
+            quantity: food.quantity ?? undefined,
+          })),
+        });
+
+        totalCalories = aiResult.totalCalories;
+        const breakdownMap = new Map(aiResult.breakdown.map((item) => [item.index, item]));
+        foods = foods.map((food, index) => {
+          const aiFood = breakdownMap.get(index);
+          if (typeof food.calories === "number") {
+            return food;
+          }
+          return {
+            ...food,
+            calories: aiFood?.calories ?? undefined,
+          };
+        });
+      } catch (aiError) {
+        console.warn("Meal AI estimation failed:", aiError);
+      }
+    }
+
+    if (totalCalories == null) {
+      totalCalories = foods.reduce((sum, food) => sum + (food.calories ?? 0), 0);
+    }
+
+    if (foods.some((food) => typeof food.calories !== "number")) {
+      return NextResponse.json(
+        { message: "Kalori bilgisi belirlenemedi. Lütfen değer girin veya AI özelliğini kullanın." },
+        { status: 400 }
+      );
+    }
+
     const meal = await supabase
       .from("meals")
       .insert({
         user_id: user.id,
         image_url: validatedData.imageUrl ?? null,
-        foods: validatedData.foods as any,
-        total_calories: validatedData.totalCalories,
+        foods: foods as any,
+        total_calories: totalCalories,
         meal_type: validatedData.mealType ?? null,
         notes: validatedData.notes ?? null,
         recommendations: validatedData.recommendations ?? null,
