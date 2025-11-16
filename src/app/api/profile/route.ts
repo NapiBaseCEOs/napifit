@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { hasSupabaseServiceRole, supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET() {
   const supabase = createSupabaseRouteClient();
@@ -14,14 +15,54 @@ export async function GET() {
   }
 
   const { data: profile, error } = await supabase
-  .from("profiles")
-  .select(
-    "id,email,full_name,avatar_url,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,onboarding_completed,created_at"
-  )
-  .eq("id", user.id)
-  .single();
+    .from("profiles")
+    .select(
+      "id,email,full_name,avatar_url,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,onboarding_completed,created_at"
+    )
+    .eq("id", user.id)
+    .maybeSingle();
 
-  if (error || !profile) {
+  if (error) {
+    return NextResponse.json(
+      { message: "Profil alınırken hata oluştu", error: error.message },
+      { status: 500 }
+    );
+  }
+
+  if (!profile) {
+    if (hasSupabaseServiceRole) {
+      const fallbackPayload = {
+        id: user.id,
+        email: user.email ?? "",
+        full_name: (user.user_metadata as Record<string, any>)?.full_name ?? user.email ?? "",
+        onboarding_completed: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      await (supabaseAdmin as any)
+        .from("profiles")
+        .upsert(fallbackPayload, { onConflict: "id" })
+        .select("id")
+        .single()
+        .catch(() => null);
+
+      return NextResponse.json({
+        id: user.id,
+        name: fallbackPayload.full_name,
+        email: fallbackPayload.email,
+        image: null,
+        height: null,
+        weight: null,
+        age: null,
+        gender: null,
+        targetWeight: null,
+        dailySteps: null,
+        onboardingCompleted: false,
+        createdAt: fallbackPayload.created_at,
+      });
+    }
+
     return NextResponse.json({ message: "Profil bulunamadı" }, { status: 404 });
   }
 
