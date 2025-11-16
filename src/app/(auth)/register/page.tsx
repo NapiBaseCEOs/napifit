@@ -21,6 +21,10 @@ export default function RegisterPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendFeedback, setResendFeedback] = useState<string | null>(null);
+
+  const passwordPolicy = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
   const completedFields = useMemo(() => {
     return [firstName, lastName, dateOfBirth, email, password].filter(Boolean).length;
@@ -29,10 +33,10 @@ export default function RegisterPage() {
   const formProgress = Math.min(100, Math.round((completedFields / 5) * 100));
 
   const passwordHint = useMemo(() => {
-    if (!password) return "En az 6 karakter, tercihen rakam + harf kombinasyonu.";
-    if (password.length < 6) return "Daha güçlü bir şifre için minimum 6 karakter girin.";
+    if (!password) return "En az 8 karakter, içinde büyük harf ve rakam bulunmalı.";
+    if (password.length < 8) return "Daha güçlü bir şifre için minimum 8 karakter girin.";
     if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-      return "Bir büyük harf ve rakam eklerseniz çok daha güvenli olur.";
+      return "Bir büyük harf ve rakam eklediğinde güvenlik artacak.";
     }
     return "Harika! Şifreniz güçlü görünüyor.";
   }, [password]);
@@ -42,6 +46,7 @@ export default function RegisterPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setResendFeedback(null);
     
     // Validasyon
     if (!firstName.trim()) {
@@ -71,6 +76,11 @@ export default function RegisterPage() {
       }
     } else if (age < 18) {
       setError("18 yaşından küçükler kayıt olamaz");
+      return;
+    }
+
+    if (!passwordPolicy.test(password)) {
+      setError("Şifren 8+ karakter olmalı ve en az bir büyük harf ile rakam içermeli.");
       return;
     }
     
@@ -116,9 +126,48 @@ export default function RegisterPage() {
       );
     } catch (err) {
       console.error("Register error:", err);
+      if (err instanceof Error) {
+        const message = err.message.toLowerCase();
+        if (message.includes("password")) {
+          setError("Şifreniz 8+ karakter olmalı ve en az bir büyük harf ile rakam içermeli.");
+          return;
+        }
+        if (message.includes("registered")) {
+          setError("Bu email adresi zaten kullanılıyor. Lütfen giriş yapmayı deneyin.");
+          return;
+        }
+        if (message.includes("invalid email")) {
+          setError("Lütfen geçerli bir email adresi girin.");
+          return;
+        }
+      }
       setError("Kayıt sırasında bir hata oluştu. Lütfen bilgilerinizi kontrol edin.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      setResendFeedback("Önce e-posta alanını doldurmalısın.");
+      return;
+    }
+    setResendLoading(true);
+    setResendFeedback(null);
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      });
+      if (resendError) {
+        throw resendError;
+      }
+      setResendFeedback(`${email} adresine yeni doğrulama bağlantısı gönderildi.`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Doğrulama maili gönderilemedi. Daha sonra tekrar deneyin.";
+      setResendFeedback(message);
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -272,10 +321,10 @@ export default function RegisterPage() {
               <input
                 type="password"
                 value={password}
-                minLength={6}
+                minLength={8}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
-                placeholder="En az 6 karakter"
+                placeholder="En az 8 karakter, büyük harf ve rakam içerir"
                 required
               />
               <p className="text-xs text-gray-500">{passwordHint}</p>
@@ -321,6 +370,19 @@ export default function RegisterPage() {
             >
               E-postamı Onayladım, Giriş Yap
             </button>
+          )}
+          {successMessage && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                className="w-full rounded-xl border border-primary-500/40 bg-primary-500/10 px-4 py-3 text-sm font-semibold text-primary-200 hover:bg-primary-500/20 transition disabled:opacity-50"
+              >
+                {resendLoading ? "Doğrulama maili gönderiliyor..." : "Doğrulama E-postasını Yeniden Gönder"}
+              </button>
+              {resendFeedback && <p className="text-xs text-gray-400 text-center">{resendFeedback}</p>}
+            </div>
           )}
 
           <div className="mt-6 rounded-2xl border border-gray-800/60 bg-gray-900/70 p-4 space-y-3">

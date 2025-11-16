@@ -92,9 +92,12 @@ export default function LoginPage() {
     } catch (err) {
       console.error("Login error:", err);
       if (err instanceof AuthError) {
-        if (err.message.toLowerCase().includes("email not confirmed")) {
+        const normalized = err.message.toLowerCase();
+        if (normalized.includes("email not confirmed")) {
           setError("E-posta adresin doğrulanmamış görünüyor.");
           setInfoMessage("Doğrulama mailini teslim almadıysan aşağıdan yeniden gönderebilirsin.");
+        } else if (normalized.includes("invalid login credentials")) {
+          setError("Email veya şifre hatalı. Lütfen kontrol edip tekrar deneyin.");
         } else {
           setError(err.message || "Geçersiz email veya şifre.");
         }
