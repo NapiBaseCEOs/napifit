@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { hasSupabaseServiceRole, supabaseAdmin } from "@/lib/supabase/admin";
+import type { Database } from "@/lib/supabase/types";
 
 const onboardingSchema = z.object({
   height: z.number().min(100).max(250), // cm
@@ -26,21 +28,51 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = onboardingSchema.parse(body);
 
+    const updatePayload = {
+      height_cm: validatedData.height,
+      weight_kg: validatedData.weight,
+      age: validatedData.age,
+      gender: validatedData.gender,
+      target_weight_kg: validatedData.targetWeight,
+      daily_steps: validatedData.dailySteps,
+      onboarding_completed: true,
+      updated_at: new Date().toISOString(),
+    };
+
     const { data, error } = await supabase
       .from("profiles")
-      .update({
-        height_cm: validatedData.height,
-        weight_kg: validatedData.weight,
-        age: validatedData.age,
-        gender: validatedData.gender,
-        target_weight_kg: validatedData.targetWeight,
-        daily_steps: validatedData.dailySteps,
-        onboarding_completed: true,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("id", user.id)
       .select("id,onboarding_completed")
       .single();
+
+    if (error?.code === "PGRST116" && hasSupabaseServiceRole) {
+      const adminPayload: Database["public"]["Tables"]["profiles"]["Insert"] = {
+        id: user.id,
+        email: user.email ?? "",
+        full_name: (user.user_metadata as Record<string, any>)?.full_name ?? user.email ?? "",
+        ...updatePayload,
+      };
+
+      const adminClient = supabaseAdmin as any;
+      const { data: adminData, error: adminError } = await adminClient
+        .from("profiles")
+        .upsert(adminPayload, { onConflict: "id" })
+        .select("id,onboarding_completed")
+        .single();
+
+      if (adminError || !adminData) {
+        return NextResponse.json(
+          { message: "Profil oluşturulamadı", details: adminError?.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        message: "Profil bilgileri kaydedildi",
+        user: adminData,
+      });
+    }
 
     if (error || !data) {
       return NextResponse.json(
