@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,10 +11,13 @@ function ErrorHandler() {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // URL'den error parametresini al
+  useState(() => {
     const errorParam = searchParams.get("error");
-    if (errorParam) {
+    const registered = searchParams.get("registered");
+
+    if (registered === "true") {
+      setError(null); // Kayıt başarılı mesajı gösterilebilir
+    } else if (errorParam) {
       if (errorParam === "OAuthSignin") {
         setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
       } else if (errorParam === "OAuthCallback") {
@@ -25,7 +28,7 @@ function ErrorHandler() {
         setError("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
       }
     }
-  }, [searchParams]);
+  });
 
   return error ? (
     <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
@@ -46,32 +49,28 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    
+
     try {
       const res = await signIn("credentials", {
         redirect: false,
-        email,
+        email: email.trim(),
         password,
       });
-      
-      setLoading(false);
-      
+
       if (res?.error) {
-        if (res.error.includes("database") || res.error.includes("connection") || res.error.includes("CredentialsSignin")) {
-          setError("Veritabanı bağlantı hatası veya geçersiz bilgiler. Lütfen kontrol edin.");
-        } else {
-          setError("Geçersiz email veya şifre");
-        }
+        setError("Geçersiz email veya şifre");
+        setLoading(false);
         return;
       }
-      
+
       if (res?.ok) {
+        // Profile kontrolü yap
         try {
           const profileRes = await fetch("/api/profile", {
             method: "GET",
             cache: "no-store",
           });
-          
+
           if (profileRes.ok) {
             const profile = await profileRes.json();
             if (!profile.onboardingCompleted) {
@@ -79,12 +78,8 @@ export default function LoginPage() {
             } else {
               router.push("/dashboard");
             }
-          } else if (profileRes.status === 503) {
-            setError("Veritabanı bağlantı hatası. Bazı özellikler çalışmayabilir.");
-            setTimeout(() => {
-              router.push("/dashboard");
-            }, 2000);
           } else {
+            // Profile hatası olsa bile dashboard'a yönlendir
             router.push("/dashboard");
           }
         } catch (err) {
@@ -94,9 +89,10 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (err) {
-      setLoading(false);
       console.error("Login error:", err);
       setError("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,27 +102,8 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Mobil platform kontrolü
-      try {
-        const { isMobilePlatform, signInWithGoogleMobile } = await import("../../../lib/google-oauth-mobile");
-        const isMobile = isMobilePlatform();
-        
-        if (isMobile) {
-          await signInWithGoogleMobile("/onboarding");
-          return;
-        }
-      } catch (mobileError) {
-        console.log("Mobile OAuth skipped, using web");
-      }
-      
-      // Web'de NextAuth'ın kendi signin endpoint'ini kullan
-      // Bu endpoint state formatını ve cookie'leri otomatik yönetir
       const callbackUrl = encodeURIComponent(`${window.location.origin}/onboarding`);
-      const signInUrl = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
-      
-      // Direkt redirect - NextAuth endpoint'i her şeyi yönetir
-      window.location.href = signInUrl;
-      
+      window.location.href = `/api/auth/signin/google?callbackUrl=${callbackUrl}`;
     } catch (err) {
       console.error("Google OAuth error:", err);
       setGoogleLoading(false);
@@ -191,7 +168,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold py-3 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -217,7 +194,7 @@ export default function LoginPage() {
 
             <button
               onClick={onGoogle}
-              disabled={googleLoading}
+              disabled={googleLoading || loading}
               className="mt-6 w-full bg-white text-gray-900 font-semibold py-3 rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-lg shadow-black/20 hover:shadow-black/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
             >
               {googleLoading ? (

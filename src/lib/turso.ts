@@ -46,12 +46,9 @@ export async function queryOne<T = any>(
   }
 
   try {
-    const result = await client.execute({
-      sql: query,
-      args: params,
-    });
-
-    return (result.rows[0] as T) || null;
+    const stmt = client.prepare(query);
+    const result = await stmt.get(params);
+    return (result as T) || null;
   } catch (error) {
     console.error('Turso query error:', error);
     return null;
@@ -69,11 +66,8 @@ export async function queryAll<T = any>(
   }
 
   try {
-    const result = await client.execute({
-      sql: query,
-      args: params,
-    });
-
+    const stmt = client.prepare(query);
+    const result = await stmt.all(params);
     return result.rows as T[];
   } catch (error) {
     console.error('Turso query error:', error);
@@ -92,11 +86,8 @@ export async function execute(
   }
 
   try {
-    await client.execute({
-      sql: query,
-      args: params,
-    });
-
+    const stmt = client.prepare(query);
+    await stmt.run(params);
     return true;
   } catch (error) {
     console.error('Turso execute error:', error);
