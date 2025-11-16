@@ -78,6 +78,47 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
         
         try {
+          // 1. Turso Database kontrolü (Vercel production için) - ÖNCELİKLİ
+          if (process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN) {
+            try {
+              const { queryOne, testConnection } = await import("./turso");
+              const tursoAvailable = await testConnection();
+              
+              if (tursoAvailable) {
+                const user = await queryOne<{ 
+                  id: string; 
+                  email: string; 
+                  password: string; 
+                  name: string | null; 
+                  image: string | null 
+                }>('SELECT id, email, password, name, image FROM User WHERE email = ?', [credentials.email]);
+                
+                if (user && user.password) {
+                  const valid = await compare(credentials.password, user.password);
+                  if (valid) {
+                    console.log("✅ Login successful with Turso");
+                    return { 
+                      id: user.id, 
+                      name: user.name || "", 
+                      email: user.email || "", 
+                      image: user.image || undefined 
+                    };
+                  } else {
+                    console.log("❌ Invalid password for user:", credentials.email);
+                    return null;
+                  }
+                } else {
+                  console.log("❌ User not found in Turso:", credentials.email);
+                  return null;
+                }
+              }
+            } catch (tursoError) {
+              console.error("❌ Turso query error in authorize:", tursoError);
+              // Fallback to D1 or Prisma
+            }
+          }
+          
+          // 2. D1 Database kontrolü (Cloudflare için)
           // NextAuth callback'lerinde request object'e erişim yok
           // Bu yüzden globalThis'ten D1 binding'i kontrol et
           // OpenNext Cloudflare adapter, D1 binding'i globalThis'e de ekleyebilir
@@ -85,9 +126,6 @@ export const authOptions: NextAuthOptions = {
             const db = (globalThis as any).DB || (globalThis as any).env?.DB || (globalThis as any).__env?.DB;
             
             if (db) {
-              const { queryOne } = await import("./d1");
-              // queryOne request istiyor ama burada request yok
-              // Bu yüzden direkt db.prepare kullan
               try {
                 const stmt = db.prepare('SELECT id, email, password, name, image FROM User WHERE email = ?').bind(credentials.email);
                 const user = await stmt.first() as { 
@@ -98,25 +136,26 @@ export const authOptions: NextAuthOptions = {
                   image: string | null 
                 } | null;
                 
-                if (!user || !user.password) return null;
-                
-                const valid = await compare(credentials.password, user.password);
-                if (!valid) return null;
-                
-                return { 
-                  id: user.id, 
-                  name: user.name || "", 
-                  email: user.email || "", 
-                  image: user.image || undefined 
-                };
+                if (user && user.password) {
+                  const valid = await compare(credentials.password, user.password);
+                  if (valid) {
+                    console.log("✅ Login successful with D1");
+                    return { 
+                      id: user.id, 
+                      name: user.name || "", 
+                      email: user.email || "", 
+                      image: user.image || undefined 
+                    };
+                  }
+                }
               } catch (dbError) {
-                console.error("D1 query error in authorize:", dbError);
+                console.error("❌ D1 query error in authorize:", dbError);
                 // Fallback to Prisma
               }
             }
           }
           
-          // Fallback: Prisma kullan (development için)
+          // 3. Fallback: Prisma kullan (development için)
           try {
             const dbConnected = await prisma.$connect().then(() => true).catch(() => false);
             if (dbConnected) {
@@ -124,25 +163,28 @@ export const authOptions: NextAuthOptions = {
                 where: { email: credentials.email },
               });
               
-              if (!user || !user.password) return null;
-              const valid = await compare(credentials.password, user.password);
-              if (!valid) return null;
-              
-              return { 
-                id: user.id, 
-                name: user.name || "", 
-                email: user.email || "", 
-                image: user.image || undefined 
-              };
+              if (user && user.password) {
+                const valid = await compare(credentials.password, user.password);
+                if (valid) {
+                  console.log("✅ Login successful with Prisma");
+                  return { 
+                    id: user.id, 
+                    name: user.name || "", 
+                    email: user.email || "", 
+                    image: user.image || undefined 
+                  };
+                }
+              }
             }
           } catch (prismaError) {
-            console.error("Prisma error in authorize:", prismaError);
+            console.error("❌ Prisma error in authorize:", prismaError);
           }
           
-          // Database bağlantısı yoksa null döndür
+          // Database bağlantısı yoksa veya kullanıcı bulunamadıysa null döndür
+          console.error("❌ Login failed: User not found or invalid credentials");
           return null;
         } catch (error) {
-          console.error("Error in authorize:", error);
+          console.error("❌ Error in authorize:", error);
           return null;
         }
       },
