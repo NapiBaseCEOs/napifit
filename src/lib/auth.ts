@@ -4,15 +4,33 @@ import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "./prisma";
 import { compare } from "bcryptjs";
 
-// Cloudflare Pages için NEXTAUTH_URL - production'da otomatik olarak ayarlanır
+// Vercel ve Cloudflare Pages için NEXTAUTH_URL - production'da otomatik olarak ayarlanır
 const getNextAuthUrl = (): string => {
-  if (process.env.NEXTAUTH_URL) {
+  // Vercel otomatik olarak VERCEL_URL environment variable'ını sağlar
+  // VERCEL_URL öncelikli olmalı (Vercel deployment'ında)
+  // VERCEL_URL format: napifit-xxx.vercel.app veya napifit.vercel.app
+  if (process.env.VERCEL_URL) {
+    const vercelUrl = process.env.VERCEL_URL;
+    // Eğer zaten https:// ile başlıyorsa olduğu gibi döndür
+    if (vercelUrl.startsWith('https://')) {
+      return vercelUrl;
+    }
+    // Değilse https:// ekle
+    return `https://${vercelUrl}`;
+  }
+  // VERCEL environment variable kontrolü (alternatif)
+  if (process.env.VERCEL && process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  // Manuel olarak ayarlanmış NEXTAUTH_URL (ama napibase.com değilse)
+  if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes('napibase.com')) {
     return process.env.NEXTAUTH_URL;
   }
   if (process.env.NODE_ENV === "development") {
     return "http://localhost:3000";
   }
-  return "https://napibase.com";
+  // Fallback - Vercel production URL
+  return "https://napifit.vercel.app";
 };
 
 const NEXTAUTH_URL = getNextAuthUrl();
