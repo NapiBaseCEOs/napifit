@@ -172,8 +172,15 @@ export default function CommunityPage() {
         await fetchRequests();
       } else {
         const data = await response.json().catch(() => ({}));
-        const errorMessage = data.error || data.details?.[0]?.message || "Öneri oluşturulamadı";
+        // API'den gelen hata mesajını kullan, yoksa genel mesaj
+        let errorMessage = "Öneri oluşturulamadı";
+        if (data.error) {
+          errorMessage = data.error;
+        } else if (data.details && Array.isArray(data.details) && data.details.length > 0) {
+          errorMessage = data.details[0].message || data.details[0].path?.[0] + " " + (data.details[0].message || "");
+        }
         setError(errorMessage);
+        console.error("Feature request creation failed:", data);
       }
     } catch (error) {
       console.error("Failed to create request:", error);

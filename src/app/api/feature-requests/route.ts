@@ -134,16 +134,32 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Feature request creation error:", error);
-      return NextResponse.json({ error: "Failed to create feature request" }, { status: 500 });
+      // Daha detaylı hata mesajı
+      const errorMessage = error.message || "Failed to create feature request";
+      return NextResponse.json({ 
+        error: errorMessage,
+        code: error.code,
+        details: error.details 
+      }, { status: 500 });
+    }
+
+    if (!featureRequest) {
+      return NextResponse.json({ error: "Feature request created but not returned" }, { status: 500 });
     }
 
     return NextResponse.json({ request: featureRequest });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid input", details: error.errors }, { status: 400 });
+      const firstError = error.errors[0];
+      const errorMessage = firstError?.message || "Invalid input";
+      return NextResponse.json({ 
+        error: errorMessage,
+        details: error.errors 
+      }, { status: 400 });
     }
     console.error("Create feature request error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 

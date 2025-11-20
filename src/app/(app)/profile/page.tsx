@@ -6,31 +6,32 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import ProfileEditForm from "@/components/profile/ProfileEditForm";
 import CommunityStats from "@/components/profile/CommunityStats";
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   searchParams: { userId?: string };
 };
 
 export default async function ProfilePage({ searchParams }: Props) {
+  const supabase = createSupabaseServerClient();
+  
+  // Session kontrolü - dashboard ile aynı pattern
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  // Eğer userId parametresi varsa, o kullanıcının profilini göster, yoksa kendi profilini göster
+  const targetUserId = searchParams.userId || session.user.id;
+  const isOwnProfile = targetUserId === session.user.id;
+
+  // Başka birinin profilini görüntülüyorsak ve gizliyse, sadece admin görebilir veya public profile false ise kısıtlı bilgi göster
+  let profileData;
   try {
-    const supabase = createSupabaseServerClient();
-    
-    // Session kontrolü - getUser kullanarak daha güvenilir kontrol
-    const {
-      data: { user: authUser },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !authUser) {
-      console.error("Profile page user error:", userError);
-      redirect("/login");
-    }
-
-    // Eğer userId parametresi varsa, o kullanıcının profilini göster, yoksa kendi profilini göster
-    const targetUserId = searchParams.userId || authUser.id;
-    const isOwnProfile = targetUserId === authUser.id;
-
-    // Başka birinin profilini görüntülüyorsak ve gizliyse, sadece admin görebilir veya public profile false ise kısıtlı bilgi göster
-    const { data: profileData, error: profileError } = await supabaseAdmin
+    const { data, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select(
         "id,email,full_name,avatar_url,created_at,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,show_public_profile,show_community_stats"
@@ -49,7 +50,7 @@ export default async function ProfilePage({ searchParams }: Props) {
       }
     }
 
-    if (!profileData) {
+    if (!data) {
       // Profil bulunamadıysa
       if (isOwnProfile) {
         // Kendi profilini görüntülüyorsa onboarding'e yönlendir
@@ -59,6 +60,16 @@ export default async function ProfilePage({ searchParams }: Props) {
         redirect("/");
       }
     }
+
+    profileData = data;
+  } catch (error) {
+    console.error("Profile fetch exception:", error);
+    if (isOwnProfile) {
+      redirect("/onboarding");
+    } else {
+      redirect("/");
+    }
+  }
 
   const profile = profileData as {
     id: string;
@@ -113,7 +124,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     name: profile.full_name,
     email: isOwnProfile ? profile.email : (showPublicProfile ? profile.email : null), // Email sadece kendi profilinde veya public profil ise
     image: profile.avatar_url,
-    emailVerified: isOwnProfile ? Boolean(authUser.email_confirmed_at) : false,
+    emailVerified: isOwnProfile ? Boolean(session.user.email_confirmed_at) : false,
     createdAt: new Date(profile.created_at),
     height: profile.height_cm,
     weight: profile.weight_kg,
@@ -312,10 +323,5 @@ export default async function ProfilePage({ searchParams }: Props) {
       </div>
     </main>
   );
-  } catch (error) {
-    console.error("Profile page error:", error);
-    // Hata durumunda login sayfasına yönlendir
-    redirect("/login");
-  }
 }
 
