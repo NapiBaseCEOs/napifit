@@ -225,57 +225,60 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     });
   };
 
+  // Miktar seçeneklerinin gram karşılıkları (yaklaşık)
+  const quantityToGrams: Record<string, number> = {
+    "1 kaşık": 15,
+    "2 kaşık": 30,
+    "1 yemek kaşığı": 20,
+    "2 yemek kaşığı": 40,
+    "1 kepçe": 200,
+    "1 tabak (orta)": 250,
+    "1 tabak (büyük)": 350,
+    "1 porsiyon": 250,
+    "100g": 100,
+    "150g": 150,
+    "200g": 200,
+    "250g": 250,
+    "300g": 300,
+    "1 kase": 200,
+    "1 bardak": 240,
+  };
+
   const calculateFoodCaloriesForAllQuantities = async (index: number, foodName: string) => {
     if (!foodName || foodName.length < 2) return;
 
     setFoodAiLoading((prev) => ({ ...prev, [index]: true }));
 
-    // Optimize edilmiş miktar seçenekleri
-    const quantities = [
-      "1 kaşık",
-      "2 kaşık",
-      "1 yemek kaşığı",
-      "2 yemek kaşığı",
-      "1 kepçe",
-      "1 tabak (orta)",
-      "1 tabak (büyük)",
-      "1 porsiyon",
-      "100g",
-      "150g",
-      "200g",
-      "250g",
-      "300g",
-      "1 kase",
-      "1 bardak",
-    ];
-
     try {
-      // Her miktar için kalori hesapla
-      const quantityCalories: Record<string, number> = {};
+      // Sadece 100g için AI'dan kalori hesapla (referans değer)
+      const response = await fetch("/api/ai/calories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "meal",
+          meal: {
+            mealType: mealData.mealType,
+            foods: [{ index: 0, name: foodName, quantity: "100g" }],
+          },
+        }),
+      });
 
-      for (const quantity of quantities) {
-        try {
-          const response = await fetch("/api/ai/calories", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "meal",
-              meal: {
-                mealType: mealData.mealType,
-                foods: [{ index: 0, name: foodName, quantity }],
-              },
-            }),
-          });
-
-          const data = await response.json();
-          if (response.ok && data.mode === "meal" && data.result?.breakdown?.[0]?.calories) {
-            quantityCalories[quantity] = Math.round(data.result.breakdown[0].calories);
-          }
-        } catch {
-          // Tek bir miktar için hata olursa devam et
-          continue;
-        }
+      const data = await response.json();
+      
+      if (!response.ok || data.mode !== "meal" || !data.result?.breakdown?.[0]?.calories) {
+        throw new Error("Kalori hesaplanamadı");
       }
+
+      // 100g için kalori (referans değer)
+      const caloriesPer100g = data.result.breakdown[0].calories;
+      const caloriesPerGram = caloriesPer100g / 100;
+
+      // Tüm miktarlar için kalori hesapla (matematiksel olarak)
+      const quantityCalories: Record<string, number> = {};
+      
+      Object.entries(quantityToGrams).forEach(([quantity, grams]) => {
+        quantityCalories[quantity] = Math.round(caloriesPerGram * grams);
+      });
 
       // Hesaplanan kalorileri state'e kaydet
       setMealData((prev) => {
@@ -294,6 +297,12 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       });
     } catch (error) {
       console.error("Food calories calculation error:", error);
+      // Hata durumunda kullanıcıyı bilgilendir
+      setAiFeedback({
+        variant: "meal",
+        message: null,
+        error: error instanceof Error ? error.message : "Kalori hesaplanamadı",
+      });
     } finally {
       setFoodAiLoading((prev) => {
         const newState = { ...prev };
