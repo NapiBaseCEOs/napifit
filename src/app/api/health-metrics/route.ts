@@ -8,6 +8,7 @@ const healthMetricSchema = z.object({
   muscleMass: z.number().min(0).max(200).optional().nullable(),
   water: z.number().min(0).max(100).optional().nullable(),
   bmi: z.number().min(10).max(60).optional().nullable(),
+  bowelMovementDays: z.number().min(0.5).max(7).optional().nullable(), // Kaç günde bir tuvalete çıktığı
   notes: z.string().max(1000).optional().nullable(),
 });
 
@@ -82,7 +83,8 @@ export async function POST(request: Request) {
       !validatedData.bodyFat &&
       !validatedData.muscleMass &&
       !validatedData.water &&
-      !validatedData.bmi
+      !validatedData.bmi &&
+      !validatedData.bowelMovementDays
     ) {
       return NextResponse.json(
         { message: "En az bir metrik değeri gerekli" },
@@ -99,6 +101,7 @@ export async function POST(request: Request) {
         muscle_mass: validatedData.muscleMass ?? null,
         water: validatedData.water ?? null,
         bmi: validatedData.bmi ?? null,
+        bowel_movement_days: validatedData.bowelMovementDays ?? null,
         notes: validatedData.notes ?? null,
       })
       .select()

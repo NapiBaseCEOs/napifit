@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { CalorieAIResponse } from "@/types/ai-calories";
+import { evaluateMealHealth, type MealHealthEvaluation } from "@/lib/ai/meal-health-evaluator";
 
 interface HealthFormsProps {
   onSuccess?: () => void;
@@ -22,6 +23,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     muscleMass: "",
     water: "",
     bmi: "",
+    bowelMovementDays: "", // Kaç günde bir tuvalete çıktığı
     notes: "",
   });
 
@@ -47,6 +49,10 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   const [foodAiLoading, setFoodAiLoading] = useState<Record<number, boolean>>({});
   const foodNameTimeouts = useRef<Record<number, NodeJS.Timeout>>({});
   const workoutNameTimeout = useRef<NodeJS.Timeout | null>(null);
+  const mealHealthTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [mealHealthEvaluation, setMealHealthEvaluation] = useState<MealHealthEvaluation | null>(null);
+  const [mealHealthLoading, setMealHealthLoading] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ currentWeight?: number | null; targetWeight?: number | null } | null>(null);
   const [aiFeedback, setAiFeedback] = useState<{
     variant: "workout" | "meal" | null;
     message: string | null;
@@ -56,6 +62,18 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     message: null,
     error: null,
   });
+
+  // Kullanıcı profilini yükle (BMR ve sağlık değerlendirmesi için)
+  useEffect(() => {
+    fetch("/api/profile")
+      .then(res => res.json())
+      .then(data => {
+        if (data.weight && data.targetWeight) {
+          setUserProfile({ currentWeight: data.weight, targetWeight: data.targetWeight });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleMetricSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +88,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       if (metricData.muscleMass) payload.muscleMass = parseFloat(metricData.muscleMass);
       if (metricData.water) payload.water = parseFloat(metricData.water);
       if (metricData.bmi) payload.bmi = parseFloat(metricData.bmi);
+      if (metricData.bowelMovementDays) payload.bowelMovementDays = parseFloat(metricData.bowelMovementDays);
       if (metricData.notes) payload.notes = metricData.notes;
 
       const response = await fetch("/api/health-metrics", {
@@ -91,6 +110,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         muscleMass: "",
         water: "",
         bmi: "",
+        bowelMovementDays: "",
         notes: "",
       });
       setTimeout(() => {
@@ -670,6 +690,24 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                 placeholder="Örn: 60"
               />
             </div>
+            <div>
+              <label className="mb-1 block text-sm text-gray-400">
+                Bağırsak Sağlığı (Kaç günde bir tuvalete çıkıyorsunuz?)
+              </label>
+              <input
+                type="number"
+                step="0.5"
+                min="0.5"
+                max="7"
+                value={metricData.bowelMovementDays}
+                onChange={(e) => setMetricData({ ...metricData, bowelMovementDays: e.target.value })}
+                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                placeholder="Örn: 1 (her gün), 2 (2 günde bir)"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Sağlıklı: Her gün veya gün aşırı (1-2 gün)
+              </p>
+            </div>
           </div>
           <div>
             <label className="mb-1 block text-sm text-gray-400">Notlar</label>
@@ -935,19 +973,70 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                 </div>
               ))}
             </div>
-            <div className="mt-2 flex flex-col gap-2 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-              <span>
-                Toplam Kalori:{" "}
-                {mealData.foods.reduce((sum, f) => sum + (parseFloat(f.calories) || 0), 0).toFixed(0)} kcal
-              </span>
-              <button
-                type="button"
-                onClick={handleMealAiEstimate}
-                disabled={mealAiLoading}
-                className="text-primary-400 hover:text-primary-300 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {mealAiLoading ? "Hesaplanıyor..." : "AI ile kalorileri doldur"}
-              </button>
+            <div className="mt-2 space-y-3">
+              <div className="flex flex-col gap-2 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+                <span>
+                  Toplam Kalori:{" "}
+                  {mealData.foods.reduce((sum, f) => sum + (parseFloat(f.calories) || 0), 0).toFixed(0)} kcal
+                </span>
+                <button
+                  type="button"
+                  onClick={handleMealAiEstimate}
+                  disabled={mealAiLoading}
+                  className="text-primary-400 hover:text-primary-300 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {mealAiLoading ? "Hesaplanıyor..." : "AI ile kalorileri doldur"}
+                </button>
+              </div>
+              
+              {/* Öğün Sağlık Göstergesi */}
+              {(() => {
+                const totalCalories = mealData.foods.reduce((sum, f) => sum + (parseFloat(f.calories) || 0), 0);
+                const hasAllCalories = mealData.foods.length > 0 && mealData.foods.every(f => f.name.trim() && f.calories && parseFloat(f.calories) > 0);
+                
+                if (hasAllCalories && totalCalories > 0) {
+                  return (
+                    <MealHealthIndicator
+                      totalCalories={totalCalories}
+                      foods={mealData.foods}
+                      mealType={mealData.mealType}
+                      currentWeight={userProfile?.currentWeight}
+                      targetWeight={userProfile?.targetWeight}
+                      evaluation={mealHealthEvaluation}
+                      loading={mealHealthLoading}
+                      onEvaluationNeeded={async () => {
+                        if (mealHealthTimeout.current) {
+                          clearTimeout(mealHealthTimeout.current);
+                        }
+                        mealHealthTimeout.current = setTimeout(async () => {
+                          setMealHealthLoading(true);
+                          try {
+                            const evaluation = await evaluateMealHealth({
+                              foods: mealData.foods
+                                .filter(f => f.name.trim() && f.calories)
+                                .map(f => ({
+                                  name: f.name.trim(),
+                                  calories: parseFloat(f.calories || "0"),
+                                  quantity: f.quantity || null,
+                                })),
+                              totalCalories,
+                              mealType: mealData.mealType,
+                              targetWeight: userProfile?.targetWeight || null,
+                              currentWeight: userProfile?.currentWeight || null,
+                            });
+                            setMealHealthEvaluation(evaluation);
+                          } catch (err) {
+                            console.error("Meal health evaluation error:", err);
+                          } finally {
+                            setMealHealthLoading(false);
+                          }
+                        }, 1000);
+                      }}
+                    />
+                  );
+                }
+                return null;
+              })()}
             </div>
           </div>
           <div>
@@ -973,3 +1062,111 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   );
 }
 
+// Öğün Sağlık Göstergesi Komponenti
+function MealHealthIndicator({
+  totalCalories,
+  foods,
+  mealType,
+  currentWeight,
+  targetWeight,
+  evaluation,
+  loading,
+  onEvaluationNeeded,
+}: {
+  totalCalories: number;
+  foods: any[];
+  mealType: string;
+  currentWeight?: number | null;
+  targetWeight?: number | null;
+  evaluation: MealHealthEvaluation | null;
+  loading: boolean;
+  onEvaluationNeeded: () => void;
+}) {
+  useEffect(() => {
+    if (totalCalories > 0 && foods.length > 0) {
+      onEvaluationNeeded();
+    }
+  }, [totalCalories, foods.length, mealType, currentWeight, targetWeight, onEvaluationNeeded]);
+
+  if (loading && !evaluation) {
+    return (
+      <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"></div>
+          <span>Sağlık değerlendirmesi yapılıyor...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!evaluation) return null;
+
+  const healthScore = evaluation.healthScore;
+  const getScoreColor = (score: number) => {
+    if (score >= 70) return "bg-green-500";
+    if (score >= 50) return "bg-yellow-500";
+    return "bg-red-500";
+  };
+
+  const getRecommendationColor = (rec: string) => {
+    if (rec === "recommended") return "text-green-400 border-green-500/40 bg-green-500/10";
+    if (rec === "caution") return "text-yellow-400 border-yellow-500/40 bg-yellow-500/10";
+    return "text-red-400 border-red-500/40 bg-red-500/10";
+  };
+
+  const getRecommendationText = (rec: string) => {
+    if (rec === "recommended") return "Tavsiye Edilir ✓";
+    if (rec === "caution") return "Dikkatli Olun";
+    return "Tavsiye Edilmez ✗";
+  };
+
+  return (
+    <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-300">Öğün Sağlık Değerlendirmesi</span>
+        <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${getRecommendationColor(evaluation.recommendation)}`}>
+          {getRecommendationText(evaluation.recommendation)}
+        </span>
+      </div>
+      
+      <div>
+        <div className="mb-1 flex items-center justify-between text-xs">
+          <span className="text-gray-400">Sağlık Skoru</span>
+          <span className="font-medium text-white">{healthScore}/100</span>
+        </div>
+        <div className="h-3 w-full overflow-hidden rounded-full bg-gray-800">
+          <div
+            className={`h-full transition-all duration-500 ${getScoreColor(healthScore)}`}
+            style={{ width: `${healthScore}%` }}
+          />
+        </div>
+      </div>
+
+      {evaluation.messages && evaluation.messages.length > 0 && (
+        <div className="space-y-1">
+          {evaluation.messages.map((message, idx) => (
+            <div key={idx} className="text-sm text-gray-300">
+              • {message}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className={`rounded border px-2 py-1 ${evaluation.isHealthy ? "border-green-500/40 bg-green-500/10 text-green-400" : "border-red-500/40 bg-red-500/10 text-red-400"}`}>
+          {evaluation.isHealthy ? "Sağlıklı ✓" : "Sağlıksız ✗"}
+        </div>
+        <div className={`rounded border px-2 py-1 ${evaluation.isMealAdequate ? "border-green-500/40 bg-green-500/10 text-green-400" : "border-yellow-500/40 bg-yellow-500/10 text-yellow-400"}`}>
+          {evaluation.isMealAdequate ? "Öğün için Yeterli" : "Öğün için Yetersiz"}
+        </div>
+        <div className="col-span-2 rounded border border-gray-700/40 bg-gray-800/40 px-2 py-1 text-gray-400">
+          Yağ Seviyesi: {evaluation.fatLevel === "low" ? "Düşük" : evaluation.fatLevel === "medium" ? "Orta" : "Yüksek"}
+        </div>
+      </div>
+
+      {evaluation.explanation && (
+        <p className="text-xs text-gray-500">{evaluation.explanation}</p>
+      )}
+    </div>
+  );
+}

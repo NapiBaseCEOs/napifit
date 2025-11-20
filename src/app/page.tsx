@@ -3,6 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/types";
+import { APP_VERSION, RELEASE_NOTES } from "@/config/version";
 
 type LandingStats = {
   members: number;
@@ -143,6 +144,7 @@ export default async function HomePage() {
         <SocialProof />
         <ExperienceGrid workouts={workouts} />
         <JourneySection />
+        <ChangelogSection />
         <CallToAction />
       </div>
     </main>
@@ -160,13 +162,19 @@ function HeroSection() {
   return (
     <section className="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center">
       <div className="space-y-8 text-center lg:text-left">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.4em] text-primary-200 shadow-lg shadow-primary-500/10">
+        <Link
+          href="#changelog"
+          className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.4em] text-primary-200 shadow-lg shadow-primary-500/10 hover:bg-white/10 transition-all"
+        >
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
           </span>
-          Yeni sürüm v0.1.45
-        </div>
+          Yeni sürüm v{APP_VERSION}
+          <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-tight">
           Sağlıklı Yaşamın
@@ -441,6 +449,80 @@ function JourneySection() {
           <p className="text-sm text-gray-400 leading-relaxed">{step.desc}</p>
         </div>
       ))}
+    </section>
+  );
+}
+
+function ChangelogSection() {
+  const latestRelease = RELEASE_NOTES[0];
+  const previousReleases = RELEASE_NOTES.slice(1, 4);
+
+  return (
+    <section id="changelog" className="scroll-mt-20">
+      <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-xl p-8 sm:p-12 shadow-2xl">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">Sürüm Notları</h2>
+            <p className="text-gray-400">En son güncellemeler ve yeni özellikler</p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 rounded-full border border-primary-500/30 bg-primary-500/10 px-4 py-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500" />
+            </span>
+            <span className="text-sm font-semibold text-primary-200">v{APP_VERSION}</span>
+          </div>
+        </div>
+
+        {/* Latest Release */}
+        {latestRelease && (
+          <div className="mb-8 rounded-2xl border border-primary-500/30 bg-primary-500/10 p-6 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-1">{latestRelease.title}</h3>
+                <div className="flex items-center gap-3 text-sm text-gray-400">
+                  <span className="font-semibold text-primary-300">v{latestRelease.version}</span>
+                  <span>•</span>
+                  <span>{latestRelease.date}</span>
+                </div>
+              </div>
+            </div>
+            <ul className="space-y-2">
+              {latestRelease.highlights.map((highlight, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-sm text-gray-300">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary-400 flex-shrink-0" />
+                  <span>{highlight}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Previous Releases */}
+        {previousReleases.length > 0 && (
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Önceki Sürümler</h4>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {previousReleases.map((release) => (
+                <div key={release.version} className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-primary-300">v{release.version}</span>
+                    <span className="text-xs text-gray-500">{release.date}</span>
+                  </div>
+                  <h5 className="text-sm font-semibold text-white">{release.title}</h5>
+                  <ul className="space-y-1">
+                    {release.highlights.slice(0, 3).map((highlight, idx) => (
+                      <li key={idx} className="text-xs text-gray-400 line-clamp-2">
+                        {highlight}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </section>
   );
 }

@@ -11,13 +11,15 @@ export const RELEASE_NOTES: ReleaseNote[] = [
   {
     version: "0.1.47",
     date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),
-    title: "Kamera ile öğün fotoğrafı analizi",
+    title: "Akıllı kalori takibi & sağlık analizi",
     highlights: [
-      "📷 Kamera ile öğün fotoğrafı çekme özelliği eklendi",
-      "🤖 GPT-4 Vision ile otomatik besin analizi (kalori, protein, yağ, karbonhidrat)",
-      "✅ Öğün önerileri (önerilir/önerilmez/moderat) ve detaylı açıklamalar",
-      "📊 Her yiyecek için detaylı besin değerleri gösterimi",
-      "💾 Tek tıkla onaylayıp öğünü kaydetme",
+      "🤖 Otomatik kalori hesaplama - Yiyecek yazıldığında tüm miktarlar için kalori hesaplanıyor",
+      "📊 Öğün sağlık göstergesi - AI ile sağlık değerlendirmesi, yağ seviyesi ve öneriler",
+      "💪 BMR (Bazal Metabolizma Hızı) takibi - Hiçbir şey yapmasanız bile yaktığınız kalori",
+      "🫁 Bağırsak sağlığı takibi - Günlük bağırsak sağlığı durumu ve yönlendirmeler",
+      "⚡ Optimize edilmiş performans - Sadece 1 API çağrısı ile tüm miktarlar hesaplanıyor",
+      "🎯 Yiyecek tipine göre akıllı miktar seçenekleri (tavuk için kaşık göstermez)",
+      "✏️ Özel gram girişi - İstediğiniz gram miktarını manuel girebilirsiniz",
     ],
   },
   {
