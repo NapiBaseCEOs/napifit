@@ -7,6 +7,7 @@ import { APP_VERSION, RELEASE_NOTES } from "@/config/version";
 import VersionBadge from "@/components/VersionBadge";
 import StatsSection from "@/components/homepage/StatsSection";
 import UserReviewsSection from "@/components/homepage/UserReviewsSection";
+import CommunitySection from "@/components/homepage/CommunitySection";
 
 type LandingStats = {
   members: number;
@@ -106,6 +107,7 @@ export default async function HomePage() {
         <HeroSection />
         <StatsSection initialStats={stats} />
         <SocialProof />
+        <CommunitySection />
         <UserReviewsSection />
         <JourneySection />
         <ChangelogSection />

@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.1.50";
+export const APP_VERSION = "0.1.51";
 
 export type ReleaseNote = {
   version: string;
@@ -8,6 +8,21 @@ export type ReleaseNote = {
 };
 
 export const RELEASE_NOTES: ReleaseNote[] = [
+  {
+    version: "0.1.51",
+    date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),
+    title: "Topluluk sistemi & her kullanıcıya özel profil linkleri",
+    highlights: [
+      "👥 Topluluk sayfası - Kullanıcılar özellik önerebilir, beğenebilir ve görüntüleyebilir",
+      "💡 Özellik önerileri - Topluluk üyeleri yeni özellikler önerebilir, beğeni sayısına göre sıralanır",
+      "👑 Yılın adamı sistemi - En çok önerisi uygulanan kullanıcılar liderlik tablosunda görünür",
+      "🔗 Her kullanıcıya özel profil linki - /profile?userId=xxx ile herhangi bir kullanıcının profilini görüntüle",
+      "🔒 Gizlilik ayarları - Profili ve topluluk istatistiklerini gizleme seçeneği",
+      "📊 Topluluk istatistikleri - Profil sayfasında öneri sayıları ve uygulanan öneriler gösterilir",
+      "🌐 Ana sayfaya topluluk bölümü - En beğenilen öneriler ve yılın adamı özeti",
+      "🎯 'Dashboard' kelimesi Türkçeleştirildi - Artık 'Kontrol Paneli' olarak görünüyor",
+    ],
+  },
   {
     version: "0.1.50",
     date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),
@@ -41,12 +56,12 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     title: "Dashboard geliştirmeleri & görsel iyileştirmeler",
     highlights: [
       "📱 Yeni sürüm bildirimi - Ana sayfadaki 'Yeni sürüm' butonuna tıklandığında detaylı release notes gösteriliyor",
-      "💪 Dashboard BMR gösterimi - Bazal Metabolizma Hızı ve TDEE (aktivite ile birlikte) hesaplama",
-      "🫁 Bağırsak sağlığı göstergesi - Dashboard'da bağırsak sağlığı durumu ve renkli progress bar",
+      "💪 Kontrol Paneli BMR gösterimi - Bazal Metabolizma Hızı ve TDEE (aktivite ile birlikte) hesaplama",
+      "🫁 Bağırsak sağlığı göstergesi - Kontrol Paneli'nde bağırsak sağlığı durumu ve renkli progress bar",
       "⚖️ Günlük kalori dengesi - BMR + yakılan kalori - alınan kalori formülü ile gerçek zamanlı takip",
       "🎨 Ana sayfa renk optimizasyonları - Daha canlı gradient'ler, gelişmiş hover efektleri ve animasyonlar",
       "✨ Görsel iyileştirmeler - Kullanıcı memnuniyeti kartına gradient glow, perks kartlarına hover animasyonları",
-      "🚀 Performans optimizasyonları - Dashboard'da daha hızlı veri yükleme ve görsel geri bildirimler",
+      "🚀 Performans optimizasyonları - Kontrol Paneli'nde daha hızlı veri yükleme ve görsel geri bildirimler",
     ],
   },
   {
@@ -100,7 +115,7 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     highlights: [
       "NextAuth + Prisma yerine Supabase Auth & veritabanı entegrasyonu",
       "Google OAuth mobil yönlendirme ve callback düzeltmeleri",
-      "Dashboard, sağlık ve profil sayfalarının Supabase sorgularıyla yeniden yazılması",
+      "Kontrol Paneli, sağlık ve profil sayfalarının Supabase sorgularıyla yeniden yazılması",
     ],
   },
 ];

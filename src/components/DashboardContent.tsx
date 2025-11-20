@@ -126,7 +126,7 @@ export default function DashboardContent({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                 </span>
-                Sağlık Dashboard
+                Sağlık Kontrol Paneli
               </div>
               <h1 className="mt-4 text-3xl sm:text-4xl font-bold text-white">
                 Hoş geldin, <span className="bg-gradient-to-r from-primary-400 to-fitness-orange bg-clip-text text-transparent">{user.name || user.email}</span>!

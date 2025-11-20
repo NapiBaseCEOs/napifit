@@ -69,7 +69,13 @@ export default function Header() {
                 href="/dashboard"
                 className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-primary-500/10 hover:border-primary-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
               >
-                Dashboard
+                Kontrol Paneli
+              </Link>
+              <Link
+                href="/community"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-cyan-500/10 hover:border-cyan-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
+              >
+                Topluluk
               </Link>
               <Link
                 href="/health"

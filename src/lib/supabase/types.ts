@@ -26,6 +26,8 @@ export interface Database {
           daily_steps: number | null;
           activity_level: string | null;
           onboarding_completed: boolean;
+          show_public_profile: boolean | null;
+          show_community_stats: boolean | null;
           created_at: string;
           updated_at: string;
         };
@@ -45,6 +47,8 @@ export interface Database {
           daily_steps?: number | null;
           activity_level?: string | null;
           onboarding_completed?: boolean;
+          show_public_profile?: boolean | null;
+          show_community_stats?: boolean | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -188,6 +192,48 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["user_reviews"]["Insert"]>;
+      };
+      feature_requests: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          description: string;
+          like_count: number;
+          is_implemented: boolean;
+          implemented_at: string | null;
+          implemented_version: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          description: string;
+          like_count?: number;
+          is_implemented?: boolean;
+          implemented_at?: string | null;
+          implemented_version?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["feature_requests"]["Insert"]>;
+      };
+      feature_request_likes: {
+        Row: {
+          id: string;
+          feature_request_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          feature_request_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["feature_request_likes"]["Insert"]>;
       };
     };
     Functions: Record<string, never>;

@@ -17,7 +17,7 @@ export async function GET() {
   const { data: profile, error } = await supabase
     .from("profiles")
     .select(
-      "id,email,full_name,avatar_url,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,onboarding_completed,created_at"
+      "id,email,full_name,avatar_url,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,onboarding_completed,show_public_profile,show_community_stats,created_at"
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -76,9 +76,11 @@ export async function GET() {
     age: profile.age,
     gender: profile.gender,
     targetWeight: profile.target_weight_kg,
-    dailySteps: profile.daily_steps,
-    onboardingCompleted: profile.onboarding_completed,
-    createdAt: profile.created_at,
+      dailySteps: profile.daily_steps,
+      onboardingCompleted: profile.onboarding_completed,
+      showPublicProfile: profile.show_public_profile ?? true,
+      showCommunityStats: profile.show_community_stats ?? true,
+      createdAt: profile.created_at,
   });
 }
 
@@ -90,6 +92,8 @@ const profileUpdateSchema = z.object({
   gender: z.enum(["male", "female", "other"]).nullable().optional(),
   targetWeight: z.number().min(20).max(300).nullable().optional(),
   dailySteps: z.number().min(0).max(200000).nullable().optional(),
+  showPublicProfile: z.boolean().optional(),
+  showCommunityStats: z.boolean().optional(),
 });
 
 export async function PUT(request: Request) {
@@ -132,6 +136,8 @@ export async function PUT(request: Request) {
       gender: parsed.gender,
       target_weight_kg: parsed.targetWeight,
       daily_steps: parsed.dailySteps,
+      show_public_profile: parsed.showPublicProfile,
+      show_community_stats: parsed.showCommunityStats,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id)

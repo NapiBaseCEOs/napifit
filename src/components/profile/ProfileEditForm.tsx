@@ -11,6 +11,8 @@ const FIELD_LABELS = {
   gender: "Cinsiyet",
   targetWeight: "Hedef kilo",
   dailySteps: "Günlük adım",
+  showPublicProfile: "Herkese açık profil",
+  showCommunityStats: "Topluluk istatistikleri",
 } as const;
 
 type EditableProfile = {
@@ -21,6 +23,8 @@ type EditableProfile = {
   gender: "male" | "female" | "other" | null;
   targetWeight: number | null;
   dailySteps: number | null;
+  showPublicProfile?: boolean | null;
+  showCommunityStats?: boolean | null;
 };
 
 type Props = {
@@ -43,6 +47,8 @@ export default function ProfileEditForm({ profile }: Props) {
     gender: profile.gender ?? "",
     targetWeight: profile.targetWeight?.toString() ?? "",
     dailySteps: profile.dailySteps?.toString() ?? "",
+    showPublicProfile: profile.showPublicProfile ?? true,
+    showCommunityStats: profile.showCommunityStats ?? true,
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -51,6 +57,19 @@ export default function ProfileEditForm({ profile }: Props) {
   const changeSummary = useMemo(() => {
     const changes: { label: string; value: string }[] = [];
     (Object.keys(formData) as (keyof typeof formData)[]).forEach((key) => {
+      // Skip privacy settings in change summary
+      if (key === "showPublicProfile" || key === "showCommunityStats") {
+        const previous = profile[key] ?? true;
+        const current = formData[key];
+        if (current !== previous) {
+          changes.push({ 
+            label: FIELD_LABELS[key as keyof typeof FIELD_LABELS] || key, 
+            value: current ? "Açık" : "Kapalı" 
+          });
+        }
+        return;
+      }
+
       const previous = profile[key];
       const current = formData[key];
       const previousText = previous == null ? "" : previous.toString();
@@ -63,7 +82,7 @@ export default function ProfileEditForm({ profile }: Props) {
                 ? "Kadın"
                 : "Diğer"
             : current || "—";
-        changes.push({ label: FIELD_LABELS[key], value: valueText });
+        changes.push({ label: FIELD_LABELS[key as keyof typeof FIELD_LABELS] || key, value: valueText });
       }
     });
     return changes;
@@ -102,6 +121,8 @@ export default function ProfileEditForm({ profile }: Props) {
       gender: formData.gender ? (formData.gender as "male" | "female" | "other") : null,
       targetWeight: parseNumber(formData.targetWeight),
       dailySteps: parseNumber(formData.dailySteps),
+      showPublicProfile: formData.showPublicProfile,
+      showCommunityStats: formData.showCommunityStats,
     };
 
     try {
@@ -226,6 +247,37 @@ export default function ProfileEditForm({ profile }: Props) {
           </div>
         </div>
 
+        {/* Privacy Settings */}
+        <div className="rounded-xl border border-white/10 bg-[#0b1325]/50 p-4 space-y-4">
+          <h4 className="text-sm font-semibold text-white">Gizlilik Ayarları</h4>
+          <div className="space-y-3">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-sm font-medium text-gray-300">Herkese açık profil</span>
+                <p className="text-xs text-gray-500 mt-0.5">Profiliniz ve bilgileriniz toplulukta görünür olur</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={formData.showPublicProfile}
+                onChange={(e) => setFormData((prev) => ({ ...prev, showPublicProfile: e.target.checked }))}
+                className="h-5 w-5 rounded border-gray-700 bg-gray-800 text-primary-500 focus:ring-2 focus:ring-primary-500/40"
+              />
+            </label>
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <span className="text-sm font-medium text-gray-300">Topluluk istatistikleri</span>
+                <p className="text-xs text-gray-500 mt-0.5">Toplulukta öneri sayınız ve liderlik bilgileriniz görünür</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={formData.showCommunityStats}
+                onChange={(e) => setFormData((prev) => ({ ...prev, showCommunityStats: e.target.checked }))}
+                className="h-5 w-5 rounded border-gray-700 bg-gray-800 text-primary-500 focus:ring-2 focus:ring-primary-500/40"
+              />
+            </label>
+          </div>
+        </div>
+
         {changeSummary.length > 0 && (
           <div className="rounded-2xl border border-primary-500/30 bg-primary-500/10 px-4 py-3 space-y-2">
             <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Güncellenecek alanlar</p>
@@ -269,6 +321,8 @@ export default function ProfileEditForm({ profile }: Props) {
                 gender: profile.gender ?? "",
                 targetWeight: profile.targetWeight?.toString() ?? "",
                 dailySteps: profile.dailySteps?.toString() ?? "",
+                showPublicProfile: profile.showPublicProfile ?? true,
+                showCommunityStats: profile.showCommunityStats ?? true,
               });
               setError(null);
               setMessage(null);
