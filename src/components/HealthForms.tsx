@@ -38,7 +38,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   // Meal Form
   const [mealData, setMealData] = useState({
     mealType: "breakfast" as "breakfast" | "lunch" | "dinner" | "snack",
-    foods: [{ name: "", calories: "", quantity: "", quantityCalories: {} as Record<string, number> }],
+    foods: [{ name: "", calories: "", quantity: "", customQuantity: "", quantityCalories: {} as Record<string, number>, caloriesPerGram: 0 }],
     notes: "",
   });
 
@@ -46,6 +46,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   const [mealAiLoading, setMealAiLoading] = useState(false);
   const [foodAiLoading, setFoodAiLoading] = useState<Record<number, boolean>>({});
   const foodNameTimeouts = useRef<Record<number, NodeJS.Timeout>>({});
+  const workoutNameTimeout = useRef<NodeJS.Timeout | null>(null);
   const [aiFeedback, setAiFeedback] = useState<{
     variant: "workout" | "meal" | null;
     message: string | null;
@@ -196,7 +197,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       setSuccess("Öğün başarıyla eklendi!");
       setMealData({
         mealType: "breakfast",
-        foods: [{ name: "", calories: "", quantity: "", quantityCalories: {} }],
+        foods: [{ name: "", calories: "", quantity: "", customQuantity: "", quantityCalories: {}, caloriesPerGram: 0 }],
         notes: "",
       });
       setTimeout(() => {
@@ -214,7 +215,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   const addFoodField = () => {
     setMealData({
       ...mealData,
-      foods: [...mealData.foods, { name: "", calories: "", quantity: "", quantityCalories: {} }],
+      foods: [...mealData.foods, { name: "", calories: "", quantity: "", customQuantity: "", quantityCalories: {}, caloriesPerGram: 0 }],
     });
   };
 
@@ -242,6 +243,55 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     "300g": 300,
     "1 kase": 200,
     "1 bardak": 240,
+  };
+
+  // Yiyecek tipine göre mantıklı miktar seçeneklerini belirle
+  const getRelevantQuantities = (foodName: string): string[] => {
+    // Et, tavuk, balık gibi katı yiyecekler için
+    const solidFoods = ["tavuk", "et", "kıyma", "köfte", "balık", "tavuk göğsü", "biftek", "pirzola", "hindi", "dana"];
+    // Sıvı/çorba gibi yiyecekler için
+    const liquidFoods = ["çorba", "su", "ayran", "meyve suyu", "komposto", "çay", "kahve", "süt"];
+    // Salata, sebze gibi hafif yiyecekler için
+    const lightFoods = ["salata", "roka", "marul", "maydanoz", "yeşillik"];
+    // Çorbalar, yemekler için
+    const cookedFoods = ["pilav", "makarna", "bulgur", "kuskus", "erişte"];
+    // Soslar, baharatlar için
+    const condiments = ["sos", "salça", "yağ", "tereyağı", "zeytinyağı", "bal"];
+
+    // Tam eşleşme veya içerik kontrolü
+    const isSolid = solidFoods.some(f => foodName.includes(f));
+    const isLiquid = liquidFoods.some(f => foodName.includes(f));
+    const isLight = lightFoods.some(f => foodName.includes(f));
+    const isCooked = cookedFoods.some(f => foodName.includes(f));
+    const isCondiment = condiments.some(f => foodName.includes(f));
+
+    // Et/tavuk/balık gibi katı yiyecekler: gram ve porsiyon
+    if (isSolid) {
+      return ["100g", "150g", "200g", "250g", "300g", "1 porsiyon"];
+    }
+    
+    // Çorba, su gibi sıvılar: bardak, kase, kepçe
+    if (isLiquid) {
+      return ["1 bardak", "1 kase", "1 kepçe", "200g", "250g", "300g"];
+    }
+    
+    // Salata gibi hafif yiyecekler: tabak, kase, gram
+    if (isLight) {
+      return ["1 tabak (orta)", "1 tabak (büyük)", "1 kase", "100g", "150g", "200g"];
+    }
+    
+    // Pilav, makarna gibi pişmiş yemekler: tabak, porsiyon, gram
+    if (isCooked) {
+      return ["1 tabak (orta)", "1 tabak (büyük)", "1 porsiyon", "150g", "200g", "250g", "300g"];
+    }
+    
+    // Sos, baharat gibi küçük miktarlı: kaşık, yemek kaşığı
+    if (isCondiment) {
+      return ["1 kaşık", "2 kaşık", "1 yemek kaşığı", "2 yemek kaşığı", "100g"];
+    }
+    
+    // Varsayılan: tüm seçenekleri göster
+    return Object.keys(quantityToGrams);
   };
 
   const calculateFoodCaloriesForAllQuantities = async (index: number, foodName: string) => {
@@ -273,11 +323,18 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       const caloriesPer100g = data.result.breakdown[0].calories;
       const caloriesPerGram = caloriesPer100g / 100;
 
+      // Yiyecek adını analiz ederek mantıklı miktar seçeneklerini belirle
+      const foodNameLower = foodName.toLowerCase();
+      const relevantQuantities = getRelevantQuantities(foodNameLower);
+
       // Tüm miktarlar için kalori hesapla (matematiksel olarak)
       const quantityCalories: Record<string, number> = {};
       
-      Object.entries(quantityToGrams).forEach(([quantity, grams]) => {
-        quantityCalories[quantity] = Math.round(caloriesPerGram * grams);
+      // Sadece mantıklı miktarlar için hesapla
+      relevantQuantities.forEach((quantity) => {
+        if (quantityToGrams[quantity]) {
+          quantityCalories[quantity] = Math.round(caloriesPerGram * quantityToGrams[quantity]);
+        }
       });
 
       // Hesaplanan kalorileri state'e kaydet
@@ -287,6 +344,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         newFoods[index] = {
           ...currentFood,
           quantityCalories,
+          caloriesPerGram,
           // Eğer miktar seçiliyse, o miktarın kalorisini kullan
           calories:
             currentFood.quantity && quantityCalories[currentFood.quantity]
@@ -338,18 +396,32 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       newFoods[index] = {
         ...newFoods[index],
         calories: String(currentFood.quantityCalories[value]),
+        customQuantity: "", // Dropdown seçilince custom temizle
       };
       setMealData({ ...mealData, foods: newFoods });
     }
+
+    // Özel gram girişi yapıldığında kalori hesapla
+    if (field === "customQuantity" && value && currentFood.caloriesPerGram > 0) {
+      const grams = parseFloat(value);
+      if (!isNaN(grams) && grams > 0) {
+        const calculatedCalories = Math.round(currentFood.caloriesPerGram * grams);
+        newFoods[index] = {
+          ...newFoods[index],
+          calories: String(calculatedCalories),
+          quantity: "", // Custom seçilince dropdown temizle
+        };
+        setMealData({ ...mealData, foods: newFoods });
+      }
+    }
   };
 
-  const handleWorkoutAiEstimate = async () => {
-    if (!workoutData.name.trim()) {
-      setError("Önce egzersiz adını gir veya AI için gerekli alanları doldur.");
-      return;
-    }
+  const calculateWorkoutCaloriesAutomatically = async (workoutName: string) => {
+    if (!workoutName || workoutName.length < 2) return;
+
     setWorkoutAiLoading(true);
     setAiFeedback({ variant: "workout", message: null, error: null });
+
     try {
       const response = await fetch("/api/ai/calories", {
         method: "POST",
@@ -357,9 +429,9 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         body: JSON.stringify({
           mode: "workout",
           workout: {
-            name: workoutData.name.trim(),
+            name: workoutName,
             type: workoutData.type,
-            duration: workoutData.duration ? Number(workoutData.duration) : undefined,
+            duration: workoutData.duration ? Number(workoutData.duration) : 30, // Varsayılan 30 dakika
             distance: workoutData.distance ? Number(workoutData.distance) : undefined,
             notes: workoutData.notes || undefined,
           },
@@ -378,7 +450,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       }));
       setAiFeedback({
         variant: "workout",
-        message: `${Math.round(data.result.calories)} kcal tahmini eklendi. ${data.result.explanation}`,
+        message: `${Math.round(data.result.calories)} kcal tahmini eklendi (30 dk). ${data.result.explanation}`,
         error: null,
       });
     } catch (err: any) {
@@ -390,6 +462,14 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     } finally {
       setWorkoutAiLoading(false);
     }
+  };
+
+  const handleWorkoutAiEstimate = async () => {
+    if (!workoutData.name.trim()) {
+      setError("Önce egzersiz adını gir veya AI için gerekli alanları doldur.");
+      return;
+    }
+    await calculateWorkoutCaloriesAutomatically(workoutData.name.trim());
   };
 
   const handleMealAiEstimate = async () => {
@@ -616,14 +696,40 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         <form onSubmit={handleWorkoutSubmit} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm text-gray-400">Egzersiz Adı *</label>
-            <input
-              type="text"
-              required
-              value={workoutData.name}
-              onChange={(e) => setWorkoutData({ ...workoutData, name: e.target.value })}
-              className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-              placeholder="Örn: Koşu, Ağırlık Antrenmanı"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                required
+                value={workoutData.name}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setWorkoutData({ ...workoutData, name: value });
+                  
+                  // Debounce: 1 saniye bekleyip otomatik kalori hesapla
+                  if (workoutNameTimeout.current) {
+                    clearTimeout(workoutNameTimeout.current);
+                  }
+                  
+                  if (value.trim().length >= 2) {
+                    workoutNameTimeout.current = setTimeout(() => {
+                      calculateWorkoutCaloriesAutomatically(value.trim());
+                    }, 1000);
+                  }
+                }}
+                onBlur={() => {
+                  if (workoutData.name.trim().length >= 2) {
+                    calculateWorkoutCaloriesAutomatically(workoutData.name.trim());
+                  }
+                }}
+                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                placeholder="Örn: Koşu, Ağırlık Antrenmanı"
+              />
+              {workoutAiLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"></div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -773,59 +879,50 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                     className="sm:col-span-3 rounded-lg border border-gray-800 bg-gray-900/40 px-4 py-2 text-gray-400 placeholder-gray-500 cursor-not-allowed focus:border-gray-700 focus:outline-none"
                     placeholder="AI ile hesaplanacak"
                   />
-                  <select
-                    value={food.quantity || ""}
-                    onChange={(e) => updateFoodField(index, "quantity", e.target.value)}
-                    disabled={!food.name.trim() || foodAiLoading[index]}
-                    className="sm:col-span-3 rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white focus:border-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="">Miktar seçin</option>
-                    <option value="1 kaşık">
-                      1 kaşık {food.quantityCalories?.["1 kaşık"] ? `(${food.quantityCalories["1 kaşık"]} kcal)` : ""}
-                    </option>
-                    <option value="2 kaşık">
-                      2 kaşık {food.quantityCalories?.["2 kaşık"] ? `(${food.quantityCalories["2 kaşık"]} kcal)` : ""}
-                    </option>
-                    <option value="1 yemek kaşığı">
-                      1 yemek kaşığı {food.quantityCalories?.["1 yemek kaşığı"] ? `(${food.quantityCalories["1 yemek kaşığı"]} kcal)` : ""}
-                    </option>
-                    <option value="2 yemek kaşığı">
-                      2 yemek kaşığı {food.quantityCalories?.["2 yemek kaşığı"] ? `(${food.quantityCalories["2 yemek kaşığı"]} kcal)` : ""}
-                    </option>
-                    <option value="1 kepçe">
-                      1 kepçe {food.quantityCalories?.["1 kepçe"] ? `(${food.quantityCalories["1 kepçe"]} kcal)` : ""}
-                    </option>
-                    <option value="1 tabak (orta)">
-                      1 tabak (orta) {food.quantityCalories?.["1 tabak (orta)"] ? `(${food.quantityCalories["1 tabak (orta)"]} kcal)` : ""}
-                    </option>
-                    <option value="1 tabak (büyük)">
-                      1 tabak (büyük) {food.quantityCalories?.["1 tabak (büyük)"] ? `(${food.quantityCalories["1 tabak (büyük)"]} kcal)` : ""}
-                    </option>
-                    <option value="1 porsiyon">
-                      1 porsiyon {food.quantityCalories?.["1 porsiyon"] ? `(${food.quantityCalories["1 porsiyon"]} kcal)` : ""}
-                    </option>
-                    <option value="100g">
-                      100g {food.quantityCalories?.["100g"] ? `(${food.quantityCalories["100g"]} kcal)` : ""}
-                    </option>
-                    <option value="150g">
-                      150g {food.quantityCalories?.["150g"] ? `(${food.quantityCalories["150g"]} kcal)` : ""}
-                    </option>
-                    <option value="200g">
-                      200g {food.quantityCalories?.["200g"] ? `(${food.quantityCalories["200g"]} kcal)` : ""}
-                    </option>
-                    <option value="250g">
-                      250g {food.quantityCalories?.["250g"] ? `(${food.quantityCalories["250g"]} kcal)` : ""}
-                    </option>
-                    <option value="300g">
-                      300g {food.quantityCalories?.["300g"] ? `(${food.quantityCalories["300g"]} kcal)` : ""}
-                    </option>
-                    <option value="1 kase">
-                      1 kase {food.quantityCalories?.["1 kase"] ? `(${food.quantityCalories["1 kase"]} kcal)` : ""}
-                    </option>
-                    <option value="1 bardak">
-                      1 bardak {food.quantityCalories?.["1 bardak"] ? `(${food.quantityCalories["1 bardak"]} kcal)` : ""}
-                    </option>
-                  </select>
+                  <div className="sm:col-span-4 flex gap-2">
+                    <select
+                      value={food.quantity || ""}
+                      onChange={(e) => updateFoodField(index, "quantity", e.target.value)}
+                      disabled={!food.name.trim() || foodAiLoading[index]}
+                      className="flex-1 rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white focus:border-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Miktar seçin</option>
+                      {food.name.trim() && food.quantityCalories && (() => {
+                        const foodNameLower = food.name.toLowerCase();
+                        const relevantQuantities = getRelevantQuantities(foodNameLower);
+                        return relevantQuantities.map((quantity) => (
+                          <option key={quantity} value={quantity}>
+                            {quantity} {food.quantityCalories[quantity] ? `(${food.quantityCalories[quantity]} kcal)` : ""}
+                          </option>
+                        ));
+                      })()}
+                    </select>
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={food.customQuantity || ""}
+                      onChange={(e) => updateFoodField(index, "customQuantity", e.target.value)}
+                      onBlur={(e) => {
+                        if (e.target.value && food.caloriesPerGram > 0) {
+                          const grams = parseFloat(e.target.value);
+                          if (!isNaN(grams) && grams > 0) {
+                            const calculatedCalories = Math.round(food.caloriesPerGram * grams);
+                            const newFoods = [...mealData.foods];
+                            newFoods[index] = {
+                              ...newFoods[index],
+                              calories: String(calculatedCalories),
+                              quantity: "",
+                            };
+                            setMealData({ ...mealData, foods: newFoods });
+                          }
+                        }
+                      }}
+                      disabled={!food.name.trim() || foodAiLoading[index] || !food.caloriesPerGram}
+                      placeholder="Özel (g)"
+                      className="w-24 rounded-lg border border-gray-800 bg-gray-900/60 px-2 py-2 text-sm text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
                   {mealData.foods.length > 1 && (
                     <button
                       type="button"
