@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.1.47";
+export const APP_VERSION = "0.1.48";
 
 export type ReleaseNote = {
   version: string;
@@ -9,8 +9,22 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
-    version: "0.1.47",
+    version: "0.1.48",
     date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),
+    title: "Dashboard geliştirmeleri & görsel iyileştirmeler",
+    highlights: [
+      "📱 Yeni sürüm bildirimi - Ana sayfadaki 'Yeni sürüm' butonuna tıklandığında detaylı release notes gösteriliyor",
+      "💪 Dashboard BMR gösterimi - Bazal Metabolizma Hızı ve TDEE (aktivite ile birlikte) hesaplama",
+      "🫁 Bağırsak sağlığı göstergesi - Dashboard'da bağırsak sağlığı durumu ve renkli progress bar",
+      "⚖️ Günlük kalori dengesi - BMR + yakılan kalori - alınan kalori formülü ile gerçek zamanlı takip",
+      "🎨 Ana sayfa renk optimizasyonları - Daha canlı gradient'ler, gelişmiş hover efektleri ve animasyonlar",
+      "✨ Görsel iyileştirmeler - Kullanıcı memnuniyeti kartına gradient glow, perks kartlarına hover animasyonları",
+      "🚀 Performans optimizasyonları - Dashboard'da daha hızlı veri yükleme ve görsel geri bildirimler",
+    ],
+  },
+  {
+    version: "0.1.47",
+    date: "20 Kas 2025",
     title: "Akıllı kalori takibi & sağlık analizi",
     highlights: [
       "🤖 Otomatik kalori hesaplama - Yiyecek yazıldığında tüm miktarlar için kalori hesaplanıyor",

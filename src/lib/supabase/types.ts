@@ -59,6 +59,7 @@ export interface Database {
           muscle_mass: number | null;
           water: number | null;
           bmi: number | null;
+          bowel_movement_days: number | null;
           notes: string | null;
           created_at: string;
         };
@@ -70,6 +71,7 @@ export interface Database {
           muscle_mass?: number | null;
           water?: number | null;
           bmi?: number | null;
+          bowel_movement_days?: number | null;
           notes?: string | null;
           created_at?: string;
         };

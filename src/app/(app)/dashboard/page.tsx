@@ -39,7 +39,7 @@ export default async function DashboardPage() {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const [{ data: todayMealsData }, { data: todayWorkoutsData }] = await Promise.all([
+  const [{ data: todayMealsData }, { data: todayWorkoutsData }, { data: latestHealthMetricData }] = await Promise.all([
     supabase
       .from("meals")
       .select("*")
@@ -56,6 +56,13 @@ export default async function DashboardPage() {
       .lt("created_at", tomorrow.toISOString())
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("health_metrics")
+      .select("bowel_movement_days")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single(),
   ]);
 
   const todayMeals =
@@ -120,6 +127,10 @@ export default async function DashboardPage() {
   const bmi = calculateBMI(user.height, user.weight);
   const bmiCategory = getBMICategory(bmi);
 
+  // Latest health metric'ten bağırsak sağlığı
+  const latestHealthMetric = latestHealthMetricData as Database["public"]["Tables"]["health_metrics"]["Row"] | null;
+  const bowelMovementDays = latestHealthMetric?.bowel_movement_days ?? null;
+
   return (
     <DashboardContent
       user={user}
@@ -130,6 +141,7 @@ export default async function DashboardPage() {
       todayBurnedCalories={todayBurnedCalories}
       todayMeals={todayMeals}
       todayWorkouts={todayWorkouts}
+      bowelMovementDays={bowelMovementDays}
     />
   );
 }

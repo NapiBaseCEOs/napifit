@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { calculateBMR, calculateTDEE, type ActivityLevel } from "@/lib/utils/bmr";
 
 interface DashboardContentProps {
   user: {
@@ -38,6 +39,7 @@ interface DashboardContentProps {
     distance: number | null;
     createdAt: Date;
   }>;
+  bowelMovementDays: number | null;
 }
 
 export default function DashboardContent({
@@ -49,6 +51,7 @@ export default function DashboardContent({
   todayBurnedCalories,
   todayMeals,
   todayWorkouts,
+  bowelMovementDays,
 }: DashboardContentProps) {
   const getColorClass = (color: string) => {
     switch (color) {
@@ -64,6 +67,47 @@ export default function DashboardContent({
         return "text-gray-400 border-gray-500/40 bg-gray-500/10";
     }
   };
+
+  // BMR hesapla
+  const bmr = user.weight && user.height && user.age && user.gender
+    ? calculateBMR({
+        weight: user.weight,
+        height: user.height,
+        age: user.age,
+        gender: user.gender as "male" | "female" | "other",
+      })
+    : null;
+
+  // Aktivite seviyesini tahmin et (günlük adıma göre)
+  const estimateActivityLevel = (): ActivityLevel => {
+    const steps = user.dailySteps ?? 0;
+    if (steps < 5000) return "sedentary";
+    if (steps < 8000) return "light";
+    if (steps < 10000) return "moderate";
+    if (steps < 12000) return "active";
+    return "very_active";
+  };
+
+  // TDEE hesapla (BMR + aktivite)
+  const activityLevel = estimateActivityLevel();
+  const tdee = bmr ? calculateTDEE(bmr, activityLevel) : null;
+
+  // Günlük kalori dengesi = BMR + yakılan kalori - alınan kalori
+  const dailyCalorieBalance = bmr !== null
+    ? bmr + todayBurnedCalories - todayCalories
+    : null;
+
+  // Bağırsak sağlığı değerlendirmesi
+  const getBowelHealthStatus = (days: number | null): { status: string; color: string; message: string } => {
+    if (days === null) return { status: "Bilinmiyor", color: "gray", message: "Henüz veri yok" };
+    if (days <= 1) return { status: "Çok Sağlıklı", color: "green", message: "Mükemmel! Her gün tuvalete çıkıyorsun." };
+    if (days <= 1.5) return { status: "Sağlıklı", color: "green", message: "Normal düzenli bağırsak hareketi." };
+    if (days <= 2) return { status: "Normal", color: "yellow", message: "Normal aralıkta, ancak daha fazla lif almayı dene." };
+    if (days <= 3) return { status: "Dikkat", color: "yellow", message: "Biraz yavaşlamış, daha fazla su ve lif tüket." };
+    return { status: "Sağlıksız", color: "red", message: "Kabızlık riski var. Doktora danış ve beslenmeyi gözden geçir." };
+  };
+
+  const bowelHealth = getBowelHealthStatus(bowelMovementDays);
 
   return (
     <main className="relative min-h-screen px-4 py-8 sm:px-6 overflow-hidden bg-[#0a0a0a]">
@@ -101,7 +145,7 @@ export default function DashboardContent({
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
           {/* BMI Card */}
           <div className="group relative rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-6 shadow-lg hover:border-primary-500/50 hover:shadow-primary-500/20 transition-all duration-300">
             <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">BMI</div>
@@ -178,6 +222,72 @@ export default function DashboardContent({
               {todayWorkouts.length} egzersiz kaydedildi
             </div>
           </Link>
+
+          {/* BMR Card */}
+          {bmr && (
+            <div className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-blue-500/20 via-primary-500/20 to-purple-500/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-blue-500/30 hover:scale-[1.02]">
+              <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">BMR (Bazal Metabolizma)</div>
+              <div className="text-3xl font-bold text-white">{bmr} <span className="text-lg text-blue-400">kcal</span></div>
+              <div className="mt-2 text-sm text-gray-400">
+                Dinlenirken yaktığın kalori
+              </div>
+              {tdee && (
+                <div className="mt-2 text-xs text-gray-500">
+                  TDEE: {tdee} kcal (aktivite ile)
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Daily Calorie Balance Card */}
+          {dailyCalorieBalance !== null && (
+            <div className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-emerald-500/20 via-green-500/20 to-teal-500/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/50 hover:shadow-emerald-500/30 hover:scale-[1.02]">
+              <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">Günlük Kalori Dengesi</div>
+              <div className={`text-3xl font-bold ${dailyCalorieBalance > 0 ? 'text-emerald-400' : dailyCalorieBalance < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                {dailyCalorieBalance > 0 ? '+' : ''}{Math.round(dailyCalorieBalance)} <span className="text-lg text-gray-400">kcal</span>
+              </div>
+              <div className="mt-2 text-sm text-gray-400">
+                {dailyCalorieBalance > 0 
+                  ? 'Kalori açığı var (kilo vermeye uygun)'
+                  : dailyCalorieBalance < 0
+                  ? 'Kalori fazlası var (kilo almak için)'
+                  : 'Dengeli'}
+              </div>
+            </div>
+          )}
+
+          {/* Bowel Health Card */}
+          {bowelMovementDays !== null && (
+            <Link
+              href="/health"
+              className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-amber-500/20 via-orange-500/20 to-red-500/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-amber-500/50 hover:shadow-amber-500/30 hover:scale-[1.02]"
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs uppercase tracking-wide text-gray-400">Bağırsak Sağlığı</span>
+                <span className="text-xs text-amber-400 font-semibold group-hover:text-amber-300 transition-colors">Takip Et →</span>
+              </div>
+              <div className={`text-3xl font-bold ${bowelHealth.color === 'green' ? 'text-green-400' : bowelHealth.color === 'yellow' ? 'text-yellow-400' : 'text-red-400'}`}>
+                {bowelHealth.status}
+              </div>
+              <div className="mt-2 text-sm text-gray-400">
+                {bowelMovementDays <= 1 ? `${bowelMovementDays} günde bir` : `${bowelMovementDays} günde bir`} tuvalet
+              </div>
+              <div className="mt-2 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${
+                    bowelHealth.color === 'green'
+                      ? 'bg-green-500'
+                      : bowelHealth.color === 'yellow'
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+                  }`}
+                  style={{
+                    width: `${Math.min(100, bowelMovementDays <= 1 ? 100 : bowelMovementDays <= 2 ? 80 : bowelMovementDays <= 3 ? 60 : 40)}%`,
+                  }}
+                />
+              </div>
+            </Link>
+          )}
         </div>
 
         {/* Today's Activities */}

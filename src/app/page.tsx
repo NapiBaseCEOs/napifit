@@ -168,7 +168,7 @@ function HeroSection() {
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white leading-tight">
           Sağlıklı Yaşamın
           <br />
-          <span className="bg-gradient-to-r from-primary-400 via-fitness-orange to-fitness-purple bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-primary-400 via-fitness-orange via-fitness-purple to-primary-500 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
             Yeni Başlangıcı
           </span>
         </h1>
@@ -180,8 +180,8 @@ function HeroSection() {
 
         <ul className="grid gap-3 sm:grid-cols-2 text-sm text-gray-300 max-w-2xl mx-auto lg:mx-0">
           {perks.map((perk) => (
-            <li key={perk} className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2">
-              <span className="h-2 w-2 rounded-full bg-primary-300" />
+            <li key={perk} className="group flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 transition-all hover:border-primary-500/30 hover:bg-primary-500/10 hover:scale-[1.02]">
+              <span className="h-2 w-2 rounded-full bg-primary-300 group-hover:bg-primary-400 group-hover:scale-125 transition-transform" />
               {perk}
             </li>
           ))}
@@ -199,26 +199,26 @@ function HeroSection() {
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white/80 hover:bg-white/10 transition-all duration-300"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white/80 hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-300"
           >
             Giriş Yap
           </Link>
           <a
             href="/napifit-logo.png"
             download
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm font-semibold text-gray-200 hover:text-white hover:border-primary-400/60 hover:bg-white/10 transition-all duration-300"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm font-semibold text-gray-200 hover:text-white hover:border-primary-400/60 hover:bg-primary-500/10 transition-all duration-300"
           >
             Logoyu indir (PNG)
           </a>
         </div>
 
         <div className="flex items-center justify-center lg:justify-start gap-4 text-left">
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3">
-            <p className="text-white font-semibold text-2xl">4.9/5</p>
+          <div className="rounded-2xl border border-primary-500/20 bg-primary-500/10 px-5 py-3 backdrop-blur-sm shadow-lg shadow-primary-500/20">
+            <p className="text-white font-semibold text-2xl bg-gradient-to-r from-primary-300 to-fitness-orange bg-clip-text text-transparent">4.9/5</p>
             <p className="text-xs text-gray-400">Beta kullanıcı memnuniyeti</p>
           </div>
           <div>
-            <p className="text-sm text-gray-400">“Günde birkaç dakika ayırarak ilerlememi net görüyorum.”</p>
+            <p className="text-sm text-gray-300">“Günde birkaç dakika ayırarak ilerlememi net görüyorum.”</p>
             <p className="text-xs text-gray-500 mt-1">Ayşe • Ürün Müdürü</p>
           </div>
         </div>
@@ -279,7 +279,7 @@ function StatsSection({ stats }: { stats: LandingStats }) {
           key={item.label}
           className="group relative rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-lg overflow-hidden shadow-[0_15px_45px_rgba(3,4,12,0.45)]"
         >
-          <div className={`absolute inset-0 bg-gradient-to-br ${item.accent} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+          <div className={`absolute inset-0 bg-gradient-to-br ${item.accent} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-105`} />
           <div className="relative space-y-2">
             <p className="text-gray-400 text-sm uppercase tracking-wide">{item.label}</p>
             <p className="text-3xl font-semibold text-white">
