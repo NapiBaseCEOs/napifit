@@ -1,4 +1,5 @@
 import type { Locale } from "./locales";
+import { defaultLocale } from "./locales";
 
 export type TranslationKey = 
   | "homepage.title"
@@ -269,8 +270,8 @@ export function getTranslation(locale: Locale, key: TranslationKey): string {
   if (localeTranslations && (key in localeTranslations)) {
     return localeTranslations[key] as string;
   }
-  const defaultTranslations = translations[defaultLocale];
-  if (key in defaultTranslations) {
+  const defaultTranslations = translations[defaultLocale as keyof typeof translations];
+  if (defaultTranslations && (key in defaultTranslations)) {
     return defaultTranslations[key] as string;
   }
   return key;
