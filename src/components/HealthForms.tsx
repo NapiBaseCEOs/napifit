@@ -558,8 +558,10 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                 step="0.1"
                 value={workoutData.calories}
                 onChange={(e) => setWorkoutData({ ...workoutData, calories: e.target.value })}
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                placeholder="Örn: 300"
+                disabled
+                readOnly
+                className="w-full rounded-lg border border-gray-800 bg-gray-900/40 px-4 py-2 text-gray-400 placeholder-gray-500 cursor-not-allowed focus:border-gray-700 focus:outline-none"
+                placeholder="AI ile hesaplanacak"
               />
             </div>
             <div>
@@ -640,16 +642,30 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                     min="0"
                     value={food.calories}
                     onChange={(e) => updateFoodField(index, "calories", e.target.value)}
-                    className="sm:col-span-3 rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                    placeholder="Kalori"
+                    disabled
+                    readOnly
+                    className="sm:col-span-3 rounded-lg border border-gray-800 bg-gray-900/40 px-4 py-2 text-gray-400 placeholder-gray-500 cursor-not-allowed focus:border-gray-700 focus:outline-none"
+                    placeholder="AI ile hesaplanacak"
                   />
-                  <input
-                    type="text"
-                    value={food.quantity}
+                  <select
+                    value={food.quantity || ""}
                     onChange={(e) => updateFoodField(index, "quantity", e.target.value)}
-                    className="sm:col-span-3 rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                    placeholder="Miktar (opsiyonel)"
-                  />
+                    className="sm:col-span-3 rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white focus:border-primary-500 focus:outline-none"
+                  >
+                    <option value="">Miktar seçin</option>
+                    <option value="1 kaşık">1 kaşık</option>
+                    <option value="2 kaşık">2 kaşık</option>
+                    <option value="1 kepçe">1 kepçe</option>
+                    <option value="1-2 tabak">1-2 tabak</option>
+                    <option value="1 porsiyon">1 porsiyon</option>
+                    <option value="1 yemek kaşığı">1 yemek kaşığı</option>
+                    <option value="2 yemek kaşığı">2 yemek kaşığı</option>
+                    <option value="100g">100g</option>
+                    <option value="200g">200g</option>
+                    <option value="300g">300g</option>
+                    <option value="1 kase">1 kase</option>
+                    <option value="1 bardak">1 bardak</option>
+                  </select>
                   {mealData.foods.length > 1 && (
                     <button
                       type="button"

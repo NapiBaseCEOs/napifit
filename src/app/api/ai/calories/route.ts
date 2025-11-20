@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { estimateMealCalories, estimateWorkoutCalories, hasOpenAIKey } from "@/lib/ai/calorie-estimator";
+import { estimateMealCalories, estimateWorkoutCalories, hasGeminiKey, hasOpenAIKey } from "@/lib/ai/calorie-estimator";
 
 const workoutSchema = z.object({
   mode: z.literal("workout"),
@@ -34,8 +34,10 @@ const mealSchema = z.object({
 const requestSchema = z.discriminatedUnion("mode", [workoutSchema, mealSchema]);
 
 export async function POST(request: Request) {
-  if (!hasOpenAIKey) {
-    return NextResponse.json({ message: "OPENAI_API_KEY tanımlı değil. Yöneticiye bildirin." }, { status: 503 });
+  if (!hasGeminiKey && !hasOpenAIKey) {
+    return NextResponse.json({ 
+      message: "GEMINI_API_KEY veya OPENAI_API_KEY tanımlı değil. En az birini tanımlayın." 
+    }, { status: 503 });
   }
 
   try {

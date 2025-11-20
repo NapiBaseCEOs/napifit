@@ -9,7 +9,7 @@ export interface UpdateCheckerRef {
   checkForUpdate: () => void;
 }
 
-const UpdateChecker = forwardRef<UpdateCheckerRef>((props, ref) => {
+const UpdateChecker = forwardRef<UpdateCheckerRef>((_props, ref) => {
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [newVersion, setNewVersion] = useState<string | null>(null);
 

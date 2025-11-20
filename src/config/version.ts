@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.1.46";
+export const APP_VERSION = "0.1.47";
 
 export type ReleaseNote = {
   version: string;
@@ -8,6 +8,18 @@ export type ReleaseNote = {
 };
 
 export const RELEASE_NOTES: ReleaseNote[] = [
+  {
+    version: "0.1.47",
+    date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),
+    title: "Kamera ile öğün fotoğrafı analizi",
+    highlights: [
+      "📷 Kamera ile öğün fotoğrafı çekme özelliği eklendi",
+      "🤖 GPT-4 Vision ile otomatik besin analizi (kalori, protein, yağ, karbonhidrat)",
+      "✅ Öğün önerileri (önerilir/önerilmez/moderat) ve detaylı açıklamalar",
+      "📊 Her yiyecek için detaylı besin değerleri gösterimi",
+      "💾 Tek tıkla onaylayıp öğünü kaydetme",
+    ],
+  },
   {
     version: "0.1.46",
     date: "17 Kas 2025",

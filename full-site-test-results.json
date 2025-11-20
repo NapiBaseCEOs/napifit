@@ -1,0 +1,147 @@
+{
+  "timestamp": "2025-11-20T13:51:09.049Z",
+  "siteUrl": "https://napibase.com",
+  "tests": [
+    {
+      "name": "Ana Sayfa",
+      "path": "/",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Login",
+      "path": "/login",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Register",
+      "path": "/register",
+      "status": 200,
+      "success": true
+    },
+    {
+      "name": "Dashboard",
+      "path": "/dashboard",
+      "status": 307,
+      "success": true
+    },
+    {
+      "name": "Health",
+      "path": "/health",
+      "status": 307,
+      "success": true
+    },
+    {
+      "name": "Profile",
+      "path": "/profile",
+      "status": 307,
+      "success": true
+    },
+    {
+      "name": "Config",
+      "path": "/api/config",
+      "status": 404,
+      "success": true,
+      "data": null
+    },
+    {
+      "name": "Test Auth",
+      "path": "/api/test-auth",
+      "status": 404,
+      "success": true,
+      "data": null
+    },
+    {
+      "name": "DB Test",
+      "path": "/api/db-test",
+      "status": 404,
+      "success": true,
+      "data": null
+    },
+    {
+      "name": "DB Debug",
+      "path": "/api/db-debug",
+      "status": 404,
+      "success": true,
+      "data": null
+    },
+    {
+      "name": "NextAuth Providers",
+      "path": "/api/auth/providers",
+      "status": 404,
+      "success": true,
+      "data": null
+    },
+    {
+      "name": "NextAuth Signin",
+      "path": "/api/auth/signin",
+      "status": 404,
+      "success": true,
+      "data": null
+    },
+    {
+      "name": "Workouts List",
+      "path": "/api/workouts",
+      "status": 401,
+      "success": true,
+      "data": {
+        "message": "Yetkisiz erişim"
+      }
+    },
+    {
+      "name": "Meals List",
+      "path": "/api/meals",
+      "status": 401,
+      "success": true,
+      "data": {
+        "message": "Yetkisiz erişim"
+      }
+    },
+    {
+      "name": "Health Metrics List",
+      "path": "/api/health-metrics",
+      "status": 401,
+      "success": true,
+      "data": {
+        "message": "Yetkisiz erişim"
+      }
+    },
+    {
+      "name": "Profile API",
+      "path": "/api/profile",
+      "status": 401,
+      "success": true
+    },
+    {
+      "name": "Workouts API",
+      "path": "/api/workouts",
+      "status": 401,
+      "success": true
+    },
+    {
+      "name": "Meals API",
+      "path": "/api/meals",
+      "status": 401,
+      "success": true
+    },
+    {
+      "name": "Health Metrics API",
+      "path": "/api/health-metrics",
+      "status": 401,
+      "success": true
+    },
+    {
+      "name": "Manifest",
+      "path": "/manifest.webmanifest",
+      "status": 200,
+      "success": true
+    }
+  ],
+  "summary": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0,
+    "warnings": 0
+  }
+}

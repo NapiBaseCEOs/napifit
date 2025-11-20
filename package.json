@@ -1,13 +1,15 @@
 {
   "name": "napifit",
-  "version": "0.1.46",
+  "version": "0.1.47",
   "private": true,
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "next lint --fix",
+    "lint:check": "next lint",
+    "type-check": "tsc --noEmit",
     "vercel:dev": "vercel dev",
     "vercel:build": "vercel build",
     "vercel:deploy": "vercel deploy --prod",
@@ -20,13 +22,16 @@
     "android:open": "npx cap open android",
     "ios:open": "npx cap open ios",
     "android:build": "npm run build && npm run cap:sync",
-    "ios:build": "npm run build && npm run cap:sync"
+    "ios:build": "npm run build && npm run cap:sync",
+    "analyze": "ANALYZE=true next build",
+    "test:build": "npm run type-check && npm run lint:check && npm run build"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.0",
     "@capacitor/browser": "^7.0.2",
     "@capacitor/camera": "^7.0.2",
     "@capacitor/preferences": "^7.0.2",
+    "@google/generative-ai": "^0.24.1",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/supabase-js": "^2.45.0",
