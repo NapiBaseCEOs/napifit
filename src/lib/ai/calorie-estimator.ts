@@ -23,8 +23,16 @@ export type WorkoutEstimateInput = {
   type?: string;
   duration?: number | null;
   distance?: number | null;
+  sets?: number | null;
+  reps?: number | null;
   intensity?: string | null;
   notes?: string | null;
+  userProfile?: {
+    height?: number | null;
+    weight?: number | null;
+    age?: number | null;
+    gender?: string | null;
+  };
 };
 
 export type WorkoutEstimateResult = {
@@ -42,6 +50,12 @@ export type MealEstimateInput = {
   }>;
   mealType?: string | null;
   notes?: string | null;
+  userProfile?: {
+    height?: number | null;
+    weight?: number | null;
+    age?: number | null;
+    gender?: string | null;
+  };
 };
 
 export type MealEstimateResult = {
@@ -89,10 +103,18 @@ export async function estimateWorkoutCalories(input: WorkoutEstimateInput): Prom
   // Use gemini-2.5-flash (free tier) - fastest and most reliable
   const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  const prompt = `Sen Türkçe konuşan bir egzersiz fizyoloğusun. MET değerleri, süre, tempo ve varsa mesafeyi kullanarak yakılan kalori miktarını tahmin et. Veriler eksikse yetişkin için 70 kg varsay.
+  // Kullanıcı profil bilgilerini prompt'a ekle
+  const userInfo = input.userProfile?.weight && input.userProfile?.height && input.userProfile?.age
+    ? `\nKullanıcı Bilgileri:\n- Kilo: ${input.userProfile.weight} kg\n- Boy: ${input.userProfile.height} cm\n- Yaş: ${input.userProfile.age}${input.userProfile.gender ? `\n- Cinsiyet: ${input.userProfile.gender === 'male' ? 'Erkek' : input.userProfile.gender === 'female' ? 'Kadın' : 'Diğer'}` : ''}`
+    : '';
+  
+  const prompt = `Sen Türkçe konuşan bir egzersiz fizyoloğusun. MET değerleri, süre, tempo, varsa mesafe, set ve tekrar sayısını kullanarak yakılan kalori miktarını tahmin et.${userInfo || '\nVeriler eksikse yetişkin için 70 kg varsay.'}
 
 Egzersiz bilgileri:
-${JSON.stringify(input, null, 2)}
+${JSON.stringify({
+  ...input,
+  userProfile: undefined, // userProfile'ı ayrı gösterdik, burada tekrar gösterme
+}, null, 2)}${userInfo}
 
 Lütfen aşağıdaki JSON formatında cevap ver:
 {
@@ -144,7 +166,12 @@ export async function estimateMealCalories(input: MealEstimateInput): Promise<Me
     return `${food.index + 1}. ${food.name}${quantity}`;
   }).join("\n");
 
-  const prompt = `Sen bir diyetisyensin. Aşağıdaki yiyecek listesindeki her öğenin kalorisini hesapla.
+  // Kullanıcı profil bilgilerini prompt'a ekle
+  const userInfo = input.userProfile?.weight && input.userProfile?.height && input.userProfile?.age
+    ? `\nKullanıcı Bilgileri:\n- Kilo: ${input.userProfile.weight} kg\n- Boy: ${input.userProfile.height} cm\n- Yaş: ${input.userProfile.age}${input.userProfile.gender ? `\n- Cinsiyet: ${input.userProfile.gender === 'male' ? 'Erkek' : input.userProfile.gender === 'female' ? 'Kadın' : 'Diğer'}` : ''}`
+    : '';
+  
+  const prompt = `Sen bir diyetisyensin. Aşağıdaki yiyecek listesindeki her öğenin kalorisini hesapla.${userInfo || ''}
 
 Öğün tipi: ${input.mealType || "belirtilmemiş"}
 Notlar: ${input.notes || "yok"}
@@ -239,5 +266,83 @@ export async function analyzeMealPhoto(_input: PhotoAnalysisInput): Promise<Phot
   // TODO: Implement photo analysis with Roboflow or Gemini
   // For now, return a placeholder response
   throw new Error("Fotoğraf analizi henüz implement edilmedi. ROBOFLOW_API_KEY veya GEMINI_API_KEY tanımlayın.");
+}
+
+/**
+ * Yiyecek için olası yapılış/hazırlık yöntemlerini AI'dan al
+ */
+export async function getFoodPreparationMethods(foodName: string): Promise<string[]> {
+  if (!hasGeminiKey) {
+    return [];
+  }
+
+  const client = getGeminiClient();
+  const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  const prompt = `Sen bir diyetisyensin. "${foodName}" için olası yapılış/hazırlık yöntemlerini listele.
+
+Örnekler:
+- "pilav" için: ["Pirinç pilavı", "Bulgur pilavı", "Tereyağlı pilav", "Zeytinyağlı pilav", "Etli pilav"]
+- "köfte" için: ["Izgara köfte", "Tavada köfte", "Fırında köfte", "Kıymalı köfte"]
+- "makarna" için: ["Domatesli makarna", "Kremalı makarna", "Zeytinyağlı makarna", "Bolognese makarna"]
+
+Lütfen sadece aşağıdaki JSON formatında cevap ver (en fazla 8 yöntem):
+{
+  "methods": ["yöntem1", "yöntem2", "yöntem3"]
+}
+
+Sadece JSON döndür, başka metin ekleme. Türkçe yöntem isimleri kullan.`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const json = parseGeminiJSON(result);
+    
+    if (Array.isArray(json.methods)) {
+      return json.methods.slice(0, 8); // En fazla 8 yöntem
+    }
+    return [];
+  } catch (error) {
+    console.error("Gemini food preparation methods error:", error);
+    return [];
+  }
+}
+
+/**
+ * Egzersiz için olası hazırlık/koşul yöntemlerini AI'dan al
+ */
+export async function getWorkoutPreparationMethods(workoutName: string): Promise<string[]> {
+  if (!hasGeminiKey) {
+    return [];
+  }
+
+  const client = getGeminiClient();
+  const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  const prompt = `Sen bir egzersiz fizyoloğusun. "${workoutName}" egzersizi için olası hazırlık/koşul yöntemlerini listele.
+
+Örnekler:
+- "koşu" için: ["Yavaş tempo koşu", "Orta tempo koşu", "Hızlı tempo koşu", "Koşu bandı", "Açık hava koşusu", "Tepede koşu"]
+- "bisiklet" için: ["Düz yolda bisiklet", "Yokuş yukarı bisiklet", "Spin bisikleti", "Açık hava bisiklet"]
+- "yüzme" için: ["Serbest stil", "Kurbağalama", "Sırt üstü", "Kelebek", "Havuz", "Deniz"]
+
+Lütfen sadece aşağıdaki JSON formatında cevap ver (en fazla 8 yöntem):
+{
+  "methods": ["yöntem1", "yöntem2", "yöntem3"]
+}
+
+Sadece JSON döndür, başka metin ekleme. Türkçe yöntem isimleri kullan.`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const json = parseGeminiJSON(result);
+    
+    if (Array.isArray(json.methods)) {
+      return json.methods.slice(0, 8); // En fazla 8 yöntem
+    }
+    return [];
+  } catch (error) {
+    console.error("Gemini workout preparation methods error:", error);
+    return [];
+  }
 }
 

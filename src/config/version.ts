@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.1.49";
+export const APP_VERSION = "0.1.50";
 
 export type ReleaseNote = {
   version: string;
@@ -9,8 +9,22 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
-    version: "0.1.49",
+    version: "0.1.50",
     date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),
+    title: "Çok dilli destek & gerçek kullanıcı yorumları",
+    highlights: [
+      "🌍 Çok dilli yapı (i18n) - IP-based dil algılama, 8 dil desteği (TR, EN, DE, FR, ES, IT, RU, AR)",
+      "⭐ Gerçek kullanıcı yorumları sistemi - Kullanıcılar yorum yazabilir, AI ile sentiment analizi yapılıyor",
+      "🤖 AI sentiment analizi - En övgü içeren yorumlar otomatik olarak ana sayfada gösteriliyor",
+      "🎯 Logo indir butonu kaldırıldı - Gereksiz buton temizlendi",
+      "🗑️ Topluluk akışı ve beta memnuniyeti kaldırıldı - Olmayan veriler temizlendi",
+      "✨ Sayı animasyonları - Tüm istatistikler 0'dan başlayıp hedef değere animasyonlu yükseliyor",
+      "🔄 Gerçek zamanlı güncellemeler - Ana sayfa verileri 30 saniyede bir otomatik güncelleniyor",
+    ],
+  },
+  {
+    version: "0.1.49",
+    date: "20 Kas 2025",
     title: "Optimizasyonlar & kullanıcı deneyimi iyileştirmeleri",
     highlights: [
       "✨ Pop-up dialog iyileştirmesi - Çirkin tarayıcı alert() yerine güzel tasarımlı dialog gösterimi",

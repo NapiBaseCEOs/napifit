@@ -117,7 +117,7 @@ export default function RegisterPage() {
         options: {
           emailRedirectTo:
             typeof window !== "undefined"
-              ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/onboarding")}`
+              ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/dashboard")}`
               : undefined,
           data: {
             full_name: fullName,
@@ -205,9 +205,10 @@ export default function RegisterPage() {
     try {
       // Mobil platform kontrolü
       const isMobile = isMobilePlatform();
+      // Google OAuth için: Login sayfasında onboarding kontrolü yapılacak, bu yüzden dashboard'a yönlendir
       const redirectTo =
         typeof window !== "undefined"
-          ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/onboarding")}`
+          ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/dashboard")}`
           : undefined;
 
       if (isMobile && redirectTo) {

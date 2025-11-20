@@ -34,13 +34,28 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     duration: "",
     calories: "",
     distance: "",
+    sets: "",
+    reps: "",
     notes: "",
+    preparationMethod: "" as string | undefined,
+    preparationMethods: [] as string[],
+    loadingMethods: false,
   });
 
   // Meal Form
   const [mealData, setMealData] = useState({
     mealType: "breakfast" as "breakfast" | "lunch" | "dinner" | "snack",
-    foods: [{ name: "", calories: "", quantity: "", customQuantity: "", quantityCalories: {} as Record<string, number>, caloriesPerGram: 0 }],
+    foods: [{ 
+      name: "", 
+      calories: "", 
+      quantity: "", 
+      customQuantity: "", 
+      quantityCalories: {} as Record<string, number>, 
+      caloriesPerGram: 0,
+      preparationMethod: "", // Yapılış yöntemi
+      preparationMethods: [] as string[], // Olası yapılış yöntemleri
+      loadingMethods: false, // Yapılış yöntemleri yükleniyor mu?
+    }],
     notes: "",
   });
 
@@ -52,7 +67,14 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   const mealHealthTimeout = useRef<NodeJS.Timeout | null>(null);
   const [mealHealthEvaluation, setMealHealthEvaluation] = useState<MealHealthEvaluation | null>(null);
   const [mealHealthLoading, setMealHealthLoading] = useState(false);
-  const [userProfile, setUserProfile] = useState<{ currentWeight?: number | null; targetWeight?: number | null } | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    height?: number | null;
+    weight?: number | null;
+    age?: number | null;
+    gender?: string | null;
+    currentWeight?: number | null;
+    targetWeight?: number | null;
+  } | null>(null);
   const [aiFeedback, setAiFeedback] = useState<{
     variant: "workout" | "meal" | null;
     message: string | null;
@@ -68,9 +90,14 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     fetch("/api/profile")
       .then(res => res.json())
       .then(data => {
-        if (data.weight && data.targetWeight) {
-          setUserProfile({ currentWeight: data.weight, targetWeight: data.targetWeight });
-        }
+        setUserProfile({
+          height: data.height,
+          weight: data.weight,
+          age: data.age,
+          gender: data.gender,
+          currentWeight: data.weight,
+          targetWeight: data.targetWeight,
+        });
       })
       .catch(() => {});
   }, []);
@@ -160,7 +187,12 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         duration: "",
         calories: "",
         distance: "",
+        sets: "",
+        reps: "",
         notes: "",
+        preparationMethod: "",
+        preparationMethods: [],
+        loadingMethods: false,
       });
       setTimeout(() => {
         setSuccess(null);
@@ -217,7 +249,17 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       setSuccess("Öğün başarıyla eklendi!");
       setMealData({
         mealType: "breakfast",
-        foods: [{ name: "", calories: "", quantity: "", customQuantity: "", quantityCalories: {}, caloriesPerGram: 0 }],
+        foods: [{ 
+          name: "", 
+          calories: "", 
+          quantity: "", 
+          customQuantity: "", 
+          quantityCalories: {}, 
+          caloriesPerGram: 0,
+          preparationMethod: "",
+          preparationMethods: [],
+          loadingMethods: false,
+        }],
         notes: "",
       });
       setTimeout(() => {
@@ -235,7 +277,34 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   const addFoodField = () => {
     setMealData({
       ...mealData,
-      foods: [...mealData.foods, { name: "", calories: "", quantity: "", customQuantity: "", quantityCalories: {}, caloriesPerGram: 0 }],
+      foods: [
+        ...mealData.foods,
+        { 
+          name: "", 
+          calories: "", 
+          quantity: "", 
+          customQuantity: "", 
+          quantityCalories: {} as Record<string, number>, 
+          caloriesPerGram: 0,
+          preparationMethod: "",
+          preparationMethods: [],
+          loadingMethods: false,
+        },
+      ],
+    });
+    setMealData({
+      ...mealData,
+      foods: [...mealData.foods, { 
+        name: "", 
+        calories: "", 
+        quantity: "", 
+        customQuantity: "", 
+        quantityCalories: {}, 
+        caloriesPerGram: 0,
+        preparationMethod: "",
+        preparationMethods: [],
+        loadingMethods: false,
+      }],
     });
   };
 
@@ -314,12 +383,58 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     return Object.keys(quantityToGrams);
   };
 
-  const calculateFoodCaloriesForAllQuantities = async (index: number, foodName: string) => {
+  // Yapılış yöntemlerini al
+  const fetchFoodPreparationMethods = async (index: number, foodName: string) => {
+    if (!foodName || foodName.length < 2) return;
+
+    const newFoods = [...mealData.foods];
+    newFoods[index] = { ...newFoods[index], loadingMethods: true };
+    setMealData({ ...mealData, foods: newFoods });
+
+    try {
+      const response = await fetch("/api/ai/preparation-methods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "food",
+          name: foodName,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && Array.isArray(data.methods)) {
+        const updatedFoods = [...mealData.foods];
+        updatedFoods[index] = {
+          ...updatedFoods[index],
+          preparationMethods: data.methods,
+          loadingMethods: false,
+        };
+        setMealData({ ...mealData, foods: updatedFoods });
+      } else {
+        const updatedFoods = [...mealData.foods];
+        updatedFoods[index] = { ...updatedFoods[index], loadingMethods: false };
+        setMealData({ ...mealData, foods: updatedFoods });
+      }
+    } catch (error) {
+      console.error("Food preparation methods fetch error:", error);
+      const updatedFoods = [...mealData.foods];
+      updatedFoods[index] = { ...updatedFoods[index], loadingMethods: false };
+      setMealData({ ...mealData, foods: updatedFoods });
+    }
+  };
+
+  const calculateFoodCaloriesForAllQuantities = async (index: number, foodName: string, preparationMethod?: string) => {
     if (!foodName || foodName.length < 2) return;
 
     setFoodAiLoading((prev) => ({ ...prev, [index]: true }));
 
     try {
+      // Yapılış yöntemini yiyecek adına ekle
+      const foodNameWithMethod = preparationMethod 
+        ? `${foodName} (${preparationMethod})`
+        : foodName;
+
       // Sadece 100g için AI'dan kalori hesapla (referans değer)
       const response = await fetch("/api/ai/calories", {
         method: "POST",
@@ -328,7 +443,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
           mode: "meal",
           meal: {
             mealType: mealData.mealType,
-            foods: [{ index: 0, name: foodName, quantity: "100g" }],
+            foods: [{ index: 0, name: foodNameWithMethod, quantity: "100g" }],
           },
         }),
       });
@@ -404,10 +519,11 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     newFoods[index] = { ...currentFood, [field]: value };
     setMealData({ ...mealData, foods: newFoods });
 
-    // Yiyecek adı yazıldığında otomatik kalori hesapla (debounce)
+    // Yiyecek adı yazıldığında otomatik yapılış yöntemlerini al ve kalori hesapla (debounce)
     if (field === "name" && value.trim().length >= 2) {
       foodNameTimeouts.current[index] = setTimeout(() => {
-        calculateFoodCaloriesForAllQuantities(index, value.trim());
+        fetchFoodPreparationMethods(index, value.trim());
+        calculateFoodCaloriesForAllQuantities(index, value.trim(), newFoods[index].preparationMethod);
       }, 1000);
     }
 
@@ -436,25 +552,103 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     }
   };
 
-  const calculateWorkoutCaloriesAutomatically = async (workoutName: string) => {
+  // Egzersiz hazırlık yöntemlerini al
+  const fetchWorkoutPreparationMethods = async (workoutName: string) => {
     if (!workoutName || workoutName.length < 2) return;
+
+    setWorkoutData({ ...workoutData, loadingMethods: true });
+
+    try {
+      const response = await fetch("/api/ai/preparation-methods", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "workout",
+          name: workoutName,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && Array.isArray(data.methods)) {
+        setWorkoutData({ ...workoutData, preparationMethods: data.methods, loadingMethods: false });
+      } else {
+        setWorkoutData({ ...workoutData, loadingMethods: false });
+      }
+    } catch (error) {
+      console.error("Workout preparation methods fetch error:", error);
+      setWorkoutData({ ...workoutData, loadingMethods: false });
+    }
+  };
+
+  // Egzersiz türüne göre mesafe gerektirip gerektirmediğini kontrol et
+  const requiresDistance = (workoutName: string): boolean => {
+    const distanceKeywords = ["koşu", "yürüyüş", "yürüme", "bisiklet", "koş", "jogging", "maraton", "yüzme", "triatlon"];
+    const lowerName = workoutName.toLowerCase();
+    return distanceKeywords.some(keyword => lowerName.includes(keyword));
+  };
+
+  const requiresSetsReps = (workoutName: string): boolean => {
+    const setsRepsKeywords = ["şınav", "mekik", "ağırlık", "press", "squat", "deadlift", "bench", "pull", "push", "curl", "extension", "row"];
+    const lowerName = workoutName.toLowerCase();
+    return setsRepsKeywords.some(keyword => lowerName.includes(keyword));
+  };
+
+  const handleWorkoutAiEstimate = async () => {
+    if (!workoutData.name || workoutData.name.trim().length < 2) {
+      setAiFeedback({ variant: "workout", message: null, error: "Lütfen egzersiz adını girin" });
+      return;
+    }
+
+    if (!workoutData.duration || Number(workoutData.duration) <= 0) {
+      setAiFeedback({ variant: "workout", message: null, error: "Lütfen süreyi girin" });
+      return;
+    }
+
+    const needsDistance = requiresDistance(workoutData.name);
+    const needsSetsReps = requiresSetsReps(workoutData.name);
+
+    // Mesafe gerektiren egzersizler için mesafe kontrolü
+    if (needsDistance && (!workoutData.distance || Number(workoutData.distance) <= 0)) {
+      setAiFeedback({ variant: "workout", message: null, error: "Bu egzersiz için mesafe bilgisi gereklidir" });
+      return;
+    }
+
+    // Set/tekrar gerektiren egzersizler için kontrol
+    if (needsSetsReps && (!workoutData.sets || Number(workoutData.sets) <= 0)) {
+      setAiFeedback({ variant: "workout", message: null, error: "Bu egzersiz için set/tekrar bilgisi gereklidir" });
+      return;
+    }
 
     setWorkoutAiLoading(true);
     setAiFeedback({ variant: "workout", message: null, error: null });
 
     try {
+      // Hazırlık yöntemini egzersiz adına ekle
+      const workoutNameWithMethod = workoutData.preparationMethod 
+        ? `${workoutData.name.trim()} (${workoutData.preparationMethod})`
+        : workoutData.name.trim();
+
       const response = await fetch("/api/ai/calories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: "workout",
           workout: {
-            name: workoutName,
+            name: workoutNameWithMethod,
             type: workoutData.type,
-            duration: workoutData.duration ? Number(workoutData.duration) : 30, // Varsayılan 30 dakika
+            duration: Number(workoutData.duration),
             distance: workoutData.distance ? Number(workoutData.distance) : undefined,
+            sets: workoutData.sets ? Number(workoutData.sets) : undefined,
+            reps: workoutData.reps ? Number(workoutData.reps) : undefined,
             notes: workoutData.notes || undefined,
           },
+          userProfile: userProfile ? {
+            height: userProfile.height,
+            weight: userProfile.weight,
+            age: userProfile.age,
+            gender: userProfile.gender,
+          } : undefined,
         }),
       });
       const data: CalorieAIResponse = await response.json();
@@ -470,7 +664,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       }));
       setAiFeedback({
         variant: "workout",
-        message: `${Math.round(data.result.calories)} kcal tahmini eklendi (30 dk). ${data.result.explanation}`,
+        message: `${Math.round(data.result.calories)} kcal tahmini eklendi (${workoutData.duration} dk). ${data.result.explanation}`,
         error: null,
       });
     } catch (err: any) {
@@ -484,13 +678,6 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     }
   };
 
-  const handleWorkoutAiEstimate = async () => {
-    if (!workoutData.name.trim()) {
-      setError("Önce egzersiz adını gir veya AI için gerekli alanları doldur.");
-      return;
-    }
-    await calculateWorkoutCaloriesAutomatically(workoutData.name.trim());
-  };
 
   const handleMealAiEstimate = async () => {
     const foodsToSend = mealData.foods
@@ -520,6 +707,12 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
             notes: mealData.notes || undefined,
             foods: foodsToSend,
           },
+          userProfile: userProfile ? {
+            height: userProfile.height,
+            weight: userProfile.weight,
+            age: userProfile.age,
+            gender: userProfile.gender,
+          } : undefined,
         }),
       });
       const data: CalorieAIResponse = await response.json();
@@ -743,20 +936,15 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                   const value = e.target.value;
                   setWorkoutData({ ...workoutData, name: value });
                   
-                  // Debounce: 1 saniye bekleyip otomatik kalori hesapla
+                  // Sadece hazırlık yöntemlerini yükle, kalori hesaplama yapma
                   if (workoutNameTimeout.current) {
                     clearTimeout(workoutNameTimeout.current);
                   }
                   
                   if (value.trim().length >= 2) {
                     workoutNameTimeout.current = setTimeout(() => {
-                      calculateWorkoutCaloriesAutomatically(value.trim());
+                      fetchWorkoutPreparationMethods(value.trim());
                     }, 1000);
-                  }
-                }}
-                onBlur={() => {
-                  if (workoutData.name.trim().length >= 2) {
-                    calculateWorkoutCaloriesAutomatically(workoutData.name.trim());
                   }
                 }}
                 className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
@@ -798,44 +986,132 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
               />
             </div>
             <div>
-              <div className="mb-1 flex items-center justify-between">
-                <label className="text-sm text-gray-400">Yakılan Kalori</label>
+              <label className="mb-1 block text-sm text-gray-400">Yakılan Kalori</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="10000"
+                  step="0.1"
+                  value={workoutData.calories}
+                  onChange={(e) => setWorkoutData({ ...workoutData, calories: e.target.value })}
+                  disabled
+                  readOnly
+                  className="w-full rounded-lg border border-gray-800 bg-gray-900/40 px-4 py-2 text-gray-400 placeholder-gray-500 cursor-not-allowed focus:border-gray-700 focus:outline-none"
+                  placeholder="AI ile hesaplanacak"
+                />
                 <button
                   type="button"
                   onClick={handleWorkoutAiEstimate}
-                  disabled={workoutAiLoading}
-                  className="text-xs text-primary-400 hover:text-primary-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={workoutAiLoading || !workoutData.name.trim() || !workoutData.duration || (requiresDistance(workoutData.name) && !workoutData.distance) || (requiresSetsReps(workoutData.name) && !workoutData.sets)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary-500 px-4 py-1.5 text-sm font-semibold text-white transition-all hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary-500"
                 >
-                  {workoutAiLoading ? "Hesaplanıyor..." : "AI ile hesapla"}
+                  {workoutAiLoading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      Hesaplanıyor...
+                    </span>
+                  ) : (
+                    "AI ile Hesapla"
+                  )}
                 </button>
               </div>
-              <input
-                type="number"
-                min="0"
-                max="10000"
-                step="0.1"
-                value={workoutData.calories}
-                onChange={(e) => setWorkoutData({ ...workoutData, calories: e.target.value })}
-                disabled
-                readOnly
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/40 px-4 py-2 text-gray-400 placeholder-gray-500 cursor-not-allowed focus:border-gray-700 focus:outline-none"
-                placeholder="AI ile hesaplanacak"
-              />
             </div>
-            <div>
-              <label className="mb-1 block text-sm text-gray-400">Mesafe (km)</label>
-              <input
-                type="number"
-                min="0"
-                max="1000"
-                step="0.1"
-                value={workoutData.distance}
-                onChange={(e) => setWorkoutData({ ...workoutData, distance: e.target.value })}
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                placeholder="Örn: 5"
-              />
-            </div>
+            {/* Dinamik alanlar - Mesafe gerektiren egzersizler için */}
+            {requiresDistance(workoutData.name) && (
+              <div>
+                <label className="mb-1 block text-sm text-gray-400">Mesafe (km) *</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="0.1"
+                  required
+                  value={workoutData.distance}
+                  onChange={(e) => setWorkoutData({ ...workoutData, distance: e.target.value })}
+                  className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                  placeholder="Örn: 5"
+                />
+              </div>
+            )}
+            {/* Dinamik alanlar - Set/Tekrar gerektiren egzersizler için */}
+            {requiresSetsReps(workoutData.name) && (
+              <>
+                <div>
+                  <label className="mb-1 block text-sm text-gray-400">Set Sayısı *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    required
+                    value={workoutData.sets}
+                    onChange={(e) => setWorkoutData({ ...workoutData, sets: e.target.value })}
+                    className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                    placeholder="Örn: 3"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-gray-400">Tekrar Sayısı (set başına)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={workoutData.reps}
+                    onChange={(e) => setWorkoutData({ ...workoutData, reps: e.target.value })}
+                    className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                    placeholder="Örn: 10"
+                  />
+                </div>
+              </>
+            )}
+            {/* Mesafe gerektirmeyen ve set gerektirmeyen egzersizler için mesafe alanı (opsiyonel) */}
+            {!requiresDistance(workoutData.name) && !requiresSetsReps(workoutData.name) && workoutData.name.trim().length >= 2 && (
+              <div>
+                <label className="mb-1 block text-sm text-gray-400">Mesafe (km) - Opsiyonel</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="0.1"
+                  value={workoutData.distance}
+                  onChange={(e) => setWorkoutData({ ...workoutData, distance: e.target.value })}
+                  className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                  placeholder="Örn: 5 (varsa)"
+                />
+              </div>
+            )}
           </div>
+          
+          {/* Hazırlık Yöntemi Seçimi */}
+          {workoutData.name.trim().length >= 2 && (
+            <div>
+              <label className="mb-1 block text-xs text-gray-400">Hazırlık/Koşul Yöntemi (Daha doğru kalori için)</label>
+              <select
+                value={workoutData.preparationMethod || ""}
+                onChange={(e) => {
+                  const newPreparationMethod = e.target.value;
+                  setWorkoutData({ ...workoutData, preparationMethod: newPreparationMethod });
+                }}
+                disabled={workoutData.loadingMethods || workoutAiLoading}
+                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-sm text-white focus:border-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Hazırlık yöntemi seçin (opsiyonel)</option>
+                {workoutData.loadingMethods && (
+                  <option value="" disabled>Yükleniyor...</option>
+                )}
+                {workoutData.preparationMethods.map((method) => (
+                  <option key={method} value={method}>
+                    {method}
+                  </option>
+                ))}
+              </select>
+              {workoutData.preparationMethod && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Seçilen: <span className="text-primary-300">{workoutData.preparationMethod}</span>
+                </p>
+              )}
+            </div>
+          )}
           <div>
             <label className="mb-1 block text-sm text-gray-400">Notlar</label>
             <textarea
@@ -886,7 +1162,8 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
             </div>
             <div className="space-y-2">
               {mealData.foods.map((food, index) => (
-                <div key={index} className="grid gap-2 sm:grid-cols-12">
+                <div key={index}>
+                  <div className="grid gap-2 sm:grid-cols-12">
                   <div className="sm:col-span-5 relative">
                     <input
                       type="text"
@@ -894,7 +1171,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                       onChange={(e) => updateFoodField(index, "name", e.target.value)}
                       onBlur={() => {
                         if (food.name.trim().length >= 2) {
-                          calculateFoodCaloriesForAllQuantities(index, food.name.trim());
+                          calculateFoodCaloriesForAllQuantities(index, food.name.trim(), food.preparationMethod);
                         }
                       }}
                       className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
@@ -970,6 +1247,45 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                       ×
                     </button>
                   )}
+                  </div>
+                  
+                  {/* Yapılış Yöntemi Seçimi */}
+                  {food.name.trim().length >= 2 && (
+                    <div className="mt-2">
+                      <label className="mb-1 block text-xs text-gray-400">Yapılış Yöntemi (Daha doğru kalori için)</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={food.preparationMethod || ""}
+                          onChange={(e) => {
+                            const newFoods = [...mealData.foods];
+                            newFoods[index] = { ...newFoods[index], preparationMethod: e.target.value };
+                            setMealData({ ...mealData, foods: newFoods });
+                            // Yapılış yöntemi değiştiğinde kaloriyi yeniden hesapla
+                            if (food.name.trim().length >= 2) {
+                              calculateFoodCaloriesForAllQuantities(index, food.name.trim(), e.target.value);
+                            }
+                          }}
+                          disabled={food.loadingMethods || foodAiLoading[index]}
+                          className="flex-1 rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-sm text-white focus:border-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="">Yapılış yöntemi seçin (opsiyonel)</option>
+                          {food.loadingMethods && (
+                            <option value="" disabled>Yükleniyor...</option>
+                          )}
+                          {food.preparationMethods.map((method) => (
+                            <option key={method} value={method}>
+                              {method}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {food.preparationMethod && (
+                        <p className="mt-1 text-xs text-gray-500">
+                          Seçilen: <span className="text-primary-300">{food.preparationMethod}</span>
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1000,8 +1316,8 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                       totalCalories={totalCalories}
                       foods={mealData.foods}
                       mealType={mealData.mealType}
-                      currentWeight={userProfile?.currentWeight}
-                      targetWeight={userProfile?.targetWeight}
+                      currentWeight={userProfile?.weight || null}
+                      targetWeight={userProfile?.targetWeight || null}
                       evaluation={mealHealthEvaluation}
                       loading={mealHealthLoading}
                       onEvaluationNeeded={async () => {

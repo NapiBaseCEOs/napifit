@@ -129,6 +129,66 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["meals"]["Insert"]>;
       };
+      learned_calories: {
+        Row: {
+          id: string;
+          food_name: string | null;
+          preparation_method: string | null;
+          quantity: string | null;
+          calories_per_100g: number | null;
+          calories_per_gram: number | null;
+          workout_name: string | null;
+          workout_preparation_method: string | null;
+          workout_duration_minutes: number | null;
+          workout_type: string | null;
+          workout_calories: number | null;
+          usage_count: number;
+          last_used_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          food_name?: string | null;
+          preparation_method?: string | null;
+          quantity?: string | null;
+          calories_per_100g?: number | null;
+          calories_per_gram?: number | null;
+          workout_name?: string | null;
+          workout_preparation_method?: string | null;
+          workout_duration_minutes?: number | null;
+          workout_type?: string | null;
+          workout_calories?: number | null;
+          usage_count?: number;
+          last_used_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["learned_calories"]["Insert"]>;
+      };
+      user_reviews: {
+        Row: {
+          id: string;
+          user_id: string;
+          rating: number;
+          comment: string;
+          is_featured: boolean;
+          ai_sentiment_score: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          rating: number;
+          comment: string;
+          is_featured?: boolean;
+          ai_sentiment_score?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["user_reviews"]["Insert"]>;
+      };
     };
     Functions: Record<string, never>;
     Enums: {

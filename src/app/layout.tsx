@@ -11,6 +11,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { hasSupabaseClientEnv } from "@/lib/supabase/config";
 import MobileInstallPrompt from "@/components/MobileInstallPrompt";
 import MobilePerformanceTuner from "@/components/MobilePerformanceTuner";
+import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://napifit.vercel.app";
 const metadataBase = new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`);
@@ -85,16 +86,18 @@ export default async function RootLayout({
     <html lang="tr" className={fontSans.variable}>
       <body className="font-sans">
         <ThemeProvider>
-          <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
-            <GoogleOAuthHandler />
-            <UpdateCheckerProvider>
-              <MobilePerformanceTuner />
-              <VersionUpdateBanner />
-              <Header />
-              {children}
-              <MobileInstallPrompt />
-            </UpdateCheckerProvider>
-          </SupabaseProvider>
+          <LocaleProvider>
+            <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
+              <GoogleOAuthHandler />
+              <UpdateCheckerProvider>
+                <MobilePerformanceTuner />
+                <VersionUpdateBanner />
+                <Header />
+                {children}
+                <MobileInstallPrompt />
+              </UpdateCheckerProvider>
+            </SupabaseProvider>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

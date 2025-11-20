@@ -141,7 +141,7 @@ export default function LoginPage() {
 
     try {
       const isMobile = isMobilePlatform();
-      const nextParam = "/onboarding";
+      const nextParam = "/dashboard";
       const redirectTo =
         typeof window !== "undefined"
           ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextParam)}`
