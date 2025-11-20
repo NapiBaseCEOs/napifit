@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "../components/Header";
-import CursorGlow from "../components/CursorGlow";
 import GoogleOAuthHandler from "../components/GoogleOAuthHandler";
 import SupabaseProvider from "../components/SupabaseProvider";
 import UpdateCheckerProvider from "../components/UpdateCheckerProvider";
@@ -86,7 +85,6 @@ export default async function RootLayout({
     <html lang="tr" className={fontSans.variable}>
       <body className="font-sans">
         <ThemeProvider>
-          <CursorGlow />
           <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
             <GoogleOAuthHandler />
             <UpdateCheckerProvider>
