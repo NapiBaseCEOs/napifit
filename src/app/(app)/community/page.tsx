@@ -45,6 +45,7 @@ export default function CommunityPage() {
   const [formDescription, setFormDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -120,8 +121,34 @@ export default function CommunityPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
-    if (!formTitle.trim() || !formDescription.trim()) {
+    // Frontend validasyonu
+    const title = formTitle.trim();
+    const description = formDescription.trim();
+
+    if (!title || !description) {
+      setError("Başlık ve açıklama zorunludur");
+      return;
+    }
+
+    if (title.length < 3) {
+      setError("Başlık en az 3 karakter olmalıdır");
+      return;
+    }
+
+    if (title.length > 200) {
+      setError("Başlık en fazla 200 karakter olabilir");
+      return;
+    }
+
+    if (description.length < 10) {
+      setError("Açıklama en az 10 karakter olmalıdır");
+      return;
+    }
+
+    if (description.length > 2000) {
+      setError("Açıklama en fazla 2000 karakter olabilir");
       return;
     }
 
@@ -132,8 +159,8 @@ export default function CommunityPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: formTitle.trim(),
-          description: formDescription.trim(),
+          title,
+          description,
         }),
       });
 
@@ -141,14 +168,16 @@ export default function CommunityPage() {
         setFormTitle("");
         setFormDescription("");
         setShowForm(false);
-        fetchRequests();
+        setError(null);
+        await fetchRequests();
       } else {
-        const data = await response.json();
-        alert(data.error || "Öneri oluşturulamadı");
+        const data = await response.json().catch(() => ({}));
+        const errorMessage = data.error || data.details?.[0]?.message || "Öneri oluşturulamadı";
+        setError(errorMessage);
       }
     } catch (error) {
       console.error("Failed to create request:", error);
-      alert("Öneri oluşturulamadı");
+      setError("Öneri oluşturulamadı. Lütfen tekrar deneyin.");
     } finally {
       setSubmitting(false);
     }
@@ -176,31 +205,49 @@ export default function CommunityPage() {
         {showForm && (
           <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6 backdrop-blur-lg">
             <h3 className="mb-4 text-lg font-semibold text-white">Yeni Özellik Öner</h3>
+            {error && (
+              <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                {error}
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-300">Başlık</label>
                 <input
                   type="text"
                   value={formTitle}
-                  onChange={(e) => setFormTitle(e.target.value)}
+                  onChange={(e) => {
+                    setFormTitle(e.target.value);
+                    setError(null);
+                  }}
                   placeholder="Örnek: Karanlık tema desteği"
                   maxLength={200}
                   required
+                  minLength={3}
                   className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  {formTitle.length}/200 {formTitle.length < 3 && formTitle.length > 0 && "(En az 3 karakter)"}
+                </p>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-300">Açıklama</label>
                 <textarea
                   value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
+                  onChange={(e) => {
+                    setFormDescription(e.target.value);
+                    setError(null);
+                  }}
                   placeholder="Özelliğin detaylarını açıklayın..."
                   rows={5}
                   maxLength={2000}
                   required
+                  minLength={10}
                   className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
                 />
-                <p className="mt-1 text-xs text-gray-500">{formDescription.length}/2000</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  {formDescription.length}/2000 {formDescription.length < 10 && formDescription.length > 0 && "(En az 10 karakter)"}
+                </p>
               </div>
               <button
                 type="submit"

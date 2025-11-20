@@ -13,23 +13,21 @@ type Props = {
 export default async function ProfilePage({ searchParams }: Props) {
   try {
     const supabase = createSupabaseServerClient();
+    
+    // Session kontrolü - getUser kullanarak daha güvenilir kontrol
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user: authUser },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError) {
-      console.error("Profile page session error:", sessionError);
-      redirect("/login");
-    }
-
-    if (!session) {
+    if (userError || !authUser) {
+      console.error("Profile page user error:", userError);
       redirect("/login");
     }
 
     // Eğer userId parametresi varsa, o kullanıcının profilini göster, yoksa kendi profilini göster
-    const targetUserId = searchParams.userId || session.user.id;
-    const isOwnProfile = targetUserId === session.user.id;
+    const targetUserId = searchParams.userId || authUser.id;
+    const isOwnProfile = targetUserId === authUser.id;
 
     // Başka birinin profilini görüntülüyorsak ve gizliyse, sadece admin görebilir veya public profile false ise kısıtlı bilgi göster
     const { data: profileData, error: profileError } = await supabaseAdmin
@@ -115,7 +113,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     name: profile.full_name,
     email: isOwnProfile ? profile.email : (showPublicProfile ? profile.email : null), // Email sadece kendi profilinde veya public profil ise
     image: profile.avatar_url,
-    emailVerified: isOwnProfile ? Boolean((session.user as any).email_confirmed_at) : false,
+    emailVerified: isOwnProfile ? Boolean(authUser.email_confirmed_at) : false,
     createdAt: new Date(profile.created_at),
     height: profile.height_cm,
     weight: profile.weight_kg,
