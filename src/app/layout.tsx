@@ -10,6 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { hasSupabaseClientEnv } from "@/lib/supabase/config";
 import MobileInstallPrompt from "@/components/MobileInstallPrompt";
+import MobilePerformanceTuner from "@/components/MobilePerformanceTuner";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://napifit.vercel.app";
 const metadataBase = new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`);
@@ -24,10 +25,6 @@ export const metadata: Metadata = {
   description: "NapiFit - NapiBase tarafından geliştirilmiş Supabase destekli fitness ve sağlık takip uygulaması",
   category: "health_and_fitness",
   manifest: "/manifest.webmanifest",
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#050b1f" },
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-  ],
   icons: {
     icon: [
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -53,7 +50,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#050b1f",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#050b1f" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+  ],
 };
 
 const fontSans = Plus_Jakarta_Sans({
@@ -88,6 +88,7 @@ export default async function RootLayout({
           <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
             <GoogleOAuthHandler />
             <UpdateCheckerProvider>
+              <MobilePerformanceTuner />
               <VersionUpdateBanner />
               <Header />
               {children}

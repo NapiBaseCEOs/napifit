@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.1.48";
+export const APP_VERSION = "0.1.49";
 
 export type ReleaseNote = {
   version: string;
@@ -9,8 +9,21 @@ export type ReleaseNote = {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
   {
-    version: "0.1.48",
+    version: "0.1.49",
     date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),
+    title: "Optimizasyonlar & kullanıcı deneyimi iyileştirmeleri",
+    highlights: [
+      "✨ Pop-up dialog iyileştirmesi - Çirkin tarayıcı alert() yerine güzel tasarımlı dialog gösterimi",
+      "📱 Mobil performans optimizasyonu - MobilePerformanceTuner layout'a eklendi, düşük güçlü cihazlar için otomatik optimizasyon",
+      "🎨 Güncel versiyon bildirimi - Versiyon güncel olduğunda bilgilendirici ve şık bir dialog gösterimi",
+      "⚡ Tam site kontrolü - Tüm proje lint, TypeScript ve build kontrolünden geçirildi",
+      "🔧 Desktop optimizasyonları - Büyük ekranlar için daha iyi layout ve görsel düzenlemeler",
+      "🚀 Build başarısı - Production build hatasız tamamlandı, tüm sayfalar optimize edildi",
+    ],
+  },
+  {
+    version: "0.1.48",
+    date: "20 Kas 2025",
     title: "Dashboard geliştirmeleri & görsel iyileştirmeler",
     highlights: [
       "📱 Yeni sürüm bildirimi - Ana sayfadaki 'Yeni sürüm' butonuna tıklandığında detaylı release notes gösteriliyor",

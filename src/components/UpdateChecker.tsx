@@ -11,6 +11,7 @@ export interface UpdateCheckerRef {
 
 const UpdateChecker = forwardRef<UpdateCheckerRef>((_props, ref) => {
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [showCurrentVersionDialog, setShowCurrentVersionDialog] = useState(false);
   const [newVersion, setNewVersion] = useState<string | null>(null);
 
   const checkForUpdate = () => {
@@ -22,8 +23,8 @@ const UpdateChecker = forwardRef<UpdateCheckerRef>((_props, ref) => {
       setNewVersion(APP_VERSION);
       setShowUpdateDialog(true);
     } else {
-      // Versiyon aynıysa bilgi mesajı göster
-      alert(`Uygulama güncel!\nMevcut versiyon: ${APP_VERSION}`);
+      // Versiyon aynıysa güzel tasarımlı dialog göster
+      setShowCurrentVersionDialog(true);
     }
   };
 
@@ -59,9 +60,72 @@ const UpdateChecker = forwardRef<UpdateCheckerRef>((_props, ref) => {
     setShowUpdateDialog(false);
   };
 
+  const handleCloseCurrentVersion = () => {
+    setShowCurrentVersionDialog(false);
+  };
+
   const currentRelease = RELEASE_NOTES.find((note) => note.version === APP_VERSION);
   const previousReleases = RELEASE_NOTES.filter((note) => note.version !== APP_VERSION).slice(0, 2);
 
+  // Güncel versiyon dialog'u
+  if (showCurrentVersionDialog) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="max-w-md w-full rounded-2xl border border-gray-800/60 bg-gray-900/95 p-6 shadow-2xl backdrop-blur animate-fade-up">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500">
+                <svg
+                  className="h-6 w-6 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Uygulama Güncel!</h3>
+                <p className="text-sm text-gray-400">Mevcut versiyon: {APP_VERSION}</p>
+              </div>
+            </div>
+            
+            <p className="text-sm text-gray-300 leading-relaxed">
+              Harika! Uygulamanın en güncel versiyonunu kullanıyorsun. Tüm özellikler ve iyileştirmeler seninle!
+            </p>
+
+            {currentRelease && (
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 space-y-2">
+                <div className="flex items-center justify-between text-sm text-emerald-100">
+                  <span>{currentRelease.title}</span>
+                  <span className="text-xs text-emerald-200">{currentRelease.date}</span>
+                </div>
+                <ul className="list-disc list-inside text-xs text-gray-100 space-y-1">
+                  {currentRelease.highlights.slice(0, 3).map((highlight) => (
+                    <li key={highlight}>{highlight}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <button
+              onClick={handleCloseCurrentVersion}
+              className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-emerald-500/30 transition-transform active:scale-95 hover:shadow-emerald-500/40"
+            >
+              Tamam
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Yeni versiyon dialog'u
   if (!showUpdateDialog) return null;
 
   return (

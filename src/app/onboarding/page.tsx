@@ -206,10 +206,10 @@ export default function OnboardingPage() {
             {currentStepData.title}
           </h1>
           <p className="text-gray-300 leading-relaxed text-sm">
-            {currentStep === 1 && "Boyunuzu girin (santimetre cinsinden)"}
-            {currentStep === 2 && "Mevcut kilonuzu girin (kilogram cinsinden)"}
-            {currentStep === 3 && "Yaşınızı girin"}
-            {currentStep === 4 && "Cinsiyetinizi seçin"}
+            {currentStep === 1 && "Boyunuzu girin (santimetre cinsinden) - BMR hesaplaması için gereklidir"}
+            {currentStep === 2 && "Mevcut kilonuzu girin (kilogram cinsinden) - BMR hesaplaması için gereklidir"}
+            {currentStep === 3 && "Yaşınızı girin - BMR hesaplaması için gereklidir"}
+            {currentStep === 4 && "Cinsiyetinizi seçin - BMR (durarken kalori yakma) hesaplaması için gereklidir"}
             {currentStep === 5 && "Hedef kilonuzu girin (kilogram cinsinden)"}
             {currentStep === 6 && "Günlük ortalama adım sayınızı girin"}
           </p>

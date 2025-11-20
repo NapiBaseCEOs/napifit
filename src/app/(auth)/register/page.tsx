@@ -17,6 +17,9 @@ export default function RegisterPage() {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
+  const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,10 +31,10 @@ export default function RegisterPage() {
   const passwordPolicy = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
   const completedFields = useMemo(() => {
-    return [firstName, lastName, dateOfBirth, email, password].filter(Boolean).length;
-  }, [firstName, lastName, dateOfBirth, email, password]);
+    return [firstName, lastName, dateOfBirth, email, password, height, weight, gender].filter(Boolean).length;
+  }, [firstName, lastName, dateOfBirth, email, password, height, weight, gender]);
 
-  const formProgress = Math.min(100, Math.round((completedFields / 5) * 100));
+  const formProgress = Math.min(100, Math.round((completedFields / 8) * 100));
 
   const passwordHint = useMemo(() => {
     if (!password) return "En az 8 karakter, içinde büyük harf ve rakam bulunmalı.";
@@ -63,19 +66,18 @@ export default function RegisterPage() {
       return;
     }
     
-    // Doğum tarihi kontrolü (18 yaşından küçük olmamalı)
+    // Doğum tarihi kontrolü ve yaş hesaplama (18 yaşından küçük olmamalı)
     const birthDate = new Date(dateOfBirth);
     const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
+    let calculatedAge = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       // Henüz doğum günü gelmemiş
-      const actualAge = age - 1;
-      if (actualAge < 18) {
-        setError("18 yaşından küçükler kayıt olamaz");
-        return;
-      }
-    } else if (age < 18) {
+      calculatedAge = calculatedAge - 1;
+    }
+    
+    // 18 yaş kontrolü
+    if (calculatedAge < 18) {
       setError("18 yaşından küçükler kayıt olamaz");
       return;
     }
@@ -87,6 +89,20 @@ export default function RegisterPage() {
 
     if (!passwordPolicy.test(password)) {
       setError("Şifren 8+ karakter olmalı ve en az bir büyük harf ile rakam içermeli.");
+      return;
+    }
+
+    // BMR hesaplama için gerekli bilgileri kontrol et
+    if (!height || parseFloat(height) < 100 || parseFloat(height) > 250) {
+      setError("Lütfen geçerli bir boy girin (100-250 cm)");
+      return;
+    }
+    if (!weight || parseFloat(weight) < 30 || parseFloat(weight) > 300) {
+      setError("Lütfen geçerli bir kilo girin (30-300 kg)");
+      return;
+    }
+    if (!gender) {
+      setError("Lütfen cinsiyet seçin");
       return;
     }
     
@@ -124,6 +140,10 @@ export default function RegisterPage() {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           date_of_birth: dateOfBirth,
+          height_cm: parseFloat(height),
+          weight_kg: parseFloat(weight),
+          age: calculatedAge,
+          gender: gender as "male" | "female" | "other",
         });
       }
 
@@ -319,6 +339,70 @@ export default function RegisterPage() {
                 required
               />
               <p className="text-xs text-gray-500">18 yaşından küçükler kayıt olamaz</p>
+            </div>
+            <div className="rounded-2xl border border-primary-500/20 bg-primary-500/5 p-4 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <svg className="h-5 w-5 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-primary-300 mb-1">BMR (Bazal Metabolizma Hızı) Hesaplaması</p>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    Durarken yaktığın kaloriyi hesaplamak için boy, kilo, yaş ve cinsiyet bilgilerine ihtiyacımız var. Bu bilgiler dashboard'da günlük kalori dengesini görmek için kullanılacak.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-xs uppercase tracking-wide text-gray-400">
+                    Boy (cm) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={100}
+                    max={250}
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                    placeholder="175"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs uppercase tracking-wide text-gray-400">
+                    Kilo (kg) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={30}
+                    max={300}
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                    placeholder="75"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs uppercase tracking-wide text-gray-400">
+                  Cinsiyet <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                  required
+                >
+                  <option value="">Seçiniz</option>
+                  <option value="male">Erkek</option>
+                  <option value="female">Kadın</option>
+                  <option value="other">Diğer</option>
+                </select>
+                <p className="text-xs text-gray-500">Yaş bilgisi doğum tarihinden otomatik hesaplanacak</p>
+              </div>
             </div>
             <div className="space-y-2">
               <label className="block text-xs uppercase tracking-wide text-gray-400">
