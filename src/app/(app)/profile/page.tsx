@@ -11,30 +11,56 @@ type Props = {
 };
 
 export default async function ProfilePage({ searchParams }: Props) {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  try {
+    const supabase = createSupabaseServerClient();
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-  if (!session) redirect("/login");
+    if (sessionError) {
+      console.error("Profile page session error:", sessionError);
+      redirect("/login");
+    }
 
-  // Eğer userId parametresi varsa, o kullanıcının profilini göster, yoksa kendi profilini göster
-  const targetUserId = searchParams.userId || session.user.id;
-  const isOwnProfile = targetUserId === session.user.id;
+    if (!session) {
+      redirect("/login");
+    }
 
-  // Başka birinin profilini görüntülüyorsak ve gizliyse, sadece admin görebilir veya public profile false ise kısıtlı bilgi göster
-  const { data: profileData, error: profileError } = await supabaseAdmin
-    .from("profiles")
-    .select(
-      "id,email,full_name,avatar_url,created_at,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,show_public_profile,show_community_stats"
-    )
-    .eq("id", targetUserId)
-    .single();
+    // Eğer userId parametresi varsa, o kullanıcının profilini göster, yoksa kendi profilini göster
+    const targetUserId = searchParams.userId || session.user.id;
+    const isOwnProfile = targetUserId === session.user.id;
 
-  if (profileError || !profileData) {
-    // Profil bulunamadıysa ana sayfaya yönlendir
-    redirect("/");
-  }
+    // Başka birinin profilini görüntülüyorsak ve gizliyse, sadece admin görebilir veya public profile false ise kısıtlı bilgi göster
+    const { data: profileData, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select(
+        "id,email,full_name,avatar_url,created_at,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,show_public_profile,show_community_stats"
+      )
+      .eq("id", targetUserId)
+      .single();
+
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
+      // Kendi profilini görüntülüyorsa ve profil yoksa, onboarding'e yönlendir
+      if (isOwnProfile) {
+        redirect("/onboarding");
+      } else {
+        // Başka birinin profilini görüntülemeye çalışıyorsa ana sayfaya yönlendir
+        redirect("/");
+      }
+    }
+
+    if (!profileData) {
+      // Profil bulunamadıysa
+      if (isOwnProfile) {
+        // Kendi profilini görüntülüyorsa onboarding'e yönlendir
+        redirect("/onboarding");
+      } else {
+        // Başka birinin profilini görüntülemeye çalışıyorsa ana sayfaya yönlendir
+        redirect("/");
+      }
+    }
 
   const profile = profileData as {
     id: string;
@@ -288,5 +314,10 @@ export default async function ProfilePage({ searchParams }: Props) {
       </div>
     </main>
   );
+  } catch (error) {
+    console.error("Profile page error:", error);
+    // Hata durumunda login sayfasına yönlendir
+    redirect("/login");
+  }
 }
 

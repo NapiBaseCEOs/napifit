@@ -55,8 +55,17 @@ export default function CommunityPage() {
   }, [supabase]);
 
   useEffect(() => {
-    fetchRequests();
-    fetchLeaderboard();
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([fetchRequests(), fetchLeaderboard()]);
+      } catch (error) {
+        console.error("Failed to load community data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy]);
 
@@ -66,11 +75,12 @@ export default function CommunityPage() {
       if (response.ok) {
         const data = await response.json();
         setRequests(data.requests || []);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to fetch requests:", errorData.error || response.statusText);
       }
     } catch (error) {
       console.error("Failed to fetch requests:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -80,6 +90,9 @@ export default function CommunityPage() {
       if (response.ok) {
         const data = await response.json();
         setLeaderboard(data.leaderboard || []);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to fetch leaderboard:", errorData.error || response.statusText);
       }
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);
@@ -87,16 +100,22 @@ export default function CommunityPage() {
   };
 
   const handleLike = async (id: string) => {
-    const response = await fetch(`/api/feature-requests/${id}/like`, {
-      method: "POST",
-    });
+    try {
+      const response = await fetch(`/api/feature-requests/${id}/like`, {
+        method: "POST",
+      });
 
-    if (!response.ok) {
-      throw new Error("Failed to like");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to like");
+      }
+
+      // Refresh requests
+      await fetchRequests();
+    } catch (error) {
+      console.error("Failed to like request:", error);
+      throw error; // Re-throw so FeatureRequestCard can handle it
     }
-
-    // Refresh requests
-    fetchRequests();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

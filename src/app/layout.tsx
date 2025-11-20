@@ -87,16 +87,16 @@ export default async function RootLayout({
       <body className="font-sans">
         <ThemeProvider>
           <LocaleProvider>
-            <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
-              <GoogleOAuthHandler />
-              <UpdateCheckerProvider>
+          <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
+            <GoogleOAuthHandler />
+            <UpdateCheckerProvider>
                 <MobilePerformanceTuner />
-                <VersionUpdateBanner />
-                <Header />
-                {children}
-                <MobileInstallPrompt />
-              </UpdateCheckerProvider>
-            </SupabaseProvider>
+              <VersionUpdateBanner />
+              <Header />
+              {children}
+              <MobileInstallPrompt />
+            </UpdateCheckerProvider>
+          </SupabaseProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

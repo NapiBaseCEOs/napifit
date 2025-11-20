@@ -162,8 +162,8 @@ export async function POST(request: Request) {
     if (foodsToEstimate.length > 0) {
       // Bazı yiyecekler için AI'dan hesapla
       const aiResult = await estimateMealCalories({
-        mealType: parsed.meal.mealType ?? null,
-        notes: parsed.meal.notes ?? null,
+      mealType: parsed.meal.mealType ?? null,
+      notes: parsed.meal.notes ?? null,
         foods: foodsToEstimate,
         userProfile: parsed.userProfile ?? undefined,
       });

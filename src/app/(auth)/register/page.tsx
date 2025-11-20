@@ -74,7 +74,7 @@ export default function RegisterPage() {
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       // Henüz doğum günü gelmemiş
       calculatedAge = calculatedAge - 1;
-    }
+      }
     
     // 18 yaş kontrolü
     if (calculatedAge < 18) {
@@ -354,54 +354,54 @@ export default function RegisterPage() {
                     Durarken yaktığın kaloriyi hesaplamak için boy, kilo, yaş ve cinsiyet bilgilerine ihtiyacımız var. Bu bilgiler dashboard'da günlük kalori dengesini görmek için kullanılacak.
                   </p>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-xs uppercase tracking-wide text-gray-400">
-                    Boy (cm) <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min={100}
-                    max={250}
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
-                    placeholder="175"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-xs uppercase tracking-wide text-gray-400">
-                    Kilo (kg) <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min={30}
-                    max={300}
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
-                    placeholder="75"
-                    required
-                  />
-                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-xs uppercase tracking-wide text-gray-400">
+                  Boy (cm) <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="number"
+                  min={100}
+                  max={250}
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                  placeholder="175"
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <label className="block text-xs uppercase tracking-wide text-gray-400">
-                  Cinsiyet <span className="text-red-400">*</span>
+                  Kilo (kg) <span className="text-red-400">*</span>
                 </label>
-                <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                <input
+                  type="number"
+                  min={30}
+                  max={300}
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                  placeholder="75"
                   required
-                >
-                  <option value="">Seçiniz</option>
-                  <option value="male">Erkek</option>
-                  <option value="female">Kadın</option>
-                  <option value="other">Diğer</option>
-                </select>
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-xs uppercase tracking-wide text-gray-400">
+                Cinsiyet <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                required
+              >
+                <option value="">Seçiniz</option>
+                <option value="male">Erkek</option>
+                <option value="female">Kadın</option>
+                <option value="other">Diğer</option>
+              </select>
                 <p className="text-xs text-gray-500">Yaş bilgisi doğum tarihinden otomatik hesaplanacak</p>
               </div>
             </div>

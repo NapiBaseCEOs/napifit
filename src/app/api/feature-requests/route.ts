@@ -26,11 +26,10 @@ export async function GET(request: Request) {
         description,
         like_count,
         is_implemented,
-        implemented_at,
         implemented_version,
         created_at,
         updated_at,
-        profiles!inner(
+        profiles(
           id,
           full_name,
           avatar_url,
@@ -71,24 +70,36 @@ export async function GET(request: Request) {
       userLikes = likes?.map((l) => l.feature_request_id) || [];
     }
 
-    const formattedRequests = requests?.map((req: any) => ({
-      id: req.id,
-      title: req.title,
-      description: req.description,
-      likeCount: req.like_count,
-      isLiked: user ? userLikes.includes(req.id) : false,
-      isImplemented: req.is_implemented,
-      implementedAt: req.implemented_at,
-      implementedVersion: req.implemented_version,
-      createdAt: req.created_at,
-      user: {
-        id: req.profiles.id,
-        name: req.profiles.show_public_profile ? (req.profiles.full_name || "Kullanıcı") : "Gizli Kullanıcı",
-        avatar: req.profiles.show_public_profile ? req.profiles.avatar_url : null,
-        joinedAt: req.profiles.created_at,
-        showStats: req.profiles.show_community_stats ?? true,
-      },
-    })) || [];
+    const formattedRequests = requests?.map((req: any) => {
+      // Profil yoksa default değerler kullan
+      const profile = req.profiles || {
+        id: req.user_id,
+        full_name: null,
+        avatar_url: null,
+        show_public_profile: true,
+        show_community_stats: true,
+        created_at: req.created_at,
+      };
+
+      return {
+        id: req.id,
+        title: req.title,
+        description: req.description,
+        likeCount: req.like_count,
+        isLiked: user ? userLikes.includes(req.id) : false,
+        isImplemented: req.is_implemented,
+        implementedAt: null, // implemented_at sütunu yok, null döndür
+        implementedVersion: req.implemented_version,
+        createdAt: req.created_at,
+        user: {
+          id: profile.id,
+          name: profile.show_public_profile ? (profile.full_name || "Kullanıcı") : "Gizli Kullanıcı",
+          avatar: profile.show_public_profile ? profile.avatar_url : null,
+          joinedAt: profile.created_at,
+          showStats: profile.show_community_stats ?? true,
+        },
+      };
+    }) || [];
 
     return NextResponse.json({ requests: formattedRequests });
   } catch (error) {
