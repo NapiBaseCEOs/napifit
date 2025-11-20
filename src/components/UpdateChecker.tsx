@@ -130,8 +130,8 @@ const UpdateChecker = forwardRef<UpdateCheckerRef>((_props, ref) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="max-w-md w-full rounded-2xl border border-gray-800/60 bg-gray-900/95 p-6 shadow-2xl backdrop-blur">
-        <div className="space-y-4">
+      <div className="max-w-md w-full max-h-[90vh] rounded-2xl border border-gray-800/60 bg-gray-900/95 shadow-2xl backdrop-blur flex flex-col">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-blue-600">
               <svg
@@ -161,12 +161,13 @@ const UpdateChecker = forwardRef<UpdateCheckerRef>((_props, ref) => {
           {currentRelease && (
             <div className="rounded-2xl border border-primary-500/30 bg-primary-500/10 px-4 py-3 space-y-2">
               <div className="flex items-center justify-between text-sm text-primary-100">
-                <span>{currentRelease.title}</span>
+                <span className="font-semibold">Versiyon {currentRelease.version}</span>
                 <span className="text-xs text-primary-200">{currentRelease.date}</span>
               </div>
-              <ul className="list-disc list-inside text-xs text-gray-100 space-y-1">
-                {currentRelease.highlights.map((highlight) => (
-                  <li key={highlight}>{highlight}</li>
+              <h4 className="text-sm font-semibold text-white">{currentRelease.title}</h4>
+              <ul className="list-disc list-inside text-xs text-gray-100 space-y-1 max-h-48 overflow-y-auto">
+                {currentRelease.highlights.map((highlight, idx) => (
+                  <li key={idx} className="leading-relaxed">{highlight}</li>
                 ))}
               </ul>
             </div>
@@ -187,21 +188,21 @@ const UpdateChecker = forwardRef<UpdateCheckerRef>((_props, ref) => {
               </ul>
             </div>
           )}
-
-          <div className="flex gap-3">
-            <button
-              onClick={handleDismiss}
-              className="flex-1 rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
-            >
-              Daha Sonra
-            </button>
-            <button
-              onClick={handleUpdate}
-              className="flex-1 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-purple-500/30 transition-transform active:scale-95"
-            >
-              Güncelle
-            </button>
-          </div>
+        </div>
+        
+        <div className="p-6 pt-0 flex gap-3 border-t border-gray-800/60">
+          <button
+            onClick={handleDismiss}
+            className="flex-1 rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
+          >
+            Daha Sonra
+          </button>
+          <button
+            onClick={handleUpdate}
+            className="flex-1 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-purple-500/30 transition-transform active:scale-95"
+          >
+            Güncelle
+          </button>
         </div>
       </div>
     </div>
