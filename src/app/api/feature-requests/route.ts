@@ -26,6 +26,7 @@ export async function GET(request: Request) {
         description,
         like_count,
         is_implemented,
+        implemented_at,
         implemented_version,
         created_at,
         updated_at,
@@ -88,7 +89,7 @@ export async function GET(request: Request) {
         likeCount: req.like_count,
         isLiked: user ? userLikes.includes(req.id) : false,
         isImplemented: req.is_implemented,
-        implementedAt: null, // implemented_at sütunu yok, null döndür
+        implementedAt: req.implemented_at,
         implementedVersion: req.implemented_version,
         createdAt: req.created_at,
         user: {

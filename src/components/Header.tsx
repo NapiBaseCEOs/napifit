@@ -9,6 +9,7 @@ import { APP_VERSION } from "@/config/version";
 import { useUpdateChecker } from "./UpdateCheckerProvider";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import type { Database } from "@/lib/supabase/types";
+import type { Database } from "@/lib/supabase/types";
 
 export default function Header() {
   const router = useRouter();
