@@ -86,7 +86,7 @@ function parseGeminiJSON(response: any): any {
 
 export async function estimateWorkoutCalories(input: WorkoutEstimateInput): Promise<WorkoutEstimateResult> {
   const client = getGeminiClient();
-  const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = client.getGenerativeModel({ model: "gemini-pro" });
 
   const prompt = `Sen Türkçe konuşan bir egzersiz fizyoloğusun. MET değerleri, süre, tempo ve varsa mesafeyi kullanarak yakılan kalori miktarını tahmin et. Veriler eksikse yetişkin için 70 kg varsay.
 
@@ -115,13 +115,32 @@ Sadece JSON döndür, başka metin ekleme.`;
     };
   } catch (error) {
     console.error("Gemini workout estimation error:", error);
-    throw new Error("Egzersiz kalori tahmini yapılamadı");
+    const errorMessage = error instanceof Error ? error.message : "Bilinmeyen hata";
+    if (errorMessage.includes("404") || errorMessage.includes("model")) {
+      throw new Error("AI model bulunamadı. Lütfen yöneticiye bildirin.");
+    }
+    if (errorMessage.includes("API_KEY") || errorMessage.includes("403")) {
+      throw new Error("API anahtarı geçersiz. Lütfen yöneticiye bildirin.");
+    }
+    throw new Error(`Egzersiz kalori tahmini yapılamadı: ${errorMessage}`);
   }
 }
 
 export async function estimateMealCalories(input: MealEstimateInput): Promise<MealEstimateResult> {
+  // Fallback: If Gemini is not available, use OpenAI if available
+  if (!hasGeminiKey && hasOpenAIKey) {
+    // TODO: Implement OpenAI fallback
+    throw new Error("Gemini API key eksik. OpenAI fallback henüz implement edilmedi.");
+  }
+  
   const client = getGeminiClient();
-  const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // Try gemini-1.5-pro first, then fallback to gemini-pro
+  let model;
+  try {
+    model = client.getGenerativeModel({ model: "gemini-1.5-pro" });
+  } catch {
+    model = client.getGenerativeModel({ model: "gemini-pro" });
+  }
 
   // Miktar örnekleri: 1-2 tabak, 2 kaşık, 1 kaşık, 1 kepçe, 1 porsiyon, 200g, vb.
   const foodsList = input.foods.map((food) => {
@@ -188,7 +207,14 @@ Sadece JSON döndür, başka metin ekleme. Tüm kalori değerleri gerçekçi olm
     };
   } catch (error) {
     console.error("Gemini meal estimation error:", error);
-    throw new Error("Öğün kalori tahmini yapılamadı");
+    const errorMessage = error instanceof Error ? error.message : "Bilinmeyen hata";
+    if (errorMessage.includes("404") || errorMessage.includes("model")) {
+      throw new Error("AI model bulunamadı. Lütfen yöneticiye bildirin.");
+    }
+    if (errorMessage.includes("API_KEY") || errorMessage.includes("403")) {
+      throw new Error("API anahtarı geçersiz. Lütfen yöneticiye bildirin.");
+    }
+    throw new Error(`Öğün kalori tahmini yapılamadı: ${errorMessage}`);
   }
 }
 

@@ -67,8 +67,24 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: "Geçersiz istek", errors: error.errors }, { status: 400 });
     }
+    
     console.error("AI calorie route error:", error);
-    return NextResponse.json({ message: "Kalori tahmini yapılamadı" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Bilinmeyen hata";
+    
+    // Detaylı hata mesajı oluştur
+    let userMessage = "Kalori tahmini yapılamadı";
+    if (errorMessage.includes("API_KEY") || errorMessage.includes("403") || errorMessage.includes("401")) {
+      userMessage = "API anahtarı geçersiz veya eksik. Lütfen yöneticiye bildirin.";
+    } else if (errorMessage.includes("404") || errorMessage.includes("model") || errorMessage.includes("not found")) {
+      userMessage = "AI model bulunamadı. Lütfen tekrar deneyin veya yöneticiye bildirin.";
+    } else if (errorMessage.includes("quota") || errorMessage.includes("rate limit")) {
+      userMessage = "API kota limiti aşıldı. Lütfen daha sonra tekrar deneyin.";
+    }
+    
+    return NextResponse.json({ 
+      message: userMessage,
+      error: process.env.NODE_ENV === "development" ? errorMessage : undefined
+    }, { status: 500 });
   }
 }
 
