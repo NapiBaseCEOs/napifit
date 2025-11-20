@@ -86,7 +86,8 @@ function parseGeminiJSON(response: any): any {
 
 export async function estimateWorkoutCalories(input: WorkoutEstimateInput): Promise<WorkoutEstimateResult> {
   const client = getGeminiClient();
-  const model = client.getGenerativeModel({ model: "gemini-pro" });
+  // Use gemini-2.5-flash (free tier) - fastest and most reliable
+  const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `Sen Türkçe konuşan bir egzersiz fizyoloğusun. MET değerleri, süre, tempo ve varsa mesafeyi kullanarak yakılan kalori miktarını tahmin et. Veriler eksikse yetişkin için 70 kg varsay.
 
@@ -134,13 +135,8 @@ export async function estimateMealCalories(input: MealEstimateInput): Promise<Me
   }
   
   const client = getGeminiClient();
-  // Try gemini-1.5-pro first, then fallback to gemini-pro
-  let model;
-  try {
-    model = client.getGenerativeModel({ model: "gemini-1.5-pro" });
-  } catch {
-    model = client.getGenerativeModel({ model: "gemini-pro" });
-  }
+  // Use gemini-2.5-flash (free tier) - fastest and most reliable
+  const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   // Miktar örnekleri: 1-2 tabak, 2 kaşık, 1 kaşık, 1 kepçe, 1 porsiyon, 200g, vb.
   const foodsList = input.foods.map((food) => {
