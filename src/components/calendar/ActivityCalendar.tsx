@@ -41,6 +41,7 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
 
   useEffect(() => {
     fetchActivities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, month]);
 
   const fetchActivities = async () => {

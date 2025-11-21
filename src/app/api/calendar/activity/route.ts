@@ -31,7 +31,6 @@ export async function GET(request: Request) {
     const now = new Date();
     const year = yearParam ? parseInt(yearParam, 10) : now.getFullYear();
     const month = monthParam ? parseInt(monthParam.split("-")[1] || monthParam, 10) : now.getMonth() + 1;
-    const targetDate = new Date(year, month - 1, 1);
 
     // Ayın ilk ve son günü
     const firstDay = new Date(year, month - 1, 1);

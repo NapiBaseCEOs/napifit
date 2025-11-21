@@ -94,6 +94,7 @@ export function useAnimatedNumber(
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetValue, duration]);
 
   return currentValue;
