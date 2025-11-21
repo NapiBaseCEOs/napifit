@@ -25,6 +25,7 @@ export async function GET(request: Request) {
         title,
         description,
         like_count,
+        dislike_count,
         is_implemented,
         implemented_at,
         implemented_version,
@@ -38,10 +39,9 @@ export async function GET(request: Request) {
           show_community_stats,
           created_at
         )
-      `)
-      .range(offset, offset + limit - 1);
+      `);
 
-    // Sıralama
+    // Sıralama (range'den ÖNCE yapılmalı)
     if (sortBy === "likes") {
       query = query.order("like_count", { ascending: false }).order("created_at", { ascending: false });
     } else if (sortBy === "newest") {
@@ -50,6 +50,9 @@ export async function GET(request: Request) {
       query = query.eq("is_implemented", true).order("implemented_at", { ascending: false });
     }
 
+    // Range'i sıralamadan SONRA uygula
+    query = query.range(offset, offset + limit - 1);
+
     const { data: requests, error } = await query;
 
     if (error) {
@@ -57,18 +60,26 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Failed to fetch feature requests" }, { status: 500 });
     }
 
-    // Kullanıcı beğenilerini kontrol et
+    // Kullanıcı beğenilerini ve beğenmemelerini kontrol et
     const supabase = createSupabaseRouteClient();
     const { data: { user } } = await supabase.auth.getUser();
     let userLikes: string[] = [];
+    let userDislikes: string[] = [];
 
-    if (user) {
-      const { data: likes } = await supabase
-        .from("feature_request_likes")
-        .select("feature_request_id")
-        .eq("user_id", user.id);
+    if (user && user.id) {
+      const [{ data: likes }, { data: dislikes }] = await Promise.all([
+        supabase
+          .from("feature_request_likes")
+          .select("feature_request_id")
+          .eq("user_id", user.id),
+        supabase
+          .from("feature_request_dislikes")
+          .select("feature_request_id")
+          .eq("user_id", user.id),
+      ]);
 
       userLikes = likes?.map((l) => l.feature_request_id) || [];
+      userDislikes = dislikes?.map((d) => d.feature_request_id) || [];
     }
 
     const formattedRequests = requests?.map((req: any) => {
@@ -86,8 +97,10 @@ export async function GET(request: Request) {
         id: req.id,
         title: req.title,
         description: req.description,
-        likeCount: req.like_count,
+        likeCount: req.like_count || 0,
+        dislikeCount: req.dislike_count || 0,
         isLiked: user ? userLikes.includes(req.id) : false,
+        isDisliked: user ? userDislikes.includes(req.id) : false,
         isImplemented: req.is_implemented,
         implementedAt: req.implemented_at,
         implementedVersion: req.implemented_version,

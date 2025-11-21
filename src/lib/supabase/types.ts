@@ -28,6 +28,9 @@ export interface Database {
           onboarding_completed: boolean;
           show_public_profile: boolean | null;
           show_community_stats: boolean | null;
+          daily_water_goal_ml: number | null;
+          water_reminder_enabled: boolean | null;
+          water_reminder_interval_minutes: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -49,6 +52,9 @@ export interface Database {
           onboarding_completed?: boolean;
           show_public_profile?: boolean | null;
           show_community_stats?: boolean | null;
+          daily_water_goal_ml?: number | null;
+          water_reminder_enabled?: boolean | null;
+          water_reminder_interval_minutes?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -200,6 +206,7 @@ export interface Database {
           title: string;
           description: string;
           like_count: number;
+          dislike_count: number;
           is_implemented: boolean;
           implemented_at: string | null;
           implemented_version: string | null;
@@ -212,6 +219,7 @@ export interface Database {
           title: string;
           description: string;
           like_count?: number;
+          dislike_count?: number;
           is_implemented?: boolean;
           implemented_at?: string | null;
           implemented_version?: string | null;
@@ -234,6 +242,36 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["feature_request_likes"]["Insert"]>;
+      };
+      feature_request_dislikes: {
+        Row: {
+          id: string;
+          feature_request_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          feature_request_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["feature_request_dislikes"]["Insert"]>;
+      };
+      water_intake: {
+        Row: {
+          id: string;
+          user_id: string;
+          amount_ml: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          amount_ml: number;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["water_intake"]["Insert"]>;
       };
     };
     Functions: Record<string, never>;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { calculateBMR, calculateTDEE, type ActivityLevel } from "@/lib/utils/bmr";
 import AdSenseAd from "@/components/ads/AdSenseAd";
+import ActivityCalendar from "@/components/calendar/ActivityCalendar";
 
 interface DashboardContentProps {
   user: {
@@ -300,6 +301,14 @@ export default function DashboardContent({
             </Link>
           )}
         </div>
+
+        {/* Activity Calendar */}
+        <ActivityCalendar 
+          onDateClick={(date) => {
+            // Gelecekte bu güne ait detayları gösterebiliriz
+            console.log("Selected date:", date);
+          }}
+        />
 
         {/* Reklam: Dashboard içerik arası - Yazı içi reklamlar */}
         <div className="flex justify-center py-4">

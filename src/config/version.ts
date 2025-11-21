@@ -1,4 +1,4 @@
-export const APP_VERSION = "0.1.51";
+export const APP_VERSION = "0.1.52";
 
 export type ReleaseNote = {
   version: string;
@@ -8,6 +8,20 @@ export type ReleaseNote = {
 };
 
 export const RELEASE_NOTES: ReleaseNote[] = [
+  {
+    version: "0.1.52",
+    date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),
+    title: "Su hatırlatıcısı & aktivite takvimi & beğenmeme sistemi",
+    highlights: [
+      "💧 Su hatırlatıcısı sistemi - Günlük su tüketimi takibi, görsel kadeh animasyonu, browser bildirimleri",
+      "📅 Aktivite takvimi - Dashboard ve sağlık sayfasında günlük aktivite takibi, renkli durum göstergeleri",
+      "👎 Beğenmeme sistemi - Topluluk önerilerine dislike butonu eklendi",
+      "🎨 Modern sağlık ekranı - Renkli gradient tasarım, gereksiz metrikler kaldırıldı (sadece kilo ve bağırsak sağlığı)",
+      "🔔 Bildirim sistemi - Su hatırlatıcısı için ayarlanabilir aralıklı bildirimler",
+      "⚖️ Sadeleştirilmiş metrikler - BMI, yağ oranı, kas kütlesi gibi kullanıcının bilemeyeceği metrikler kaldırıldı",
+      "📊 Bugün özeti - Takvimde bugün için eksiklik kontrolü ve uyarılar",
+    ],
+  },
   {
     version: "0.1.51",
     date: new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }),

@@ -94,6 +94,9 @@ const profileUpdateSchema = z.object({
   dailySteps: z.number().min(0).max(200000).nullable().optional(),
   showPublicProfile: z.boolean().optional(),
   showCommunityStats: z.boolean().optional(),
+  dailyWaterGoalMl: z.number().min(500).max(10000).optional(),
+  waterReminderEnabled: z.boolean().optional(),
+  waterReminderIntervalMinutes: z.number().min(30).max(480).optional(),
 });
 
 export async function PUT(request: Request) {
@@ -126,20 +129,32 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: "Güncellenecek veri yok" }, { status: 400 });
   }
 
+  const updateData: any = {
+    full_name: parsed.name,
+    height_cm: parsed.height,
+    weight_kg: parsed.weight,
+    age: parsed.age,
+    gender: parsed.gender,
+    target_weight_kg: parsed.targetWeight,
+    daily_steps: parsed.dailySteps,
+    show_public_profile: parsed.showPublicProfile,
+    show_community_stats: parsed.showCommunityStats,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (parsed.dailyWaterGoalMl !== undefined) {
+    updateData.daily_water_goal_ml = parsed.dailyWaterGoalMl;
+  }
+  if (parsed.waterReminderEnabled !== undefined) {
+    updateData.water_reminder_enabled = parsed.waterReminderEnabled;
+  }
+  if (parsed.waterReminderIntervalMinutes !== undefined) {
+    updateData.water_reminder_interval_minutes = parsed.waterReminderIntervalMinutes;
+  }
+
   const { data, error } = await supabase
     .from("profiles")
-    .update({
-      full_name: parsed.name,
-      height_cm: parsed.height,
-      weight_kg: parsed.weight,
-      age: parsed.age,
-      gender: parsed.gender,
-      target_weight_kg: parsed.targetWeight,
-      daily_steps: parsed.dailySteps,
-      show_public_profile: parsed.showPublicProfile,
-      show_community_stats: parsed.showCommunityStats,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq("id", user.id)
     .select()
     .single();

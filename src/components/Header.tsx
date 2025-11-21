@@ -84,6 +84,12 @@ export default function Header() {
                 Sağlık
               </Link>
               <Link
+                href="/water"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-blue-500/10 hover:border-blue-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
+              >
+                💧 Su
+              </Link>
+              <Link
                 href="/profile"
                 className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-fitness-purple/10 hover:border-fitness-purple/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
               >

@@ -17,23 +17,19 @@ export async function findLearnedFoodCalories(
 } | null> {
   const supabase = createSupabaseRouteClient();
 
-  // preparation_method ve quantity null kontrolü için daha esnek sorgu
+  // preparation_method kontrolü için esnek sorgu
+  // quantity kontrolü yok çünkü her zaman "100g" için kaydediyoruz ve kontrol ediyoruz
   let query = supabase
     .from("learned_calories")
     .select("id, calories_per_100g, calories_per_gram")
     .eq("food_name", foodName.toLowerCase().trim())
-    .is("workout_name", null);
+    .is("workout_name", null)
+    .eq("quantity", "100g"); // Her zaman 100g için kontrol et
 
   if (preparationMethod) {
     query = query.eq("preparation_method", preparationMethod.toLowerCase().trim());
   } else {
     query = query.is("preparation_method", null);
-  }
-
-  if (quantity) {
-    query = query.eq("quantity", quantity);
-  } else {
-    query = query.is("quantity", null);
   }
 
   const { data, error } = await query.single();
@@ -133,6 +129,31 @@ export async function saveLearnedFoodCalories(
     last_used_at: new Date().toISOString(),
   };
 
+  // Önce aynı kayıt var mı kontrol et (duplicate önleme)
+  const existing = await findLearnedFoodCalories(
+    foodName,
+    preparationMethod,
+    quantity || "100g"
+  );
+
+  if (existing) {
+    // Zaten var, güncelle
+    const { error: updateError } = await supabase
+      .from("learned_calories")
+      .update({
+        calories_per_100g: caloriesPer100g,
+        calories_per_gram: caloriesPerGram,
+        last_used_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id);
+
+    if (updateError) {
+      console.error("Error updating learned food calories:", updateError);
+    }
+    return;
+  }
+
+  // Yeni kayıt ekle
   const { error } = await supabase.from("learned_calories").insert(insertData);
 
   if (error) {
@@ -168,6 +189,31 @@ export async function saveLearnedWorkoutCalories(
     last_used_at: new Date().toISOString(),
   };
 
+  // Önce aynı kayıt var mı kontrol et (duplicate önleme)
+  const existing = await findLearnedWorkoutCalories(
+    workoutName,
+    preparationMethod,
+    duration,
+    type
+  );
+
+  if (existing) {
+    // Zaten var, güncelle
+    const { error: updateError } = await supabase
+      .from("learned_calories")
+      .update({
+        workout_calories: calories,
+        last_used_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id);
+
+    if (updateError) {
+      console.error("Error updating learned workout calories:", updateError);
+    }
+    return;
+  }
+
+  // Yeni kayıt ekle
   const { error } = await supabase.from("learned_calories").insert(insertData);
 
   if (error) {

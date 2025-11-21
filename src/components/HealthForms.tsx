@@ -16,13 +16,9 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Health Metric Form
+  // Health Metric Form - Sadeleştirilmiş (sadece kullanıcının bilebileceği bilgiler)
   const [metricData, setMetricData] = useState({
     weight: "",
-    bodyFat: "",
-    muscleMass: "",
-    water: "",
-    bmi: "",
     bowelMovementDays: "", // Kaç günde bir tuvalete çıktığı
     notes: "",
   });
@@ -111,10 +107,6 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     try {
       const payload: any = {};
       if (metricData.weight) payload.weight = parseFloat(metricData.weight);
-      if (metricData.bodyFat) payload.bodyFat = parseFloat(metricData.bodyFat);
-      if (metricData.muscleMass) payload.muscleMass = parseFloat(metricData.muscleMass);
-      if (metricData.water) payload.water = parseFloat(metricData.water);
-      if (metricData.bmi) payload.bmi = parseFloat(metricData.bmi);
       if (metricData.bowelMovementDays) payload.bowelMovementDays = parseFloat(metricData.bowelMovementDays);
       if (metricData.notes) payload.notes = metricData.notes;
 
@@ -133,10 +125,6 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       setSuccess("Sağlık metrik başarıyla eklendi!");
       setMetricData({
         weight: "",
-        bodyFat: "",
-        muscleMass: "",
-        water: "",
-        bmi: "",
         bowelMovementDays: "",
         notes: "",
       });
@@ -519,11 +507,11 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     newFoods[index] = { ...currentFood, [field]: value };
     setMealData({ ...mealData, foods: newFoods });
 
-    // Yiyecek adı yazıldığında otomatik yapılış yöntemlerini al ve kalori hesapla (debounce)
+    // Yiyecek adı yazıldığında sadece yapılış yöntemlerini al (kalori hesaplama butonla yapılacak)
     if (field === "name" && value.trim().length >= 2) {
       foodNameTimeouts.current[index] = setTimeout(() => {
         fetchFoodPreparationMethods(index, value.trim());
-        calculateFoodCaloriesForAllQuantities(index, value.trim(), newFoods[index].preparationMethod);
+        // Kalori hesaplama artık butonla yapılıyor, otomatik değil
       }, 1000);
     }
 
@@ -757,38 +745,38 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-800/70 bg-gray-900/80 p-6 shadow-lg">
-      {/* Tabs */}
-      <div className="mb-6 flex gap-2 border-b border-gray-800">
+    <div className="rounded-3xl border border-primary-500/30 bg-gradient-to-br from-gray-900/90 via-primary-900/10 to-transparent backdrop-blur-xl p-6 shadow-2xl shadow-primary-500/20 sm:p-8">
+      {/* Modern Tabs */}
+      <div className="mb-6 flex gap-2 rounded-xl bg-gray-800/40 p-1 backdrop-blur-sm">
         <button
           onClick={() => setActiveTab("metric")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "metric"
-              ? "border-b-2 border-primary-500 text-primary-400"
-              : "text-gray-400 hover:text-gray-300"
+              ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30"
+              : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/60"
           }`}
         >
-          Sağlık Metrik
+          ⚖️ Kilo Takibi
         </button>
         <button
           onClick={() => setActiveTab("workout")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "workout"
-              ? "border-b-2 border-primary-500 text-primary-400"
-              : "text-gray-400 hover:text-gray-300"
+              ? "bg-gradient-to-r from-fitness-orange to-red-500 text-white shadow-lg shadow-fitness-orange/30"
+              : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/60"
           }`}
         >
-          Egzersiz
+          💪 Egzersiz
         </button>
         <button
           onClick={() => setActiveTab("meal")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
             activeTab === "meal"
-              ? "border-b-2 border-primary-500 text-primary-400"
-              : "text-gray-400 hover:text-gray-300"
+              ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30"
+              : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/60"
           }`}
         >
-          Öğün
+          🍽️ Öğün
         </button>
       </div>
 
@@ -829,58 +817,6 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                 onChange={(e) => setMetricData({ ...metricData, weight: e.target.value })}
                 className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
                 placeholder="Örn: 70"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-gray-400">BMI</label>
-              <input
-                type="number"
-                step="0.1"
-                min="10"
-                max="60"
-                value={metricData.bmi}
-                onChange={(e) => setMetricData({ ...metricData, bmi: e.target.value })}
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                placeholder="Örn: 22.5"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-gray-400">Vücut Yağı (%)</label>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="100"
-                value={metricData.bodyFat}
-                onChange={(e) => setMetricData({ ...metricData, bodyFat: e.target.value })}
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                placeholder="Örn: 15"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-gray-400">Kas Kütlesi (kg)</label>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="200"
-                value={metricData.muscleMass}
-                onChange={(e) => setMetricData({ ...metricData, muscleMass: e.target.value })}
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                placeholder="Örn: 50"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-gray-400">Su (%)</label>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="100"
-                value={metricData.water}
-                onChange={(e) => setMetricData({ ...metricData, water: e.target.value })}
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                placeholder="Örn: 60"
               />
             </div>
             <div>
@@ -1169,19 +1105,27 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                       type="text"
                       value={food.name}
                       onChange={(e) => updateFoodField(index, "name", e.target.value)}
-                      onBlur={() => {
+                      className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 pr-24 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                      placeholder="Yemek adı"
+                      spellCheck="false"
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
                         if (food.name.trim().length >= 2) {
                           calculateFoodCaloriesForAllQuantities(index, food.name.trim(), food.preparationMethod);
                         }
                       }}
-                      className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-                      placeholder="Yemek adı"
-                    />
-                    {foodAiLoading[index] && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"></div>
-                      </div>
-                    )}
+                      disabled={foodAiLoading[index] || !food.name.trim() || food.name.trim().length < 2}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary-500"
+                    >
+                      {foodAiLoading[index] ? (
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      ) : (
+                        "AI ile Hesapla"
+                      )}
+                    </button>
                   </div>
                   <input
                     type="number"

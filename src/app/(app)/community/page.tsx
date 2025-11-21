@@ -11,7 +11,9 @@ type FeatureRequest = {
   title: string;
   description: string;
   likeCount: number;
+  dislikeCount: number;
   isLiked: boolean;
+  isDisliked: boolean;
   isImplemented: boolean;
   implementedAt: string | null;
   implementedVersion: string | null;
@@ -117,6 +119,25 @@ export default function CommunityPage() {
       await fetchRequests();
     } catch (error) {
       console.error("Failed to like request:", error);
+      throw error; // Re-throw so FeatureRequestCard can handle it
+    }
+  };
+
+  const handleDislike = async (id: string) => {
+    try {
+      const response = await fetch(`/api/feature-requests/${id}/dislike`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to dislike");
+      }
+
+      // Refresh requests
+      await fetchRequests();
+    } catch (error) {
+      console.error("Failed to dislike request:", error);
       throw error; // Re-throw so FeatureRequestCard can handle it
     }
   };
@@ -320,6 +341,7 @@ export default function CommunityPage() {
                     key={request.id}
                     request={request}
                     onLike={handleLike}
+                    onDislike={handleDislike}
                     currentUserId={currentUserId || undefined}
                   />
                 ))}
