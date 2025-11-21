@@ -29,41 +29,52 @@ export default async function ProfilePage({ searchParams }: Props) {
   const isOwnProfile = targetUserId === session.user.id;
 
   // Başka birinin profilini görüntülüyorsak ve gizliyse, sadece admin görebilir veya public profile false ise kısıtlı bilgi göster
-  let profileData;
-  try {
-    const { data, error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .select(
-        "id,email,full_name,avatar_url,created_at,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,show_public_profile,show_community_stats"
-      )
-      .eq("id", targetUserId)
-      .single();
+  // Kendi profilini görüntülüyorsak normal supabase client, başkasınınkini görüntülüyorsak admin client
+  const profileClient = isOwnProfile ? supabase : supabaseAdmin;
+  
+  const { data: profileData, error: profileError } = await profileClient
+    .from("profiles")
+    .select(
+      "id,email,full_name,avatar_url,created_at,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,show_public_profile,show_community_stats"
+    )
+    .eq("id", targetUserId)
+    .maybeSingle();
 
+  // Eğer kendi profilini görüntülüyorsak ve profil yoksa, onboarding'e yönlendir
+  if (isOwnProfile) {
     if (profileError) {
       console.error("Profile fetch error:", profileError);
-      // Kendi profilini görüntülüyorsa ve profil yoksa, onboarding'e yönlendir
-      if (isOwnProfile) {
+      // Veritabanı hatası değilse (örn: profil yoksa) onboarding'e yönlendir
+      if (profileError.code === 'PGRST116') {
+        // PGRST116 = no rows returned
         redirect("/onboarding");
       } else {
-        // Başka birinin profilini görüntülemeye çalışıyorsa ana sayfaya yönlendir
-        redirect("/");
+        // Diğer hatalar için dashboard'a yönlendir
+        console.error("Unexpected profile error:", profileError);
+        redirect("/dashboard");
       }
     }
 
-    if (!data) {
-      // Profil bulunamadıysa
-      if (isOwnProfile) {
-        // Kendi profilini görüntülüyorsa onboarding'e yönlendir
-        redirect("/onboarding");
-      } else {
-        // Başka birinin profilini görüntülemeye çalışıyorsa ana sayfaya yönlendir
-        redirect("/");
-      }
+    if (!profileData) {
+      // Profil bulunamadıysa onboarding'e yönlendir
+      redirect("/onboarding");
+    }
+  } else {
+    // Başka birinin profilini görüntülüyorsak
+    if (profileError) {
+      console.error("Profile fetch error:", profileError);
+      redirect("/");
     }
 
-    profileData = data;
-  } catch (error) {
-    console.error("Profile fetch exception:", error);
+    if (!profileData) {
+      // Profil bulunamadıysa ana sayfaya yönlendir
+      redirect("/");
+    }
+  }
+
+  // ProfileData artık tanımlı olmalı, null check yapıldı
+  if (!profileData) {
+    // Bu noktaya gelmemeli ama TypeScript için
     if (isOwnProfile) {
       redirect("/onboarding");
     } else {
