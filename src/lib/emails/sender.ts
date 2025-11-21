@@ -59,10 +59,10 @@ export async function sendEmail({ to, locale, type, params }: SendEmailOptions):
  * 3. Browser locale
  * 4. Default locale (tr)
  */
-export async function getUserLocale(userId?: string, fallbackLocale?: Locale): Promise<Locale> {
+export async function getUserLocale(_userId?: string, fallbackLocale?: Locale): Promise<Locale> {
   // TODO: Kullanıcı profilinden locale al
-  // if (userId) {
-  //   const profile = await supabase.from('profiles').select('preferred_locale').eq('id', userId).single();
+  // if (_userId) {
+  //   const profile = await supabase.from('profiles').select('preferred_locale').eq('id', _userId).single();
   //   if (profile?.preferred_locale) {
   //     return profile.preferred_locale as Locale;
   //   }
