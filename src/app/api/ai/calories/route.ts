@@ -132,8 +132,7 @@ export async function POST(request: Request) {
       // Veritabanından kontrol et (100g için)
       const learnedData = await findLearnedFoodCalories(
         cleanFoodName,
-        extractedPreparationMethod,
-        "100g"
+        extractedPreparationMethod
       );
 
       if (learnedData) {
