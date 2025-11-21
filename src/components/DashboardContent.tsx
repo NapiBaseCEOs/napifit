@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { calculateBMR, calculateTDEE, type ActivityLevel } from "@/lib/utils/bmr";
+import AdSenseAd from "@/components/ads/AdSenseAd";
 
 interface DashboardContentProps {
   user: {
@@ -142,6 +143,16 @@ export default function DashboardContent({
               />
             )}
           </div>
+        </div>
+
+        {/* Reklam: Dashboard üstü (Above the fold) - Görüntülü reklamlar */}
+        <div className="flex justify-center py-4">
+          <AdSenseAd 
+            adSlot="1680336225" 
+            adFormat="auto"
+            fullWidthResponsive={true}
+            className="min-h-[100px] w-full max-w-5xl"
+          />
         </div>
 
         {/* Stats Grid */}
@@ -288,6 +299,16 @@ export default function DashboardContent({
               </div>
             </Link>
           )}
+        </div>
+
+        {/* Reklam: Dashboard içerik arası - Yazı içi reklamlar */}
+        <div className="flex justify-center py-4">
+          <AdSenseAd 
+            adSlot="2095269194" 
+            adFormat="auto"
+            fullWidthResponsive={true}
+            className="min-h-[250px] w-full max-w-5xl"
+          />
         </div>
 
         {/* Today's Activities */}

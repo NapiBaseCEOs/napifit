@@ -8,6 +8,7 @@ import VersionBadge from "@/components/VersionBadge";
 import StatsSection from "@/components/homepage/StatsSection";
 import UserReviewsSection from "@/components/homepage/UserReviewsSection";
 import CommunitySection from "@/components/homepage/CommunitySection";
+import AdSenseAd from "@/components/ads/AdSenseAd";
 
 type LandingStats = {
   members: number;
@@ -105,12 +106,39 @@ export default async function HomePage() {
 
       <div className="mx-auto flex flex-col gap-16 lg:gap-20 max-w-6xl">
         <HeroSection />
+        {/* Reklam: Header altı (Above the fold - En yüksek gelir) - Görüntülü reklamlar */}
+        <div className="flex justify-center py-4">
+          <AdSenseAd 
+            adSlot="1680336225" 
+            adFormat="auto"
+            fullWidthResponsive={true}
+            className="min-h-[100px] w-full max-w-5xl"
+          />
+        </div>
         <StatsSection initialStats={stats} />
         <SocialProof />
+        {/* Reklam: İçerik arası 1 - Yazı içi reklamlar */}
+        <div className="flex justify-center py-4">
+          <AdSenseAd 
+            adSlot="2095269194" 
+            adFormat="auto"
+            fullWidthResponsive={true}
+            className="min-h-[250px] w-full max-w-5xl"
+          />
+        </div>
         <CommunitySection />
         <UserReviewsSection />
         <JourneySection />
         <ChangelogSection />
+        {/* Reklam: Footer üstü - Multiplex reklamlar */}
+        <div className="flex justify-center py-4">
+          <AdSenseAd 
+            adSlot="9614666567" 
+            adFormat="auto"
+            fullWidthResponsive={true}
+            className="min-h-[250px] w-full max-w-5xl"
+          />
+        </div>
         <CallToAction />
       </div>
     </main>
