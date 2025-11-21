@@ -98,6 +98,7 @@ export async function GET(request: Request) {
           avatar: profile.show_public_profile ? profile.avatar_url : null,
           joinedAt: profile.created_at,
           showStats: profile.show_community_stats ?? true,
+          showPublicProfile: profile.show_public_profile ?? true,
         },
       };
     }) || [];

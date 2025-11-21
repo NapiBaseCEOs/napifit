@@ -22,6 +22,7 @@ type FeatureRequest = {
     avatar: string | null;
     joinedAt: string;
     showStats: boolean;
+    showPublicProfile: boolean;
   };
 };
 
@@ -32,6 +33,7 @@ type LeaderboardEntry = {
   implementedCount: number;
   joinedAt: string;
   showStats: boolean;
+  showPublicProfile: boolean;
 };
 
 export default function CommunityPage() {

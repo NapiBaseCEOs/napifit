@@ -20,6 +20,7 @@ type FeatureRequest = {
     avatar: string | null;
     joinedAt: string;
     showStats: boolean;
+    showPublicProfile: boolean;
   };
 };
 
@@ -87,21 +88,36 @@ export default function FeatureRequestCard({ request, onLike, currentUserId }: F
       {/* Footer */}
       <div className="flex items-center justify-between">
         {/* User Info */}
-        <Link
-          href={`/profile?userId=${request.user.id}`}
-          className="flex items-center gap-2 text-sm text-gray-400 hover:text-primary-400 transition-colors"
-        >
-          {request.user.avatar ? (
-            <div className="relative h-8 w-8 overflow-hidden rounded-full">
-              <Image src={request.user.avatar} alt={request.user.name} fill className="object-cover" unoptimized />
-            </div>
-          ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-xs font-semibold text-white">
-              {request.user.name[0].toUpperCase()}
-            </div>
-          )}
-          <span>{request.user.name}</span>
-        </Link>
+        {request.user.showPublicProfile ? (
+          <Link
+            href={`/profile?userId=${request.user.id}`}
+            className="flex items-center gap-2 text-sm text-gray-400 hover:text-primary-400 transition-colors"
+          >
+            {request.user.avatar ? (
+              <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                <Image src={request.user.avatar} alt={request.user.name} fill className="object-cover" unoptimized />
+              </div>
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-xs font-semibold text-white">
+                {request.user.name[0].toUpperCase()}
+              </div>
+            )}
+            <span>{request.user.name}</span>
+          </Link>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-gray-400 cursor-not-allowed">
+            {request.user.avatar ? (
+              <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                <Image src={request.user.avatar} alt={request.user.name} fill className="object-cover unoptimized" />
+              </div>
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-gray-600 to-gray-700 text-xs font-semibold text-white">
+                {request.user.name[0].toUpperCase()}
+              </div>
+            )}
+            <span>{request.user.name}</span>
+          </div>
+        )}
 
         {/* Like Button */}
         <div className="flex items-center gap-3">

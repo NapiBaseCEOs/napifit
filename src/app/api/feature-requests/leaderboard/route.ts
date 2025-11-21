@@ -66,6 +66,7 @@ export async function GET() {
           implementedCount: userCounts[userId],
           joinedAt: profile.created_at,
           showStats: profile.show_community_stats ?? true,
+          showPublicProfile: profile.show_public_profile ?? true,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)

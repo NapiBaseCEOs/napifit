@@ -11,6 +11,7 @@ type LeaderboardEntry = {
   implementedCount: number;
   joinedAt: string;
   showStats: boolean;
+  showPublicProfile: boolean;
 };
 
 type FeatureRequest = {
@@ -125,12 +126,13 @@ export default function CommunitySection() {
           ) : (
             <div className="space-y-2">
               {leaderboard.slice(0, 5).map((entry, index) => (
-                <Link
-                  key={entry.userId}
-                  href={`/profile?userId=${entry.userId}`}
-                  className="block"
-                >
-                  <div className="flex items-center gap-3 rounded-lg border border-gray-800/60 bg-gray-900/50 p-3 hover:border-primary-500/30 transition-all">
+                entry.showPublicProfile ? (
+                  <Link
+                    key={entry.userId}
+                    href={`/profile?userId=${entry.userId}`}
+                    className="block"
+                  >
+                    <div className="flex items-center gap-3 rounded-lg border border-gray-800/60 bg-gray-900/50 p-3 hover:border-primary-500/30 transition-all">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-primary-500 to-fitness-orange text-xs font-bold text-white">
                     {index === 0 ? "👑" : index + 1}
                   </div>
@@ -151,6 +153,31 @@ export default function CommunitySection() {
                   </div>
                   </div>
                 </Link>
+                ) : (
+                  <div
+                    key={entry.userId}
+                    className="flex items-center gap-3 rounded-lg border border-gray-800/60 bg-gray-900/50 p-3 cursor-not-allowed opacity-75"
+                  >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-gray-600 to-gray-700 text-xs font-bold text-white">
+                    {index === 0 ? "👑" : index + 1}
+                  </div>
+                  {entry.avatar ? (
+                    <div className="relative h-8 w-8 overflow-hidden rounded-full">
+                      <Image src={entry.avatar} alt={entry.name} fill className="object-cover" unoptimized />
+                    </div>
+                  ) : (
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-gray-600 to-gray-700 text-xs font-semibold text-white">
+                      {entry.name[0].toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-400 truncate">{entry.name}</p>
+                    {entry.showStats && (
+                      <p className="text-xs text-gray-500">{entry.implementedCount} öneri</p>
+                    )}
+                  </div>
+                  </div>
+                )
               ))}
             </div>
           )}
