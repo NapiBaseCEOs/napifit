@@ -8,8 +8,7 @@ type LearnedCaloriesInsert = Database["public"]["Tables"]["learned_calories"]["I
  */
 export async function findLearnedFoodCalories(
   foodName: string,
-  preparationMethod?: string | null,
-  quantity?: string | null
+  preparationMethod?: string | null
 ): Promise<{
   caloriesPer100g: number;
   caloriesPerGram: number;
@@ -132,8 +131,7 @@ export async function saveLearnedFoodCalories(
   // Önce aynı kayıt var mı kontrol et (duplicate önleme)
   const existing = await findLearnedFoodCalories(
     foodName,
-    preparationMethod,
-    quantity || "100g"
+    preparationMethod
   );
 
   if (existing) {
