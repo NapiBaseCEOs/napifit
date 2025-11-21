@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import Header from "../components/Header";
 import GoogleOAuthHandler from "../components/GoogleOAuthHandler";
@@ -85,6 +86,13 @@ export default async function RootLayout({
   return (
     <html lang="tr" className={fontSans.variable}>
       <body className="font-sans">
+        {/* Google AdSense - Tüm sayfalara eklenir */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9781131812136360"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <ThemeProvider>
           <LocaleProvider>
           <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
