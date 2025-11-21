@@ -850,7 +850,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
           </div>
           <button
             type="submit"
-            disabled={loading || (!metricData.weight && !metricData.bmi && !metricData.bodyFat && !metricData.muscleMass && !metricData.water)}
+            disabled={loading || (!metricData.weight && !metricData.bowelMovementDays)}
             className="w-full rounded-lg bg-primary-500 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Kaydediliyor..." : "Kaydet"}
