@@ -123,18 +123,9 @@ export default function CommunityPage() {
   };
 
   const handleDeleteRequest = async (id: string) => {
-    if (!isAdmin) return;
-    const confirmed = window.confirm("Bu topluluk mesajını silmek istediğine emin misin?");
-    if (!confirmed) return;
     try {
       const response = await fetch(`/api/feature-requests/${id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          reason: "Topluluk kurallarına aykırı içerik",
-        }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));

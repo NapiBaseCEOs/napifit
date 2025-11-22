@@ -112,15 +112,15 @@ export default function DashboardContent({
   const bowelHealth = getBowelHealthStatus(bowelMovementDays);
 
   return (
-    <main className="relative min-h-screen px-4 py-8 sm:px-6 overflow-hidden bg-[#0a0a0a]">
+    <main className="relative min-h-screen px-4 py-6 sm:px-5 md:px-6 overflow-hidden bg-[#0a0a0a]">
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-0 left-1/4 h-[500px] w-[500px] rounded-full bg-gradient-to-r from-primary-500/15 via-fitness-orange/15 to-transparent blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-0 right-1/4 h-[500px] w-[500px] rounded-full bg-gradient-to-r from-fitness-purple/15 via-fitness-blue/15 to-transparent blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
       </div>
 
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto max-w-5xl space-y-5 md:space-y-6">
         {/* Header */}
-        <div className="rounded-3xl border border-gray-800/60 bg-gray-900/90 backdrop-blur-xl p-6 shadow-2xl shadow-primary-500/20 sm:p-8">
+        <div className="rounded-3xl border border-gray-800/60 bg-gray-900/90 backdrop-blur-xl p-5 shadow-2xl shadow-primary-500/20 sm:p-7">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary-500/40 bg-primary-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-primary-300 shadow-lg shadow-primary-500/20">
@@ -130,7 +130,7 @@ export default function DashboardContent({
                 </span>
                 Sağlık Kontrol Paneli
               </div>
-              <h1 className="mt-4 text-3xl sm:text-4xl font-bold text-white">
+              <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-white">
                 Hoş geldin, <span className="bg-gradient-to-r from-primary-400 to-fitness-orange bg-clip-text text-transparent">{user.name || user.email}</span>!
               </h1>
             </div>
@@ -157,7 +157,7 @@ export default function DashboardContent({
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+        <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
           {/* BMI Card */}
           <div className="group relative rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-6 shadow-lg hover:border-primary-500/50 hover:shadow-primary-500/20 transition-all duration-300">
             <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">BMI</div>

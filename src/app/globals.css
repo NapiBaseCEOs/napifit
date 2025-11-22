@@ -45,6 +45,19 @@ body::after {
   opacity: 0.6;
 }
 
+/* Genel boyutu biraz küçült (masaüstü için ~%10) */
+@media (min-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1280px) {
+  html {
+    font-size: 14px;
+  }
+}
+
 a {
   @apply transition-colors duration-200;
 }

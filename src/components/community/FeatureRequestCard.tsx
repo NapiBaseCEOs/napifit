@@ -54,6 +54,10 @@ export default function FeatureRequestCard({
   const [isDisliking, setIsDisliking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const isOwner = currentUserId && currentUserId === request.user.id;
+  const canDeleteOwn = Boolean(isOwner && likeCount === 0);
+  const canDelete = Boolean(onDelete && (isAdmin || canDeleteOwn));
+
   const handleLike = async () => {
     if (isLiking || isDisliking || !currentUserId) return;
 
@@ -125,8 +129,13 @@ export default function FeatureRequestCard({
   };
 
   const handleDelete = async () => {
-    if (!isAdmin || !onDelete || isDeleting) return;
-    const confirmed = window.confirm("Bu öneriyi silmek istediğine emin misin?");
+    if (!canDelete || !onDelete || isDeleting) return;
+
+    const message = isAdmin
+      ? "Bu öneriyi silmek istediğine emin misin?"
+      : "Bu öneri hiç beğeni almadığı için silebilirsin. Silmek istediğine emin misin?";
+
+    const confirmed = window.confirm(message);
     if (!confirmed) return;
     setIsDeleting(true);
     try {
@@ -165,7 +174,7 @@ export default function FeatureRequestCard({
           </div>
           <p className="text-sm text-gray-400 leading-relaxed">{request.description}</p>
         </div>
-        {isAdmin && onDelete && (
+        {canDelete && (
           <button
             onClick={handleDelete}
             disabled={isDeleting}

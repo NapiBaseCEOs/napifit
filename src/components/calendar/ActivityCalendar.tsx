@@ -168,32 +168,34 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
   }
 
   return (
-    <div className={`rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-6 shadow-lg ${className}`}>
+  <div
+    className={`max-w-md sm:max-w-lg lg:max-w-2xl mx-auto rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-4 sm:p-5 shadow-md ${className}`}
+  >
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-white">Aktivite Takvimi</h3>
-          <p className="text-xs text-gray-400 mt-1">
+          <h3 className="text-base sm:text-lg font-semibold text-white">Aktivite Takvimi</h3>
+          <p className="text-[11px] sm:text-xs text-gray-400 mt-1">
             {monthNames[month - 1]} {year}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={goToPreviousMonth}
-            className="rounded-lg border border-gray-700 bg-gray-800/50 p-2 text-gray-400 hover:border-gray-600 hover:bg-gray-800 hover:text-white transition-all"
+            className="rounded-lg border border-gray-700 bg-gray-800/50 p-1.5 text-gray-400 hover:border-gray-600 hover:bg-gray-800 hover:text-white transition-all"
             aria-label="Önceki ay"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
             onClick={goToToday}
-            className="rounded-lg border border-primary-500/30 bg-primary-500/10 px-3 py-2 text-xs font-medium text-primary-300 hover:border-primary-500/50 hover:bg-primary-500/20 transition-all"
+            className="rounded-lg border border-primary-500/30 bg-primary-500/10 px-2.5 py-1.5 text-[11px] sm:text-xs font-medium text-primary-300 hover:border-primary-500/50 hover:bg-primary-500/20 transition-all"
           >
             Bugün
           </button>
           <button
             onClick={goToNextMonth}
-            className="rounded-lg border border-gray-700 bg-gray-800/50 p-2 text-gray-400 hover:border-gray-600 hover:bg-gray-800 hover:text-white transition-all"
+            className="rounded-lg border border-gray-700 bg-gray-800/50 p-1.5 text-gray-400 hover:border-gray-600 hover:bg-gray-800 hover:text-white transition-all"
             aria-label="Sonraki ay"
           >
             <ChevronRight className="h-4 w-4" />
@@ -203,7 +205,7 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
 
       {/* Bugün Özeti */}
       {todayInfo && (
-        <div className={`mb-6 rounded-xl border p-4 ${
+        <div className={`mb-4 rounded-xl border p-3 sm:p-4 ${
           todayInfo.isComplete
             ? "border-green-500/40 bg-green-500/10"
             : todayInfo.hasMeal || todayInfo.hasWorkout
@@ -212,8 +214,8 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
         }`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-white">Bugünün Durumu</p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-[13px] sm:text-sm font-medium text-white">Bugünün Durumu</p>
+              <p className="text-[11px] sm:text-xs text-gray-400 mt-1">
                 {todayInfo.meals} öğün • {todayInfo.workouts} egzersiz
               </p>
             </div>
@@ -238,17 +240,17 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
 
       {/* Takvim Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-8">
           <div className="text-gray-400 text-sm">Yükleniyor...</div>
         </div>
       ) : (
         <>
           {/* Gün isimleri */}
-          <div className="grid grid-cols-7 gap-2 mb-2">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2">
             {dayNames.map((dayName) => (
               <div
                 key={dayName}
-                className="text-center text-xs font-semibold text-gray-400 py-2"
+                className="text-center text-[11px] sm:text-xs font-semibold text-gray-400 py-1.5"
               >
                 {dayName}
               </div>
@@ -256,7 +258,7 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
           </div>
 
           {/* Takvim günleri */}
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {calendarDays.map((day, index) => {
               if (day === null) {
                 return <div key={`empty-${index}`} className="aspect-square" />;
@@ -280,14 +282,14 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
                       setSelectedDate((prev) => (prev === dateKey ? null : dateKey));
                     }
                   }}
-                  className={`aspect-square rounded-lg border transition-all hover:scale-105 hover:shadow-lg ${
+                  className={`aspect-square rounded-lg border transition-all hover:scale-[1.03] hover:shadow-md ${
                     getDayColor(status)
                   } ${isSelected ? "ring-2 ring-white/70" : ""} ${onDateClick ? "cursor-pointer" : "cursor-pointer"}`}
                   title={getDayTooltip(day)}
                 >
-                  <div className="flex flex-col items-center justify-center h-full p-1">
+                  <div className="flex flex-col items-center justify-center h-full p-0.5 sm:p-1">
                     <span
-                      className={`text-sm font-semibold ${
+                      className={`text-[11px] sm:text-sm font-semibold ${
                         isToday ? "text-white" : status === "empty" ? "text-gray-500" : "text-white"
                       }`}
                     >
@@ -310,7 +312,7 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
           </div>
 
           {/* Açıklama */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-400">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-[11px] sm:text-xs text-gray-400">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-gradient-to-br from-green-500/40 to-emerald-500/40 border border-green-500/60" />
               <span>Tam (Öğün + Egzersiz)</span>
@@ -325,7 +327,7 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-primary-500/20 bg-gray-900/70 p-4 text-sm text-gray-200">
+          <div className="mt-4 rounded-2xl border border-primary-500/20 bg-gray-900/70 p-3 sm:p-4 text-[13px] sm:text-sm text-gray-200">
             {selectedDate ? (
               <>
                 <div className="flex items-center justify-between flex-wrap gap-2">
