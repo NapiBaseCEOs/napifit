@@ -1,4 +1,4 @@
-const CACHE_NAME = "napifit-sw-v2";
+const CACHE_NAME = "napifit-sw-v3";
 const WATER_REMINDER_TAG = "water-reminder";
 
 // Kullanıcı ayarları (default değerler)
@@ -9,15 +9,24 @@ let reminderSettings = {
   dailyGoal: 2000,
 };
 
+// Son bildirim zamanı (duplicate önlemek için)
+let lastNotificationTime = 0;
+
 // Service Worker kurulumu
 self.addEventListener("install", (event) => {
-  console.log("[SW] Installing service worker...");
-  event.waitUntil(self.skipWaiting());
+  console.log("[SW] Installing service worker v3...");
+  event.waitUntil(
+    Promise.all([
+      self.skipWaiting(),
+      // Cache'i temizle
+      caches.delete(CACHE_NAME).catch(() => {}),
+    ])
+  );
 });
 
 // Service Worker aktivasyonu
 self.addEventListener("activate", (event) => {
-  console.log("[SW] Activating service worker...");
+  console.log("[SW] Activating service worker v3...");
   event.waitUntil(
     Promise.all([
       self.clients.claim(),
@@ -25,8 +34,21 @@ self.addEventListener("activate", (event) => {
       self.registration.getNotifications({ tag: WATER_REMINDER_TAG }).then((notifications) => {
         notifications.forEach((notification) => notification.close());
       }),
+      // Eski cache'leri temizle
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => name.startsWith("napifit-sw-") && name !== CACHE_NAME)
+            .map((name) => caches.delete(name))
+        );
+      }),
     ])
   );
+  
+  // Aktif olduktan sonra bildirim kontrolünü başlat
+  if (reminderSettings.enabled) {
+    startNotificationLoop();
+  }
 });
 
 // Bildirim tıklama olayı
@@ -68,13 +90,30 @@ self.addEventListener("message", (event) => {
     
     // Bildirimleri yeniden zamanla
     if (reminderSettings.enabled) {
-      scheduleNotifications();
+      startNotificationLoop();
     } else {
+      stopNotificationLoop();
       cancelAllNotifications();
     }
     
     // Onay mesajı gönder
     event.ports[0]?.postMessage({ success: true });
+  }
+});
+
+// Background Sync event
+self.addEventListener("sync", (event) => {
+  if (event.tag === "water-reminder-sync" && reminderSettings.enabled) {
+    console.log("[SW] Background sync triggered");
+    event.waitUntil(checkAndSendNotification());
+  }
+});
+
+// Periodic Background Sync event
+self.addEventListener("periodicsync", (event) => {
+  if (event.tag === "water-reminder" && reminderSettings.enabled) {
+    console.log("[SW] Periodic sync triggered");
+    event.waitUntil(checkAndSendNotification());
   }
 });
 
@@ -88,16 +127,77 @@ async function cancelAllNotifications() {
   console.log("[SW] All notifications cancelled");
 }
 
-// Bildirimleri zamanla
-async function scheduleNotifications() {
-  await cancelAllNotifications();
+// Bildirim gönder (duplicate kontrolü ile)
+async function sendNotification() {
+  const now = Date.now();
+  const intervalMs = reminderSettings.intervalMinutes * 60 * 1000;
+  
+  // Son bildirimden bu yana yeterli zaman geçti mi?
+  if (now - lastNotificationTime < intervalMs * 0.9) {
+    console.log("[SW] Skipping notification - too soon");
+    return;
+  }
+  
+  try {
+    await self.registration.showNotification("💧 Su Hatırlatıcısı", {
+      body: `Hedefinize ulaşmak için su içmeyi unutmayın! ${Math.round(reminderSettings.totalAmount)}ml / ${reminderSettings.dailyGoal}ml`,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: WATER_REMINDER_TAG,
+      requireInteraction: false,
+      silent: false,
+      vibrate: [200, 100, 200],
+    });
+    
+    lastNotificationTime = now;
+    console.log("[SW] Notification sent at", new Date(now).toISOString());
+  } catch (error) {
+    console.error("[SW] Failed to send notification:", error);
+  }
+}
+
+// Bildirim kontrolü yap ve gönder
+async function checkAndSendNotification() {
+  if (!reminderSettings.enabled) {
+    return;
+  }
+  
+  await sendNotification();
+  
+  // Background Sync'i tekrar kaydet (Chrome'da daha güvenilir)
+  if ("sync" in self.registration) {
+    try {
+      await self.registration.sync.register("water-reminder-sync");
+    } catch (error) {
+      console.log("[SW] Background sync registration:", error);
+    }
+  }
+}
+
+// Notification loop timer
+let notificationTimer = null;
+let isLoopRunning = false;
+
+// Bildirim döngüsünü başlat (Chrome için optimize edilmiş)
+function startNotificationLoop() {
+  if (isLoopRunning) {
+    console.log("[SW] Notification loop already running");
+    return;
+  }
+  
+  stopNotificationLoop();
   
   if (!reminderSettings.enabled) {
     return;
   }
   
+  isLoopRunning = true;
   const intervalMs = reminderSettings.intervalMinutes * 60 * 1000;
-  const now = Date.now();
+  
+  console.log(`[SW] Starting notification loop with ${reminderSettings.intervalMinutes}min interval`);
+  
+  // İlk bildirimi hemen gönder (eğer izin varsa)
+  checkAndSendNotification();
   
   // Scheduled Notifications API desteği var mı?
   const supportsScheduled = 
@@ -107,103 +207,90 @@ async function scheduleNotifications() {
   if (supportsScheduled) {
     // Chrome/Edge: Scheduled Notifications API kullan
     console.log("[SW] Using Scheduled Notifications API");
-    
-    try {
-      const TriggerConstructor = self.TimestampTrigger;
-      
-      // Sonraki 24 saat için bildirimleri zamanla (her interval'de bir)
-      const notificationsToSchedule = Math.floor((24 * 60 * 60 * 1000) / intervalMs);
-      
-      for (let i = 1; i <= Math.min(notificationsToSchedule, 48); i++) {
-        const triggerTime = now + intervalMs * i;
-        
-        await self.registration.showNotification("💧 Su Hatırlatıcısı", {
-          body: `Hedefinize ulaşmak için su içmeyi unutmayın! ${Math.round(reminderSettings.totalAmount)}ml / ${reminderSettings.dailyGoal}ml`,
-          icon: "/icon-192.png",
-          badge: "/icon-192.png",
-          tag: `${WATER_REMINDER_TAG}-${i}`,
-          requireInteraction: false,
-          showTrigger: new TriggerConstructor(triggerTime),
-        });
-      }
-      
-      console.log(`[SW] Scheduled ${Math.min(notificationsToSchedule, 48)} notifications`);
-    } catch (error) {
-      console.error("[SW] Scheduled notification failed:", error);
-      // Fallback: Periodic Background Sync kullan
-      setupPeriodicSync();
-    }
-  } else {
-    // Fallback: Periodic Background Sync veya interval kullan
-    console.log("[SW] Using Periodic Background Sync fallback");
-    setupPeriodicSync();
-  }
-}
-
-// Periodic Background Sync kurulumu
-async function setupPeriodicSync() {
-  if (!("periodicSync" in self.registration)) {
-    console.log("[SW] Periodic Background Sync not supported, using interval fallback");
-    setupIntervalFallback();
-    return;
+    scheduleScheduledNotifications();
   }
   
-  try {
-    // Periodic sync kaydı
-    await self.registration.periodicSync.register("water-reminder", {
-      minInterval: reminderSettings.intervalMinutes * 60 * 1000,
+  // Background Sync kaydı (Chrome'da daha güvenilir)
+  if ("sync" in self.registration) {
+    self.registration.sync.register("water-reminder-sync").catch((error) => {
+      console.log("[SW] Background sync registration failed:", error);
     });
-    
-    console.log("[SW] Periodic Background Sync registered");
-  } catch (error) {
-    console.error("[SW] Periodic sync registration failed:", error);
-    setupIntervalFallback();
   }
+  
+  // Periodic Background Sync kaydı
+  if ("periodicSync" in self.registration) {
+    self.registration.periodicSync
+      .register("water-reminder", {
+        minInterval: Math.max(intervalMs, 60 * 1000), // En az 1 dakika
+      })
+      .catch((error) => {
+        console.log("[SW] Periodic sync registration failed:", error);
+      });
+  }
+  
+  // Fallback: Service Worker'da interval (tarayıcı açıkken)
+  // Chrome'da Service Worker bazen uyuyor, bu yüzden daha agresif bir kontrol yapıyoruz
+  const checkInterval = Math.min(intervalMs, 5 * 60 * 1000); // En fazla 5 dakikada bir kontrol
+  
+  notificationTimer = setInterval(() => {
+    if (reminderSettings.enabled) {
+      checkAndSendNotification();
+    }
+  }, checkInterval);
+  
+  console.log(`[SW] Notification loop started with ${checkInterval / 1000}s check interval`);
 }
 
-// Interval fallback (tarayıcı açıkken çalışır)
-let intervalTimer = null;
-
-function setupIntervalFallback() {
-  if (intervalTimer) {
-    clearInterval(intervalTimer);
+// Bildirim döngüsünü durdur
+function stopNotificationLoop() {
+  if (notificationTimer) {
+    clearInterval(notificationTimer);
+    notificationTimer = null;
   }
+  isLoopRunning = false;
+  console.log("[SW] Notification loop stopped");
+}
+
+// Scheduled Notifications API ile bildirimleri zamanla
+async function scheduleScheduledNotifications() {
+  await cancelAllNotifications();
   
   if (!reminderSettings.enabled) {
     return;
   }
   
   const intervalMs = reminderSettings.intervalMinutes * 60 * 1000;
+  const now = Date.now();
   
-  intervalTimer = setInterval(async () => {
-    if (reminderSettings.enabled) {
-      await self.registration.showNotification("💧 Su Hatırlatıcısı", {
-        body: `Hedefinize ulaşmak için su içmeyi unutmayın! ${Math.round(reminderSettings.totalAmount)}ml / ${reminderSettings.dailyGoal}ml`,
-        icon: "/icon-192.png",
-        badge: "/icon-192.png",
-        tag: WATER_REMINDER_TAG,
-        requireInteraction: false,
-      });
+  try {
+    const TriggerConstructor = self.TimestampTrigger;
+    
+    // Sonraki 24 saat için bildirimleri zamanla (her interval'de bir)
+    const notificationsToSchedule = Math.floor((24 * 60 * 60 * 1000) / intervalMs);
+    const maxNotifications = Math.min(notificationsToSchedule, 48);
+    
+    for (let i = 1; i <= maxNotifications; i++) {
+      const triggerTime = now + intervalMs * i;
+      
+      try {
+        await self.registration.showNotification("💧 Su Hatırlatıcısı", {
+          body: `Hedefinize ulaşmak için su içmeyi unutmayın! ${Math.round(reminderSettings.totalAmount)}ml / ${reminderSettings.dailyGoal}ml`,
+          icon: "/icon-192.png",
+          badge: "/icon-192.png",
+          tag: `${WATER_REMINDER_TAG}-scheduled-${i}`,
+          requireInteraction: false,
+          showTrigger: new TriggerConstructor(triggerTime),
+        });
+      } catch (error) {
+        console.error(`[SW] Failed to schedule notification ${i}:`, error);
+      }
     }
-  }, intervalMs);
-  
-  console.log("[SW] Interval fallback set up");
-}
-
-// Periodic sync olayı
-self.addEventListener("periodicsync", (event) => {
-  if (event.tag === "water-reminder" && reminderSettings.enabled) {
-    event.waitUntil(
-      self.registration.showNotification("💧 Su Hatırlatıcısı", {
-        body: `Hedefinize ulaşmak için su içmeyi unutmayın! ${Math.round(reminderSettings.totalAmount)}ml / ${reminderSettings.dailyGoal}ml`,
-        icon: "/icon-192.png",
-        badge: "/icon-192.png",
-        tag: WATER_REMINDER_TAG,
-        requireInteraction: false,
-      })
-    );
+    
+    console.log(`[SW] Scheduled ${maxNotifications} notifications using Scheduled Notifications API`);
+  } catch (error) {
+    console.error("[SW] Scheduled notification setup failed:", error);
   }
-});
+}
 
 // Push event (gelecekte push notifications için)
 self.addEventListener("push", (event) => {
@@ -223,3 +310,17 @@ self.addEventListener("push", (event) => {
   }
 });
 
+// Service Worker'ın uyanık kalması için ekstra tetikleyiciler
+// Chrome'da Service Worker bazen uyuyor, bu yüzden ekstra mekanizmalar ekliyoruz
+self.addEventListener("fetch", (event) => {
+  // Her fetch'te bildirim kontrolü yap (sadece belirli aralıklarla)
+  if (reminderSettings.enabled && Math.random() < 0.01) {
+    // %1 ihtimalle kontrol et (çok sık olmasın)
+    checkAndSendNotification();
+  }
+});
+
+// Service Worker başlatıldığında bildirim döngüsünü başlat
+if (reminderSettings.enabled) {
+  startNotificationLoop();
+}

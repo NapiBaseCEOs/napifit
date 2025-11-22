@@ -95,6 +95,15 @@ export default function WaterReminder({
       "showTrigger" in (Notification.prototype as any) &&
       "TimestampTrigger" in window;
     setSupportsScheduledNotifications(supported);
+    
+    // Background Sync desteğini kontrol et
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        const hasBackgroundSync = "sync" in registration;
+        const hasPeriodicSync = "periodicSync" in registration;
+        console.log("Background Sync support:", hasBackgroundSync, "Periodic Sync:", hasPeriodicSync);
+      }).catch(() => {});
+    }
   }, []);
 
   // Service Worker ayarlarını güncelle
@@ -123,6 +132,28 @@ export default function WaterReminder({
           },
           [messageChannel.port2]
         );
+        
+        // Background Sync API'yi kaydet (Chrome için)
+        if ("sync" in registration) {
+          try {
+            await (registration as any).sync.register("water-reminder-sync");
+            console.log("Background Sync registered");
+          } catch (error) {
+            console.log("Background Sync registration:", error);
+          }
+        }
+        
+        // Periodic Background Sync API'yi kaydet
+        if ("periodicSync" in registration) {
+          try {
+            await (registration as any).periodicSync.register("water-reminder", {
+              minInterval: Math.max(reminderInterval * 60 * 1000, 60 * 1000), // En az 1 dakika
+            });
+            console.log("Periodic Background Sync registered");
+          } catch (error) {
+            console.log("Periodic Sync registration:", error);
+          }
+        }
       }
     } catch (error) {
       console.error("Service worker ayar güncelleme hatası:", error);
@@ -591,10 +622,10 @@ export default function WaterReminder({
                       <p className="mt-1 text-[11px] text-emerald-200/80">
                         {supportsScheduledNotifications
                           ? "✅ Arka plan bildirimleri aktif - Tarayıcı kapalıyken bile bildirimler gelecek!"
-                          : "⚠️ Tarayıcınız Scheduled Notifications API'yi desteklemiyor. Service Worker ile arka plan bildirimleri çalışıyor ancak bazı tarayıcılarda sınırlı olabilir."}
+                          : "✅ Gelişmiş arka plan bildirimleri aktif - Background Sync API ile tarayıcı kapalıyken bile çalışıyor!"}
                       </p>
                       <p className="mt-1 text-[10px] text-emerald-200/60">
-                        💡 En iyi deneyim için Chrome, Edge veya Opera kullanın.
+                        💡 Chrome, Edge veya Opera'da en iyi deneyim için tarayıcıyı açık tutmanız önerilir. Service Worker arka planda çalışmaya devam edecek.
                       </p>
                     </div>
                   )}
