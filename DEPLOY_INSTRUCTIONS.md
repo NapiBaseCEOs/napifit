@@ -1,36 +1,38 @@
-# Deploy Talimatları
+# 🚀 GitHub Actions ile Deploy Talimatları
 
 ## Durum
-✅ Build başarılı - Tüm hatalar düzeltildi
-✅ Kod commit edildi
-⚠️ Vercel CLI token bu ortamda yok
+✅ GitHub Actions workflow dosyası oluşturuldu: `.github/workflows/vercel-deploy.yml`
+✅ Tüm değişiklikler commit edildi
+⏳ GitHub'a push yapılması gerekiyor (authentication gerekli)
 
-## Deploy Yöntemleri
+## Adımlar
 
-### Yöntem 1: Vercel CLI (Önerilen)
-Kendi makinen­de şu komutları çalıştır:
-
+### 1. GitHub'a Push Yapın
+Lokal makinenizde şu komutu çalıştırın:
 ```bash
 cd /home/sefa/Desktop/NapiBase
-vercel --prod
+git push origin feat/supabase-migration
 ```
 
-### Yöntem 2: GitHub Push (Otomatik Deploy)
-Eğer Vercel GitHub ile entegre edilmişse:
+### 2. GitHub Secrets Ekleme (İlk Kez)
+Eğer daha önce eklemediyseniz, GitHub repository'nizde:
 
-```bash
-cd /home/sefa/Desktop/NapiBase
-git push -u origin main
-```
+1. GitHub → Settings → Secrets and variables → Actions
+2. Şu secrets'ları ekleyin:
+   - `VERCEL_TOKEN` - Vercel Dashboard → Settings → Tokens
+   - `VERCEL_ORG_ID` - Vercel Dashboard → Settings → General
+   - `VERCEL_PROJECT_ID` - Vercel Dashboard → Projeniz → Settings → General
 
-Bu push otomatik olarak Vercel'de deploy başlatacak.
+### 3. Otomatik Deploy
+Push yaptıktan sonra:
+- GitHub Actions otomatik olarak çalışacak
+- Build işlemi yapılacak
+- Vercel production'a deploy edilecek
 
-### Yöntem 3: Vercel Dashboard
-1. https://vercel.com/dashboard adresine git
-2. Projeyi seç
-3. "Deployments" sekmesine git
-4. "Redeploy" butonuna bas
+### 4. Deploy Durumunu Kontrol
+- GitHub repository → Actions sekmesi
+- "Deploy to Vercel" workflow'unu göreceksiniz
+- Yeşil tik = Başarılı deploy ✅
 
-## WhatsApp Güncelleme Notları
-Hazır notlar: `RELEASE_NOTES_WHATSAPP.md` dosyasında
-
+## Manuel Deploy (Opsiyonel)
+GitHub Actions sayfasından "Run workflow" butonuna tıklayarak manuel deploy da yapabilirsiniz.
