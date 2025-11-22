@@ -15,9 +15,11 @@ type FeatureRequest = {
 
 interface CommunityStatsProps {
   userId: string;
+  currentUserId?: string; // Mevcut kullanıcı ID'si (sahiplik kontrolü için)
+  isAdmin?: boolean; // Admin kontrolü için
 }
 
-export default function CommunityStats({ userId }: CommunityStatsProps) {
+export default function CommunityStats({ userId, currentUserId, isAdmin = false }: CommunityStatsProps) {
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -155,14 +157,54 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
                 );
               }
 
+              const isOwner = currentUserId && currentUserId === userId;
+              const canDeleteOwn = isOwner && request.likeCount === 0;
+              const canDelete = isAdmin || canDeleteOwn;
+              
               return (
-                <Link
+                <div
                   key={request.id}
-                  href="/community"
-                  className="block rounded-lg border border-gray-800/60 bg-gray-800/30 p-3 hover:border-primary-500/30 transition-all"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-gray-800/60 bg-gray-800/30 p-3 hover:border-primary-500/30 transition-all"
                 >
-                  {content}
-                </Link>
+                  <Link href="/community" className="flex-1">
+                    {content}
+                  </Link>
+                  {canDelete && (
+                    <button
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const message = isAdmin
+                          ? "Bu öneriyi silmek istediğine emin misin?"
+                          : "Bu öneri hiç beğeni almadığı için silebilirsin. Silmek istediğine emin misin?";
+                        const confirmed = window.confirm(message);
+                        if (!confirmed) return;
+                        
+                        try {
+                          const response = await fetch(`/api/feature-requests/${request.id}`, {
+                            method: "DELETE",
+                          });
+                          if (response.ok) {
+                            // Öneriyi listeden kaldır
+                            setRequests((prev) => prev.filter((r) => r.id !== request.id));
+                            // Event gönder (diğer component'ler güncellensin)
+                            window.dispatchEvent(new CustomEvent('feature-request-created'));
+                          } else {
+                            const data = await response.json().catch(() => ({}));
+                            alert(data.error || "Silme işlemi başarısız");
+                          }
+                        } catch (error) {
+                          console.error("Delete request failed:", error);
+                          alert("Silme işlemi sırasında hata oluştu");
+                        }
+                      }}
+                      className="flex-shrink-0 rounded-lg border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-300 hover:bg-red-500/20 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                      title="Öneriyi sil"
+                    >
+                      Sil
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>

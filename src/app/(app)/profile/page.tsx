@@ -372,7 +372,11 @@ export default async function ProfilePage({ searchParams }: Props) {
 
         {/* Community Stats - Her zaman göster (gizlilik ayarına göre) */}
         {(profile.show_community_stats ?? true) && (
-          <CommunityStats userId={user.id} />
+          <CommunityStats 
+            userId={user.id} 
+            currentUserId={isOwnProfile ? authUser.id : undefined}
+            isAdmin={isAdminProfile}
+          />
         )}
 
         {/* Profile Edit Form - Sadece kendi profilinde */}

@@ -26,8 +26,16 @@ export default function Header() {
     setSigningOut(true);
     try {
       await supabase.auth.signOut();
+      // Session state'inin güncellenmesi için kısa bir delay
+      await new Promise(resolve => setTimeout(resolve, 100));
       router.push("/");
       router.refresh();
+      // Force reload to ensure all components update
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Sign out error:", error);
+      // Hata olsa bile sayfayı yenile
+      window.location.href = "/";
     } finally {
       setSigningOut(false);
     }
