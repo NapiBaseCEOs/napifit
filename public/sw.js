@@ -324,3 +324,37 @@ self.addEventListener("fetch", (event) => {
 if (reminderSettings.enabled) {
   startNotificationLoop();
 }
+
+// AI Assistant proaktif mesajları için
+let aiAssistantCheckInterval = null;
+
+// AI Assistant mesaj kontrolü
+async function checkAIAssistantMessages() {
+  try {
+    // Service Worker'dan main thread'e mesaj gönder
+    const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    clients.forEach((client) => {
+      client.postMessage({
+        type: "CHECK_AI_ASSISTANT_MESSAGE",
+      });
+    });
+  } catch (error) {
+    console.error("[SW] AI Assistant message check error:", error);
+  }
+}
+
+// AI Assistant için periyodik kontrol başlat
+function startAIAssistantCheck() {
+  if (aiAssistantCheckInterval) {
+    clearInterval(aiAssistantCheckInterval);
+  }
+  
+  // Her 5 dakikada bir kontrol et
+  aiAssistantCheckInterval = setInterval(checkAIAssistantMessages, 5 * 60 * 1000);
+  
+  // İlk kontrolü hemen yap
+  setTimeout(checkAIAssistantMessages, 10000); // 10 saniye sonra
+}
+
+// Service Worker aktif olduğunda AI Assistant kontrolünü başlat
+startAIAssistantCheck();

@@ -14,6 +14,7 @@ import MobilePerformanceTuner from "@/components/MobilePerformanceTuner";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { NetworkStatusProvider } from "@/context/NetworkStatusContext";
 import NetworkStatusOverlay from "@/components/NetworkStatusOverlay";
+import FloatingAIAssistant from "@/components/ai/FloatingAIAssistant";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://napifit.vercel.app";
 const metadataBase = new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`);
@@ -110,6 +111,7 @@ export default async function RootLayout({
                   <Header />
                   {children}
                   <MobileInstallPrompt />
+                  <FloatingAIAssistant />
                 </UpdateCheckerProvider>
               </SupabaseProvider>
             </NetworkStatusProvider>
