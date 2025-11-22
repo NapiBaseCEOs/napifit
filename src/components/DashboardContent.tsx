@@ -121,8 +121,8 @@ export default function DashboardContent({
       <div className="mx-auto max-w-5xl space-y-5 md:space-y-6">
         {/* Header */}
         <div className="rounded-3xl border border-gray-800/60 bg-gray-900/90 backdrop-blur-xl p-5 shadow-2xl shadow-primary-500/20 sm:p-7">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div className="flex-1">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary-500/40 bg-primary-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-primary-300 shadow-lg shadow-primary-500/20">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
@@ -134,20 +134,43 @@ export default function DashboardContent({
                 Hoş geldin, <span className="bg-gradient-to-r from-primary-400 to-fitness-orange bg-clip-text text-transparent">{user.name || user.email}</span>!
               </h1>
             </div>
-            {user.image && (
-              <Image
-                src={user.image}
-                alt="Profil"
-                width={64}
-                height={64}
-                className="h-16 w-16 rounded-full border-2 border-gray-700 object-cover"
-              />
-            )}
+            
+            {/* Sağlık Durumu - Modern Badge */}
+            <div className="flex items-center gap-3">
+              {bmi && (
+                <div className="flex items-center gap-3 rounded-2xl border border-gray-800/60 bg-gradient-to-br from-gray-900/90 to-gray-800/50 backdrop-blur-sm px-4 py-3 shadow-lg">
+                  <div className="flex flex-col items-end">
+                    <div className="text-xs uppercase tracking-wide text-gray-400">BMI</div>
+                    <div className="text-2xl font-bold text-white">{bmi}</div>
+                  </div>
+                  <div className="h-12 w-px bg-gray-700/50"></div>
+                  <div className="flex flex-col">
+                    <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getColorClass(bmiCategory.color)}`}>
+                      {bmiCategory.label}
+                    </div>
+                    {weightDifference !== null && (
+                      <div className={`mt-2 text-xs ${weightDifference > 0 ? "text-green-400" : weightDifference < 0 ? "text-red-400" : "text-gray-400"}`}>
+                        {weightDifference > 0 ? "+" : ""}{weightDifference} kg hedefe
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {user.image && (
+                <Image
+                  src={user.image}
+                  alt="Profil"
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 rounded-full border-2 border-gray-700 object-cover shadow-lg"
+                />
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Reklam: Dashboard üstü (Above the fold) - Görüntülü reklamlar */}
-        <div className="flex justify-center py-4">
+        {/* Reklam: Dashboard üstü - Sadece doğrulama için gizli (AdSense script yüklü kalacak) */}
+        <div className="hidden">
           <AdSenseAd 
             adSlot="1680336225" 
             adFormat="auto"
@@ -157,20 +180,7 @@ export default function DashboardContent({
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-          {/* BMI Card */}
-          <div className="group relative rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-6 shadow-lg hover:border-primary-500/50 hover:shadow-primary-500/20 transition-all duration-300">
-            <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">BMI</div>
-            <div className="mb-2 text-3xl font-bold text-white">{bmi || "—"}</div>
-            <div
-              className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getColorClass(
-                bmiCategory.color
-              )}`}
-            >
-              {bmiCategory.label}
-            </div>
-          </div>
-
+        <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
           {/* Weight Card */}
           <div className="group relative rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-6 shadow-lg hover:border-fitness-orange/50 hover:shadow-fitness-orange/20 transition-all duration-300">
             <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Mevcut Kilo</div>
@@ -310,8 +320,8 @@ export default function DashboardContent({
           }}
         />
 
-        {/* Reklam: Dashboard içerik arası - Yazı içi reklamlar */}
-        <div className="flex justify-center py-4">
+        {/* Reklam: Dashboard içerik arası - Sadece doğrulama için gizli */}
+        <div className="hidden">
           <AdSenseAd 
             adSlot="2095269194" 
             adFormat="auto"
@@ -433,86 +443,6 @@ export default function DashboardContent({
           )}
         </div>
 
-        {/* Profile Info */}
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="rounded-2xl border border-gray-800/70 bg-gray-900/80 p-6 shadow-lg">
-            <h3 className="mb-4 text-lg font-semibold text-white">Kişisel Bilgiler</h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Boy</span>
-                <span className="text-gray-200">{user.height || "—"} cm</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Yaş</span>
-                <span className="text-gray-200">{user.age || "—"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Cinsiyet</span>
-                <span className="text-gray-200">
-                  {user.gender === "male"
-                    ? "Erkek"
-                    : user.gender === "female"
-                    ? "Kadın"
-                    : user.gender === "other"
-                    ? "Diğer"
-                    : "—"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Email</span>
-                <span className="text-gray-200">{user.email || "—"}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-gray-800/70 bg-gray-900/80 p-6 shadow-lg">
-            <h3 className="mb-4 text-lg font-semibold text-white">Sağlık Özeti</h3>
-            <div className="space-y-4">
-              {bmi && (
-                <div>
-                  <div className="mb-2 flex justify-between text-sm">
-                    <span className="text-gray-400">BMI Durumu</span>
-                    <span className={`font-medium ${getColorClass(bmiCategory.color).split(" ")[0]}`}>
-                      {bmiCategory.label}
-                    </span>
-                  </div>
-                  <div className="h-2 rounded-full bg-gray-800">
-                    <div
-                      className={`h-full rounded-full ${
-                        bmiCategory.color === "green"
-                          ? "bg-green-500"
-                          : bmiCategory.color === "yellow"
-                          ? "bg-yellow-500"
-                          : bmiCategory.color === "red"
-                          ? "bg-red-500"
-                          : "bg-blue-500"
-                      }`}
-                      style={{
-                        width: `${Math.min(100, ((bmi - 15) / 20) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-              {weightDifference !== null && (
-                <div className="rounded-lg border border-gray-800/70 bg-gray-900/60 p-4">
-                  <div className="text-xs uppercase tracking-wide text-gray-500">Hedef İlerleme</div>
-                  <div className="mt-2 text-2xl font-bold text-white">
-                    {weightDifference > 0 ? "+" : ""}
-                    {weightDifference} kg
-                  </div>
-                  <div className="mt-1 text-xs text-gray-400">
-                    {weightDifference > 0
-                      ? "Hedef kiloya ulaşmak için kilo alınmalı"
-                      : weightDifference < 0
-                      ? "Hedef kiloya ulaşmak için kilo verilmeli"
-                      : "Hedef kiloya ulaşıldı! 🎉"}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </main>
   );
