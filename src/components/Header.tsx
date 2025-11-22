@@ -64,66 +64,85 @@ export default function Header() {
             <span className="text-[9px] sm:text-[10px] text-gray-500 font-normal">by <span className="text-primary-500/70 font-medium">NapiBase</span></span>
           </div>
         </Link>
-        <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
-          {isAuth && <NotificationBell />}
-          <NetworkStatusIndicator />
-          <nav className="flex items-center gap-1.5 sm:gap-2 text-xs sm:gap-3 sm:text-sm">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Network Status - Sadece desktop'ta, küçük */}
+          <div className="hidden lg:block">
+            <NetworkStatusIndicator />
+          </div>
+          
+          {/* Navigation */}
+          <nav className="flex items-center gap-1 sm:gap-1.5 md:gap-2 text-xs sm:text-sm">
             {isAuth && (
               <>
+                {/* Mobilde sadece önemli linkler, desktop'ta hepsi */}
                 <Link
                   href="/dashboard"
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-primary-500/10 hover:border-primary-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
+                  className="hidden sm:inline-flex px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-primary-500/10 hover:border-primary-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  Kontrol Paneli
+                  <span className="hidden md:inline">Kontrol Paneli</span>
+                  <span className="md:hidden">Panel</span>
                 </Link>
                 <Link
                   href="/community"
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-cyan-500/10 hover:border-cyan-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
+                  className="hidden sm:inline-flex px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-cyan-500/10 hover:border-cyan-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
                   Topluluk
                 </Link>
                 <Link
                   href="/health"
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-fitness-orange/10 hover:border-fitness-orange/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
+                  className="hidden md:inline-flex px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-fitness-orange/10 hover:border-fitness-orange/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
                   Sağlık
                 </Link>
                 <Link
                   href="/water"
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-blue-500/10 hover:border-blue-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
+                  className="px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-blue-500/10 hover:border-blue-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  💧 Su
+                  <span className="hidden sm:inline">💧 Su</span>
+                  <span className="sm:hidden">💧</span>
                 </Link>
                 <Link
                   href="/profile"
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-gray-300 hover:text-white rounded-xl hover:bg-fitness-purple/10 hover:border-fitness-purple/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
+                  className="hidden lg:inline-flex px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-fitness-purple/10 hover:border-fitness-purple/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
                   Profil
                 </Link>
               </>
             )}
+            
+            {/* Bildirim Butonu - Nav'ın içinde, en sağda */}
+            {isAuth && (
+              <div className="ml-1 sm:ml-2">
+                <NotificationBell />
+              </div>
+            )}
+            
+            {/* Auth Butonları */}
             {isAuth ? (
               <button
                 onClick={handleSignOut}
                 disabled={signingOut}
-                className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 hover:scale-105 transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 min-h-[36px] sm:min-h-0"
+                className="ml-2 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 hover:scale-105 transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
               >
-                {signingOut ? <Spinner className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : "Çıkış"}
+                {signingOut ? <Spinner className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <span className="hidden sm:inline">Çıkış</span>}
+                {!signingOut && <span className="sm:hidden">✕</span>}
               </button>
             ) : (
-              <div className="flex items-center gap-2 sm:gap-2.5">
+              <div className="ml-2 flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={handleGoLogin}
                   disabled={navigatingLogin}
-                  className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 hover:scale-105 transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 min-h-[36px] sm:min-h-0"
+                  className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 hover:scale-105 transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
                 >
-                  {navigatingLogin ? <Spinner className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : "Giriş"}
+                  {navigatingLogin ? <Spinner className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <span className="hidden sm:inline">Giriş</span>}
+                  {!navigatingLogin && <span className="sm:hidden">→</span>}
                 </button>
                 <Link
                   href="/register"
-                  className="rounded-xl border-2 border-gray-700 bg-gray-900/50 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-gray-200 hover:text-white hover:border-primary-500/50 hover:bg-gray-900/70 transition-all duration-300 hover:scale-105 active:scale-95 min-h-[36px] sm:min-h-0 flex items-center justify-center"
+                  className="rounded-xl border-2 border-gray-700 bg-gray-900/50 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-gray-200 hover:text-white hover:border-primary-500/50 hover:bg-gray-900/70 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center"
                 >
-                  Kayıt
+                  <span className="hidden sm:inline">Kayıt</span>
+                  <span className="sm:hidden">+</span>
                 </Link>
               </div>
             )}

@@ -117,14 +117,14 @@ export default function NotificationBell() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Bildirim İkonu */}
+      {/* Bildirim İkonu - Optimize edilmiş boyutlar */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+        className="relative p-1.5 sm:p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
         aria-label="Bildirimler"
       >
         <svg
-          className="h-6 w-6 text-gray-400 hover:text-primary-400 transition-colors"
+          className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400 hover:text-primary-400 transition-colors"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -137,15 +137,15 @@ export default function NotificationBell() {
           />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white animate-pulse">
+          <span className="absolute top-0 right-0 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-red-500 text-[10px] sm:text-xs font-bold text-white animate-pulse">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown - Optimize edilmiş konum ve boyut */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-gray-800/60 bg-gray-900/95 backdrop-blur-xl shadow-2xl z-50 max-h-[500px] overflow-hidden flex flex-col">
+        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 md:w-96 rounded-2xl border border-gray-800/60 bg-gray-900/95 backdrop-blur-xl shadow-2xl z-50 max-h-[calc(100vh-8rem)] sm:max-h-[500px] overflow-hidden flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-800/60">
             <h3 className="text-lg font-semibold text-white">Bildirimler</h3>

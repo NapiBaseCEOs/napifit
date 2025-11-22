@@ -99,10 +99,6 @@ export async function GET(request: Request) {
     if (requestsWithLikes.length > 0) {
       const requestIds = requestsWithLikes.map((r: any) => r.id);
       
-      // Admin/kurucu e-postalarını önceden al (tek seferde)
-      const FOUNDER_EMAIL = "hzjsj895@gmail.com";
-      const ADMIN_EMAILS = ["hzjsj895@gmail.com"];
-      
       // Tüm beğenileri tek sorguda al (daha hızlı)
       const { data: allLikes } = await supabaseAdmin
         .from("feature_request_likes")
@@ -120,10 +116,11 @@ export async function GET(request: Request) {
           try {
             const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
             if (authUser?.user?.email) {
-              const email = authUser.user.email.toLowerCase();
-              if (email === FOUNDER_EMAIL || ADMIN_EMAILS.includes(email)) {
+              const isFounder = isFounderEmail(authUser.user.email);
+              const isAdmin = isAdminEmail(authUser.user.email);
+              if (isFounder || isAdmin) {
                 adminUserIds.add(userId);
-                return { userId, isFounder: email === FOUNDER_EMAIL, isAdmin: ADMIN_EMAILS.includes(email) };
+                return { userId, isFounder, isAdmin };
               }
             }
           } catch {

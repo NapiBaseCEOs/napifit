@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-11-22T21:15:53.691Z",
+  "siteUrl": "https://napibase.com",
+  "tests": [
+    {
+      "name": "Community",
+      "path": "/community",
+      "status": 200,
+      "duration": 595,
+      "success": true
+    },
+    {
+      "name": "Login",
+      "path": "/login",
+      "status": 200,
+      "duration": 629,
+      "success": true
+    },
+    {
+      "name": "Register",
+      "path": "/register",
+      "status": 200,
+      "duration": 638,
+      "success": true
+    },
+    {
+      "name": "Ana Sayfa",
+      "path": "/",
+      "status": 200,
+      "duration": 869,
+      "success": true
+    },
+    {
+      "name": "Ping",
+      "path": "/api/ping",
+      "status": 200,
+      "duration": 315,
+      "success": true
+    },
+    {
+      "name": "Notifications",
+      "path": "/api/notifications",
+      "status": 200,
+      "duration": 417,
+      "success": true
+    },
+    {
+      "name": "Stats",
+      "path": "/api/stats",
+      "status": 200,
+      "duration": 916,
+      "success": true
+    },
+    {
+      "name": "Feature Requests",
+      "path": "/api/feature-requests",
+      "status": 200,
+      "duration": 1322,
+      "success": true
+    }
+  ],
+  "performance": {
+    "avgResponseTime": 713,
+    "slowEndpoints": []
+  },
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  }
+}
