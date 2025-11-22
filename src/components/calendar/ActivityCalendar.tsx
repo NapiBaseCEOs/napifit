@@ -358,11 +358,6 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
                     </p>
                   </div>
                 </div>
-                {!(activities[selectedDate]?.meals || activities[selectedDate]?.workouts) && (
-                  <p className="mt-3 text-xs text-gray-400">
-                    Bu gün için kayıt bulunmuyor. Hızlıca eklemek için aşağıdaki formu kullanabilirsiniz.
-                  </p>
-                )}
               </>
             ) : (
               <p className="text-center text-gray-400">

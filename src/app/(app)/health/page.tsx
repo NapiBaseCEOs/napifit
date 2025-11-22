@@ -344,29 +344,151 @@ export default async function HealthPage() {
           </div>
         </div>
 
+        {/* Activity Calendar and Today's Activities - Side by Side */}
+        <section id="calendar" className="grid gap-5 md:gap-6 lg:grid-cols-3">
+          {/* Activity Calendar - 2 columns */}
+          <div className="lg:col-span-2 space-y-3 md:space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Takvim</p>
+                <h3 className="text-xl sm:text-2xl font-semibold text-white">Aktivite Takvimi</h3>
+              </div>
+            </div>
+            <ActivityCalendar />
+          </div>
+
+          {/* Today's Activities - 1 column */}
+          <div className="space-y-3 md:space-y-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Bugün</p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-white">Bugünkü Aktiviteler</h3>
+            </div>
+            <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 backdrop-blur-sm p-5 shadow-lg space-y-4">
+              {/* Today's Date */}
+              <div className="pb-4 border-b border-gray-800/60">
+                <p className="text-sm font-medium text-gray-300">
+                  {new Date().toLocaleDateString("tr-TR", { 
+                    weekday: "long", 
+                    year: "numeric", 
+                    month: "long", 
+                    day: "numeric" 
+                  })}
+                </p>
+              </div>
+
+              {/* Today's Meals */}
+              <div>
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="text-lg">🍽️</span>
+                  <h4 className="text-sm font-semibold text-white">Bugünkü Öğünler</h4>
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {meals.filter((meal) => {
+                    const mealDate = new Date(meal.createdAt);
+                    const today = new Date();
+                    return mealDate.toDateString() === today.toDateString();
+                  }).length > 0 ? (
+                    meals
+                      .filter((meal) => {
+                        const mealDate = new Date(meal.createdAt);
+                        const today = new Date();
+                        return mealDate.toDateString() === today.toDateString();
+                      })
+                      .map((meal) => {
+                        const foods = Array.isArray(meal.foods) ? meal.foods : [];
+                        const mealTypeLabels: Record<string, string> = {
+                          breakfast: "🌅 Kahvaltı",
+                          lunch: "☀️ Öğle",
+                          dinner: "🌙 Akşam",
+                          snack: "🍿 Atıştırmalık",
+                        };
+                        return (
+                          <div
+                            key={meal.id}
+                            className="rounded-lg border border-emerald-500/20 bg-gray-800/40 p-3"
+                          >
+                            <div className="text-xs font-medium text-white">
+                              {mealTypeLabels[meal.mealType || ""] || "🍽️ Öğün"}
+                            </div>
+                            <div className="mt-1 text-xs text-gray-400 line-clamp-1">
+                              {foods.slice(0, 2).map((food: any) => food.name).join(", ") || "Yemek"}
+                              {foods.length > 2 && "..."}
+                            </div>
+                            <div className="mt-1 text-xs text-emerald-400">
+                              {Math.round(meal.totalCalories)} kcal
+                            </div>
+                            <div className="mt-1 text-xs text-gray-500">
+                              {new Date(meal.createdAt).toLocaleTimeString("tr-TR", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">Bugün henüz öğün kaydedilmedi</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Today's Workouts */}
+              <div>
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="text-lg">💪</span>
+                  <h4 className="text-sm font-semibold text-white">Bugünkü Egzersizler</h4>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {workouts.filter((workout) => {
+                    const workoutDate = new Date(workout.createdAt);
+                    const today = new Date();
+                    return workoutDate.toDateString() === today.toDateString();
+                  }).length > 0 ? (
+                    workouts
+                      .filter((workout) => {
+                        const workoutDate = new Date(workout.createdAt);
+                        const today = new Date();
+                        return workoutDate.toDateString() === today.toDateString();
+                      })
+                      .map((workout) => (
+                        <div
+                          key={workout.id}
+                          className="rounded-lg border border-fitness-orange/20 bg-gray-800/40 p-3"
+                        >
+                          <div className="text-xs font-medium text-white">{workout.name}</div>
+                          <div className="mt-1 text-xs text-fitness-orange">
+                            {workout.duration && `${workout.duration} dk`}
+                            {workout.calories && ` • ${Math.round(workout.calories)} kcal`}
+                          </div>
+                          <div className="mt-1 text-xs text-gray-500">
+                            {new Date(workout.createdAt).toLocaleTimeString("tr-TR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">Bugün henüz egzersiz kaydedilmedi</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Quick Log Section */}
         <section id="quick-log" className="space-y-3 md:space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Hızlı Kayıt</p>
-              <h3 className="text-2xl font-semibold text-white">Kilo, egzersiz ve öğünlerini anında kaydet</h3>
+              <h3 className="text-xl sm:text-2xl font-semibold text-white">Kilo, egzersiz ve öğünlerini anında kaydet</h3>
             </div>
             <span className="rounded-full border border-primary-500/30 bg-primary-500/10 px-4 py-1 text-xs text-primary-200">
               1 dakikada kayıt
             </span>
           </div>
           <HealthForms />
-        </section>
-
-        {/* Activity Calendar */}
-        <section id="calendar" className="space-y-3 md:space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Takvim</p>
-              <h3 className="text-2xl font-semibold text-white">Günün boş mu dolu mu?</h3>
-            </div>
-          </div>
-          <ActivityCalendar />
         </section>
 
         {/* Modern Info Card */}
