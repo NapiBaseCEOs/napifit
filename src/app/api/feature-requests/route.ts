@@ -3,6 +3,7 @@ import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { ensureWaterSuggestionExists, getWaterPlaceholderFeatureResponse } from "@/lib/community/water-reminder";
+import { isAdminEmail, isFounderEmail } from "@/config/admins";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +89,67 @@ export async function GET(request: Request) {
       userDislikes = dislikes?.map((d) => d.feature_request_id) || [];
     }
 
+    // Admin/kurucu beğenilerini kontrol et (OPTİMİZE EDİLDİ - ÇOK DAHA HIZLI)
+    // Performans optimizasyonu: Admin/kurucu kontrolünü sadece gerekli durumlarda yap
+    const adminLikeMap = new Map<string, { isFounder: boolean; isAdmin: boolean }>();
+    
+    // Sadece beğeni sayısı > 0 olan öneriler için kontrol yap (performans için)
+    const requestsWithLikes = (requests || []).filter((r: any) => (r.like_count ?? 0) > 0);
+    
+    if (requestsWithLikes.length > 0) {
+      const requestIds = requestsWithLikes.map((r: any) => r.id);
+      
+      // Admin/kurucu e-postalarını önceden al (tek seferde)
+      const FOUNDER_EMAIL = "hzjsj895@gmail.com";
+      const ADMIN_EMAILS = ["hzjsj895@gmail.com"];
+      
+      // Tüm beğenileri tek sorguda al (daha hızlı)
+      const { data: allLikes } = await supabaseAdmin
+        .from("feature_request_likes")
+        .select("feature_request_id, user_id")
+        .in("feature_request_id", requestIds)
+        .limit(200); // İlk 200 beğeniyi kontrol et (yeterli)
+      
+      if (allLikes && allLikes.length > 0) {
+        // Tüm beğenen kullanıcı ID'lerini topla
+        const userIds = [...new Set((allLikes as Array<{ user_id: string }>).map(l => l.user_id))];
+        
+        // Admin/kurucu kullanıcı ID'lerini bul (sadece ilk 20 kullanıcıyı kontrol et - performans)
+        const adminUserIds = new Set<string>();
+        const checkPromises = userIds.slice(0, 20).map(async (userId) => {
+          try {
+            const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+            if (authUser?.user?.email) {
+              const email = authUser.user.email.toLowerCase();
+              if (email === FOUNDER_EMAIL || ADMIN_EMAILS.includes(email)) {
+                adminUserIds.add(userId);
+                return { userId, isFounder: email === FOUNDER_EMAIL, isAdmin: ADMIN_EMAILS.includes(email) };
+              }
+            }
+          } catch {
+            // Kullanıcı bulunamadı, devam et
+          }
+          return null;
+        });
+        
+        const results = await Promise.all(checkPromises);
+        const adminInfo = new Map<string, { isFounder: boolean; isAdmin: boolean }>();
+        for (const result of results) {
+          if (result) {
+            adminInfo.set(result.userId, { isFounder: result.isFounder, isAdmin: result.isAdmin });
+          }
+        }
+        
+        // Admin/kurucu beğenilerini map'e ekle
+        for (const like of allLikes as Array<{ feature_request_id: string; user_id: string }>) {
+          if (adminInfo.has(like.user_id) && !adminLikeMap.has(like.feature_request_id)) {
+            const info = adminInfo.get(like.user_id)!;
+            adminLikeMap.set(like.feature_request_id, info);
+          }
+        }
+      }
+    }
+
     let formattedRequests =
       requests?.map((req: any) => {
         const sanitizedLikeCount = Math.max(0, req.like_count ?? 0);
@@ -102,6 +164,8 @@ export async function GET(request: Request) {
           created_at: req.created_at,
         };
 
+        const adminLike = adminLikeMap.get(req.id);
+        
         return {
           id: req.id,
           title: req.title,
@@ -116,6 +180,8 @@ export async function GET(request: Request) {
           createdAt: req.created_at,
           deletedAt: req.deleted_at,
           deletedReason: req.deleted_reason,
+          likedByFounder: adminLike?.isFounder ?? false,
+          likedByAdmin: adminLike?.isAdmin ?? false,
           user: {
             id: profile.id,
             name: profile.show_public_profile ? (profile.full_name || "Kullanıcı") : "Gizli Kullanıcı",

@@ -105,6 +105,15 @@ function generateReleaseNotes() {
       notes += `  - İstatistik kartları daha kompakt\n`;
       notes += `  - Genel layout sıkılaştırıldı\n\n`;
     }
+    
+    if (categories.ui.some(f => f.includes('water')) || categories.other.some(f => f.includes('sw.js'))) {
+      notes += `• 🔔 Su Hatırlatıcısı - Arka Plan Bildirimleri\n`;
+      notes += `  - Artık tarayıcı kapalıyken bile bildirimler geliyor!\n`;
+      notes += `  - Scheduled Notifications API desteği (Chrome/Edge)\n`;
+      notes += `  - Periodic Background Sync desteği\n`;
+      notes += `  - Service Worker ile tam arka plan desteği\n`;
+      notes += `  - Sekme açık olmasa bile hatırlatmalar çalışıyor\n\n`;
+    }
   }
 
   // API Değişiklikleri

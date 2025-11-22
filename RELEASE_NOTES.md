@@ -1,6 +1,14 @@
 🚀 *NapiFit v0.1.55 Güncelleme Notları*
 📅 22 Kasım 2025
 
+✨ *Arayüz İyileştirmeleri*
+• 🔔 Su Hatırlatıcısı - Arka Plan Bildirimleri
+  - Artık tarayıcı kapalıyken bile bildirimler geliyor!
+  - Scheduled Notifications API desteği (Chrome/Edge)
+  - Periodic Background Sync desteği
+  - Service Worker ile tam arka plan desteği
+  - Sekme açık olmasa bile hatırlatmalar çalışıyor
+
 ⚡ *Performans İyileştirmeleri*
 • Render yükü azaltıldı
 • Gereksiz padding ve büyük component'ler optimize edildi

@@ -25,6 +25,8 @@ type FeatureRequest = {
   createdAt: string;
   deletedAt?: string | null;
   deletedReason?: string | null;
+  likedByFounder?: boolean;
+  likedByAdmin?: boolean;
   user: {
     id: string;
     name: string;
@@ -170,6 +172,29 @@ export default function CommunityPage() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to like");
+      }
+
+      const data = await response.json();
+      
+      // Admin/kurucu beğendiğinde bildirim göster (eğer öneri sahibi isek)
+      if (data.liked && (data.isAdmin || data.isFounder)) {
+        const request = requests.find(r => r.id === id);
+        if (request && currentUserId === request.user.id) {
+          // Browser notification göster
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(
+              data.isFounder ? "👑 Kurucu Önerinizi Beğendi!" : "⭐ Admin Önerinizi Beğendi!",
+              {
+                body: data.isFounder
+                  ? "🎉 Kurucu önerinizi beğendi! Harika bir fikir, tebrikler!"
+                  : "⭐ Admin önerinizi beğendi! Güzel bir öneri, tebrikler!",
+                icon: "/icon-192.png",
+                badge: "/icon-192.png",
+                tag: `admin-like-${id}`,
+              }
+            );
+          }
+        }
       }
 
       // Refresh requests

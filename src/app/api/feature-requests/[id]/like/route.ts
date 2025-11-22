@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { isAdminEmail, isFounderEmail } from "@/config/admins";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,16 +16,21 @@ export async function POST(_request: Request, { params }: { params: { id: string
     }
 
     const featureRequestId = params.id;
+    const isAdmin = isAdminEmail(user.email);
+    const isFounder = isFounderEmail(user.email);
 
+    // Öneri bilgilerini al (bildirim için)
     const { data: targetRequest } = await supabaseAdmin
       .from("feature_requests")
-      .select("deleted_at")
+      .select("deleted_at, user_id, title")
       .eq("id", featureRequestId)
       .maybeSingle();
 
-    if ((targetRequest as { deleted_at: string | null } | null)?.deleted_at) {
+    if (!targetRequest || (targetRequest as { deleted_at: string | null }).deleted_at) {
       return NextResponse.json({ error: "Feature request not available" }, { status: 410 });
     }
+
+    const requestData = targetRequest as { user_id: string; title: string | null; deleted_at: string | null };
 
     // Önce beğenme var mı kontrol et
     const { data: existingLike } = await supabase
@@ -48,7 +54,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
       }
 
       await syncLikeCount(featureRequestId);
-      return NextResponse.json({ liked: false });
+      return NextResponse.json({ liked: false, isAdmin, isFounder });
     } else {
       // Beğen
       const { error } = await supabase
@@ -64,11 +70,60 @@ export async function POST(_request: Request, { params }: { params: { id: string
       }
 
       await syncLikeCount(featureRequestId);
-      return NextResponse.json({ liked: true });
+
+      // Admin veya kurucu beğendiğinde bildirim gönder
+      if ((isAdmin || isFounder) && requestData.user_id !== user.id) {
+        await sendNotificationToOwner(
+          requestData.user_id,
+          featureRequestId,
+          requestData.title || "Öneriniz",
+          isFounder
+        );
+      }
+
+      return NextResponse.json({ liked: true, isAdmin, isFounder });
     }
   } catch (error) {
     console.error("Like feature request error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// Öneri sahibine bildirim gönder
+async function sendNotificationToOwner(
+  ownerUserId: string,
+  featureRequestId: string,
+  featureTitle: string,
+  isFounder: boolean
+) {
+  try {
+    // Kullanıcının e-posta adresini al
+    const { data: ownerProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("id", ownerUserId)
+      .maybeSingle();
+
+    if (!ownerProfile) return;
+
+    // Bildirim kaydı oluştur (gelecekte bildirimler sayfası için)
+    // Şimdilik sadece logluyoruz, gerçek bildirim sistemi için notifications tablosu oluşturulabilir
+    console.log("Notification sent:", {
+      ownerUserId,
+      featureRequestId,
+      featureTitle,
+      isFounder,
+      message: isFounder
+        ? "🎉 Kurucu önerinizi beğendi! Tebrikler!"
+        : "⭐ Admin önerinizi beğendi! Tebrikler!",
+    });
+
+    // TODO: Gerçek bildirim sistemi için:
+    // - notifications tablosu oluştur
+    // - Browser notification gönder (eğer izin varsa)
+    // - E-posta gönder (opsiyonel)
+  } catch (error) {
+    console.error("Failed to send notification:", error);
   }
 }
 

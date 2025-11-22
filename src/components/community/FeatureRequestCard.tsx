@@ -18,6 +18,8 @@ type FeatureRequest = {
   createdAt: string;
   deletedAt?: string | null;
   deletedReason?: string | null;
+  likedByFounder?: boolean;
+  likedByAdmin?: boolean;
   user: {
     id: string;
     name: string;
@@ -173,6 +175,30 @@ export default function FeatureRequestCard({
             )}
           </div>
           <p className="text-sm text-gray-400 leading-relaxed">{request.description}</p>
+          
+          {/* Admin/Kurucu Beğenisi Mesajı */}
+          {(request.likedByFounder || request.likedByAdmin) && (
+            <div className={`mt-3 rounded-lg border p-3 ${
+              request.likedByFounder
+                ? "border-yellow-500/40 bg-gradient-to-r from-yellow-500/10 to-amber-500/10"
+                : "border-blue-500/40 bg-gradient-to-r from-blue-500/10 to-cyan-500/10"
+            }`}>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">
+                  {request.likedByFounder ? "👑" : "⭐"}
+                </span>
+                <p className={`text-sm font-semibold ${
+                  request.likedByFounder
+                    ? "text-yellow-300"
+                    : "text-blue-300"
+                }`}>
+                  {request.likedByFounder
+                    ? "🎉 Kurucu önerinizi beğendi! Harika bir fikir, tebrikler!"
+                    : "⭐ Admin önerinizi beğendi! Güzel bir öneri, tebrikler!"}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
         {canDelete && (
           <button

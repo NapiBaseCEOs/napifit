@@ -56,6 +56,8 @@ export function getWaterPlaceholderFeatureResponse() {
     createdAt: WATER_CREATED_AT,
     deletedAt: null,
     deletedReason: null,
+    likedByFounder: false,
+    likedByAdmin: false,
     user: {
       id: WATER_PROFILE_ID,
       name: "MERT DEMİR",

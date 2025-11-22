@@ -10,6 +10,7 @@ import { useUpdateChecker } from "./UpdateCheckerProvider";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import type { Database } from "@/lib/supabase/types";
 import NetworkStatusIndicator from "./NetworkStatusIndicator";
+import NotificationBell from "./NotificationBell";
 
 export default function Header() {
   const router = useRouter();
@@ -64,6 +65,7 @@ export default function Header() {
           </div>
         </Link>
         <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
+          {isAuth && <NotificationBell />}
           <NetworkStatusIndicator />
           <nav className="flex items-center gap-1.5 sm:gap-2 text-xs sm:gap-3 sm:text-sm">
             {isAuth && (
