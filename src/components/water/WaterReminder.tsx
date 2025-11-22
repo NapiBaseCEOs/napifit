@@ -44,18 +44,47 @@ export default function WaterReminder({
     }
   }, []);
 
-  // Service worker kaydı
+  // Service worker kaydı ve ayarları güncelleme
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
-    navigator.serviceWorker
-      .getRegistration()
-      .then((reg) => {
-        if (!reg) {
-          navigator.serviceWorker.register("/sw.js").catch((err) => console.error("SW register failed", err));
+    
+    const registerAndUpdateSW = async () => {
+      try {
+        const registration = await navigator.serviceWorker.register("/sw.js", {
+          scope: "/",
+        });
+        
+        // Service worker hazır olana kadar bekle
+        await navigator.serviceWorker.ready;
+        
+        // Ayarları service worker'a gönder
+        if (registration.active) {
+          const messageChannel = new MessageChannel();
+          
+          messageChannel.port1.onmessage = (event) => {
+            if (event.data.success) {
+              console.log("Service worker ayarları güncellendi");
+            }
+          };
+          
+          registration.active.postMessage(
+            {
+              type: "UPDATE_REMINDER_SETTINGS",
+              enabled: reminderEnabled,
+              intervalMinutes: reminderInterval,
+              totalAmount,
+              dailyGoal,
+            },
+            [messageChannel.port2]
+          );
         }
-      })
-      .catch((err) => console.error("SW registration lookup failed", err));
-  }, []);
+      } catch (err) {
+        console.error("SW register failed", err);
+      }
+    };
+    
+    registerAndUpdateSW();
+  }, [reminderEnabled, reminderInterval, totalAmount, dailyGoal]);
 
   // Tarayıcı planlı bildirim destekliyor mu?
   useEffect(() => {
@@ -68,81 +97,45 @@ export default function WaterReminder({
     setSupportsScheduledNotifications(supported);
   }, []);
 
-  const cancelScheduledNotifications = useCallback(async () => {
-    if (typeof window === "undefined" || !supportsScheduledNotifications) return;
-    const registration = await navigator.serviceWorker.ready;
-    const existing = await registration.getNotifications({
-      tag: "water-reminder",
-      includeTriggered: true,
-    });
-    existing.forEach((notification) => notification.close());
-  }, [supportsScheduledNotifications]);
-
-  const scheduleBackgroundNotification = useCallback(async () => {
-    if (typeof window === "undefined" || !supportsScheduledNotifications) return false;
+  // Service Worker ayarlarını güncelle
+  const updateServiceWorkerSettings = useCallback(async () => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    
     try {
       const registration = await navigator.serviceWorker.ready;
-      await cancelScheduledNotifications();
-      const TriggerConstructor = (window as any).TimestampTrigger;
-      if (!TriggerConstructor) {
-        return false;
+      
+      if (registration.active && notificationPermission === "granted") {
+        const messageChannel = new MessageChannel();
+        
+        messageChannel.port1.onmessage = (event) => {
+          if (event.data.success) {
+            console.log("Service worker ayarları güncellendi");
+          }
+        };
+        
+        registration.active.postMessage(
+          {
+            type: "UPDATE_REMINDER_SETTINGS",
+            enabled: reminderEnabled && notificationPermission === "granted",
+            intervalMinutes: reminderInterval,
+            totalAmount,
+            dailyGoal,
+          },
+          [messageChannel.port2]
+        );
       }
-      const timestamp = Date.now() + reminderInterval * 60 * 1000;
-      await registration.showNotification("💧 Su Hatırlatıcısı", {
-        body: `Hedefine ulaşmak için su içme zamanı! ${Math.round(totalAmount)}ml / ${dailyGoal}ml`,
-        icon: "/icon-192.png",
-        badge: "/icon-192.png",
-        tag: "water-reminder",
-        requireInteraction: false,
-        showTrigger: new TriggerConstructor(timestamp),
-      });
-      return true;
     } catch (error) {
-      console.error("Scheduled notification failed:", error);
-      return false;
+      console.error("Service worker ayar güncelleme hatası:", error);
     }
-  }, [supportsScheduledNotifications, reminderInterval, totalAmount, dailyGoal, cancelScheduledNotifications]);
+  }, [reminderEnabled, reminderInterval, notificationPermission, totalAmount, dailyGoal]);
 
-  // Bildirim zamanlayıcısı
+  // Service Worker'a ayarları gönder (ayarlar değiştiğinde)
   useEffect(() => {
-    if (!reminderEnabled || notificationPermission !== "granted") {
-      cancelScheduledNotifications();
-      return;
-    }
-
-    if (supportsScheduledNotifications) {
-      scheduleBackgroundNotification();
-      return () => {
-        cancelScheduledNotifications();
-      };
-    }
-
-    const interval = reminderInterval * 60 * 1000; // Dakikayı milisaniyeye çevir
-
-    const showNotification = () => {
-      if (document.hidden && Notification.permission === "granted") {
-        new Notification("💧 Su Hatırlatıcısı", {
-          body: `Hedefinize ulaşmak için su içmeyi unutmayın! ${Math.round(totalAmount)}ml / ${dailyGoal}ml`,
-          icon: "/icon-192.png",
-          badge: "/icon-192.png",
-          tag: "water-reminder",
-          requireInteraction: false,
-        });
-      }
-    };
-
-    const timer = setInterval(showNotification, interval);
-    return () => clearInterval(timer);
-  }, [
-    reminderEnabled,
-    reminderInterval,
-    notificationPermission,
-    totalAmount,
-    dailyGoal,
-    supportsScheduledNotifications,
-    scheduleBackgroundNotification,
-    cancelScheduledNotifications,
-  ]);
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    if (notificationPermission !== "granted") return;
+    
+    updateServiceWorkerSettings();
+  }, [reminderEnabled, reminderInterval, notificationPermission, totalAmount, dailyGoal, updateServiceWorkerSettings]);
 
   // Bildirim izni iste
   const requestNotificationPermission = async () => {
@@ -153,9 +146,8 @@ export default function WaterReminder({
 
     if (Notification.permission === "granted") {
       setNotificationPermission("granted");
-      if (supportsScheduledNotifications) {
-        scheduleBackgroundNotification();
-      }
+      // Service Worker'a ayarları gönder
+      await updateServiceWorkerSettings();
       return;
     }
 
@@ -164,14 +156,41 @@ export default function WaterReminder({
       setNotificationPermission(permission);
       
       if (permission === "granted") {
+        // Service Worker'ı kaydet ve ayarları gönder
+        if ("serviceWorker" in navigator) {
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            if (registration.active) {
+              const messageChannel = new MessageChannel();
+              
+              messageChannel.port1.onmessage = (event) => {
+                if (event.data.success) {
+                  console.log("Service worker ayarları güncellendi");
+                }
+              };
+              
+              registration.active.postMessage(
+                {
+                  type: "UPDATE_REMINDER_SETTINGS",
+                  enabled: reminderEnabled,
+                  intervalMinutes: reminderInterval,
+                  totalAmount,
+                  dailyGoal,
+                },
+                [messageChannel.port2]
+              );
+            }
+          } catch (error) {
+            console.error("Service worker ayar güncelleme hatası:", error);
+          }
+        }
+        
         // İlk bildirimi göster
         new Notification("💧 Su Hatırlatıcısı Aktif", {
-          body: "Artık düzenli olarak su içmenizi hatırlatacağız!",
+          body: "Artık düzenli olarak su içmenizi hatırlatacağız! Tarayıcı kapalıyken bile bildirimler gelecek.",
           icon: "/icon-192.png",
+          badge: "/icon-192.png",
         });
-        if (supportsScheduledNotifications) {
-          scheduleBackgroundNotification();
-        }
       }
     } else {
       alert("Bildirim izni reddedilmiş. Lütfen tarayıcı ayarlarından izin verin.");
@@ -277,6 +296,11 @@ export default function WaterReminder({
       if (response.ok) {
         setReminderEnabled(enabled);
         setReminderInterval(interval);
+        
+        // Service Worker'a yeni ayarları gönder
+        if (enabled && notificationPermission === "granted") {
+          await updateServiceWorkerSettings();
+        }
       }
     } catch (error) {
       console.error("Failed to update reminder settings:", error);
@@ -566,8 +590,11 @@ export default function WaterReminder({
                       </p>
                       <p className="mt-1 text-[11px] text-emerald-200/80">
                         {supportsScheduledNotifications
-                          ? "Tarayıcınız sekme kapalıyken bile zamanlanmış bildirim gösterebilir."
-                          : "Sekmeyi açık bırakmanız gerekir; arka plan bildirimleri tarayıcınızda desteklenmiyor."}
+                          ? "✅ Arka plan bildirimleri aktif - Tarayıcı kapalıyken bile bildirimler gelecek!"
+                          : "⚠️ Tarayıcınız Scheduled Notifications API'yi desteklemiyor. Service Worker ile arka plan bildirimleri çalışıyor ancak bazı tarayıcılarda sınırlı olabilir."}
+                      </p>
+                      <p className="mt-1 text-[10px] text-emerald-200/60">
+                        💡 En iyi deneyim için Chrome, Edge veya Opera kullanın.
                       </p>
                     </div>
                   )}
