@@ -276,9 +276,16 @@ export default function CommunityPage() {
         setError(null);
         await fetchRequests();
         // Profil sayfasını refresh etmek için custom event gönder
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('feature-request-created'));
-        }
+        // Kısa bir delay ekle (API'nin commit olması için)
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            console.log('[CommunityPage] Dispatching feature-request-created event');
+            window.dispatchEvent(new CustomEvent('feature-request-created', { 
+              bubbles: true,
+              cancelable: true 
+            }));
+          }
+        }, 500);
       } else {
         const data = await response.json().catch(() => ({}));
         // API'den gelen hata mesajını kullan, yoksa genel mesaj

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 type FeatureRequest = {
@@ -21,7 +21,7 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/feature-requests/user/${userId}?t=${Date.now()}`);
@@ -34,11 +34,11 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchData();
-  }, [userId]);
+  }, [fetchData]);
 
   // Sayfa görünür olduğunda (örneğin başka bir tab'dan dönüldüğünde) refresh et
   useEffect(() => {
@@ -57,6 +57,7 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
     
     // Custom event dinle (aynı tab'da öneri oluşturulduğunda)
     const handleFeatureRequestCreated = () => {
+      console.log('[CommunityStats] Feature request created event received, refreshing...');
       fetchData();
     };
 
@@ -67,7 +68,7 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('feature-request-created', handleFeatureRequestCreated);
     };
-  }, [userId]);
+  }, [fetchData]);
 
   // Aynı başlığa sahip tekrar eden kayıtları filtrele (örn: su hatırlatıcısı migrasyonları)
   const dedupeByTitle = (items: FeatureRequest[]) => {

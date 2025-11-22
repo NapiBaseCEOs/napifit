@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Kullanıcının önerilerini getir
 export async function GET(_request: Request, { params }: { params: { userId: string } }) {
