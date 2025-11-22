@@ -21,22 +21,52 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/feature-requests/user/${userId}?t=${Date.now()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setRequests(data.requests || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch community stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`/api/feature-requests/user/${userId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setRequests(data.requests || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch community stats:", error);
-      } finally {
-        setLoading(false);
+    fetchData();
+  }, [userId]);
+
+  // Sayfa görünür olduğunda (örneğin başka bir tab'dan dönüldüğünde) refresh et
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
       }
     };
 
-    fetchData();
+    const handleFocus = () => {
+      fetchData();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    // Custom event dinle (aynı tab'da öneri oluşturulduğunda)
+    const handleFeatureRequestCreated = () => {
+      fetchData();
+    };
+
+    window.addEventListener('feature-request-created', handleFeatureRequestCreated);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('feature-request-created', handleFeatureRequestCreated);
+    };
   }, [userId]);
 
   // Aynı başlığa sahip tekrar eden kayıtları filtrele (örn: su hatırlatıcısı migrasyonları)

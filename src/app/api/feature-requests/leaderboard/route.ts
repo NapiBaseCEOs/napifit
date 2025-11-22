@@ -8,10 +8,10 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await ensureWaterSuggestionExists();
-    // Uygulanan önerileri say
+    // Uygulanan önerileri say (title ve user_id ile birlikte)
     const { data: implementedRequests, error: countError } = await supabaseAdmin
       .from("feature_requests")
-      .select("user_id")
+      .select("user_id, title")
       .eq("is_implemented", true)
       .is("deleted_at", null);
 
@@ -20,10 +20,24 @@ export async function GET() {
       return NextResponse.json({ leaderboard: [] });
     }
 
-    // Kullanıcı başına say
+    // Kullanıcı başına say - duplicate önerileri filtrele (aynı başlığa sahip önerileri tek say)
     const userCounts: Record<string, number> = {};
-    implementedRequests?.forEach((req: { user_id: string }) => {
-      userCounts[req.user_id] = (userCounts[req.user_id] || 0) + 1;
+    const userTitleMap: Record<string, Set<string>> = {}; // Her kullanıcı için unique title'ları tut
+    
+    implementedRequests?.forEach((req: { user_id: string; title: string }) => {
+      const userId = req.user_id;
+      const titleKey = req.title.trim().toLowerCase();
+      
+      // Kullanıcı için title map'i oluştur
+      if (!userTitleMap[userId]) {
+        userTitleMap[userId] = new Set();
+      }
+      
+      // Eğer bu title daha önce eklenmemişse say
+      if (!userTitleMap[userId].has(titleKey)) {
+        userTitleMap[userId].add(titleKey);
+        userCounts[userId] = (userCounts[userId] || 0) + 1;
+      }
     });
 
     // En çok önerisi uygulanan kullanıcıları al

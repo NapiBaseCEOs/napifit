@@ -275,6 +275,10 @@ export default function CommunityPage() {
         setShowForm(false);
         setError(null);
         await fetchRequests();
+        // Profil sayfasını refresh etmek için custom event gönder
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('feature-request-created'));
+        }
       } else {
         const data = await response.json().catch(() => ({}));
         // API'den gelen hata mesajını kullan, yoksa genel mesaj
