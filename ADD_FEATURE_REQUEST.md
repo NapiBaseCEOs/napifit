@@ -57,7 +57,7 @@ INSERT INTO public.feature_requests (
   0,
   true, -- Uygulandı olarak işaretle
   now(), -- Bugün uygulandı
-  '0.1.52', -- Güncel versiyon numarası
+  '0.1.53', -- Güncel versiyon numarası
   now() - interval '7 days' -- 7 gün önce oluşturulmuş gibi göster
 );
 ```
@@ -109,5 +109,5 @@ WHERE LOWER(full_name) LIKE '%mert%' AND LOWER(full_name) LIKE '%demir%';
 - Öneri ekledikten sonra siteyi yenileyin
 - Kullanıcının `show_public_profile = true` olması gerekir ki ismine tıklanabilsin
 - Öneri "Uygulandı" olarak işaretlenmiş olacak
-- Versiyon numarasını (`0.1.52`) güncel versiyonla değiştirmeyi unutmayın
+- Versiyon numarasını (`0.1.53`) güncel versiyonla değiştirmeyi unutmayın
 

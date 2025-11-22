@@ -29,7 +29,7 @@ INSERT INTO public.feature_requests (
   0,
   true,
   now(),
-  '0.1.52',
+  '0.1.53',
   now() - interval '2 hours'
 )
 RETURNING *;

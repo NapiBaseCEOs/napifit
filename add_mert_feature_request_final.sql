@@ -47,7 +47,7 @@ SELECT
   0,
   true,
   now(),
-  '0.1.52',
+      '0.1.53',
   now() - interval '2 hours'  -- 2 saat önce eklenmiş gibi
 FROM public.profiles p
 WHERE (

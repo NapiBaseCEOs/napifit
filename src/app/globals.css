@@ -107,6 +107,49 @@ body.theme-light,
   --border-color: #e5e7eb;
 }
 
+/* Low-power Android optimizations (see MobilePerformanceTuner) */
+html.android-performance,
+body.android-performance {
+  animation: none !important;
+  background-attachment: scroll;
+  background-size: 200% 200%;
+}
+
+html.android-performance body::before,
+html.android-performance body::after,
+body.android-performance::before,
+body.android-performance::after {
+  opacity: 0.25;
+  filter: blur(30px);
+}
+
+html.android-performance *,
+body.android-performance * {
+  transition-duration: 120ms !important;
+}
+
+html.android-performance .animate-gradient,
+body.android-performance .animate-gradient {
+  animation-duration: 18s !important;
+}
+
+html.android-performance .animate-float,
+body.android-performance .animate-float {
+  animation-duration: 6s !important;
+  transform: translateY(0) !important;
+}
+
+html.android-performance .loading-shimmer,
+body.android-performance .loading-shimmer {
+  animation-duration: 2.6s !important;
+}
+
+html.android-performance [class*="backdrop-blur"],
+body.android-performance [class*="backdrop-blur"] {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
 /* Tema-spesifik text renkleri */
 .theme-light .text-gray-100 { color: #1f2937 !important; }
 .theme-light .text-gray-200 { color: #374151 !important; }

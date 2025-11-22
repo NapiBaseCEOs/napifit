@@ -5,6 +5,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import ProfileEditForm from "@/components/profile/ProfileEditForm";
 import CommunityStats from "@/components/profile/CommunityStats";
+import { isAdminEmail, isFounderEmail } from "@/config/admins";
+import { WATER_PROFILE_ID, WATER_PROFILE_PLACEHOLDER } from "@/lib/community/water-reminder";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,18 +17,30 @@ type Props = {
 export default async function ProfilePage({ searchParams }: Props) {
   const supabase = createSupabaseServerClient();
   
-  // Session kontrolü - dashboard ile aynı pattern
+  // Kullanıcı kontrolü - dashboard ile aynı pattern
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (userError) {
+    console.error("User fetch error:", userError);
     redirect("/login");
   }
 
+  if (!authUser) {
+    redirect("/login");
+  }
+
+  const requestedUserId = searchParams.userId;
+  const normalizedUserId =
+    requestedUserId && requestedUserId.toLowerCase() === "mert-demir"
+      ? WATER_PROFILE_ID
+      : requestedUserId;
+
   // Eğer userId parametresi varsa, o kullanıcının profilini göster, yoksa kendi profilini göster
-  const targetUserId = searchParams.userId || session.user.id;
-  const isOwnProfile = targetUserId === session.user.id;
+  const targetUserId = normalizedUserId || authUser.id;
+  const isOwnProfile = targetUserId === authUser.id;
 
   // Başka birinin profilini görüntülüyorsak ve gizliyse, sadece admin görebilir veya public profile false ise kısıtlı bilgi göster
   // Kendi profilini görüntülüyorsak normal supabase client, başkasınınkini görüntülüyorsak admin client
@@ -39,6 +53,24 @@ export default async function ProfilePage({ searchParams }: Props) {
     )
     .eq("id", targetUserId)
     .maybeSingle();
+
+  const renderProfileNotFound = (title = "Profil bulunamadı", description = "Aradığınız kullanıcı profili mevcut değil.") => (
+    <main className="min-h-screen px-4 py-8 sm:px-6 bg-[#03060f]">
+      <div className="mx-auto max-w-3xl space-y-6 text-center">
+        <h1 className="text-3xl font-semibold text-white">{title}</h1>
+        <p className="text-sm text-gray-400">{description}</p>
+        <Link
+          href="/community"
+          className="inline-flex items-center justify-center rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:border-gray-600 hover:bg-gray-800 hover:text-white"
+        >
+          Topluluğa Dön
+        </Link>
+      </div>
+    </main>
+  );
+
+  const shouldUseWaterPlaceholder = !isOwnProfile && targetUserId === WATER_PROFILE_ID;
+  const resolvedProfileData = profileData ?? (shouldUseWaterPlaceholder ? (WATER_PROFILE_PLACEHOLDER as any) : null);
 
   // Eğer kendi profilini görüntülüyorsak ve profil yoksa, onboarding'e yönlendir
   if (isOwnProfile) {
@@ -61,28 +93,22 @@ export default async function ProfilePage({ searchParams }: Props) {
     }
   } else {
     // Başka birinin profilini görüntülüyorsak
-    if (profileError) {
+    if (profileError && profileError.code !== "PGRST116") {
       console.error("Profile fetch error:", profileError);
-      redirect("/");
+      return renderProfileNotFound("Profil yüklenemedi", "Beklenmeyen bir hata oluştu.");
     }
 
-    if (!profileData) {
-      // Profil bulunamadıysa ana sayfaya yönlendir
-      redirect("/");
-    }
-  }
-
-  // ProfileData artık tanımlı olmalı, null check yapıldı
-  if (!profileData) {
-    // Bu noktaya gelmemeli ama TypeScript için
-    if (isOwnProfile) {
-      redirect("/onboarding");
-    } else {
-      redirect("/");
+    if (!resolvedProfileData) {
+      return renderProfileNotFound();
     }
   }
 
-  const profile = profileData as {
+  // ProfileData artık tanımlı olmalı
+  if (!resolvedProfileData) {
+    return isOwnProfile ? redirect("/onboarding") : renderProfileNotFound();
+  }
+
+  const profile = resolvedProfileData as {
     id: string;
     email: string;
     full_name: string | null;
@@ -99,6 +125,8 @@ export default async function ProfilePage({ searchParams }: Props) {
   };
 
   const showPublicProfile = profile.show_public_profile ?? true;
+  const isAdminProfile = isAdminEmail(profile.email);
+  const isFounderProfile = isFounderEmail(profile.email);
 
   // Başka birinin profilini görüntülüyorsak ve gizliyse
   if (!isOwnProfile && showPublicProfile === false) {
@@ -135,7 +163,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     name: profile.full_name,
     email: isOwnProfile ? profile.email : (showPublicProfile ? profile.email : null), // Email sadece kendi profilinde veya public profil ise
     image: profile.avatar_url,
-    emailVerified: isOwnProfile ? Boolean(session.user.email_confirmed_at) : false,
+    emailVerified: isOwnProfile ? Boolean(authUser.email_confirmed_at) : false,
     createdAt: new Date(profile.created_at),
     height: profile.height_cm,
     weight: profile.weight_kg,
@@ -205,7 +233,27 @@ export default async function ProfilePage({ searchParams }: Props) {
             {/* User Info */}
             <div className="flex-1 space-y-4 text-center sm:text-left">
               <div>
-                <h2 className="text-2xl font-semibold text-white">{user.name || "İsimsiz Kullanıcı"}</h2>
+                <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3">
+                  <h2 className="text-2xl font-semibold text-white">{user.name || "İsimsiz Kullanıcı"}</h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isFounderProfile && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-100">
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2l3 7h7l-5.5 4.5L18 22l-6-3.5L6 22l1.5-8.5L2 9h7z" />
+                        </svg>
+                        Kurucu
+                      </span>
+                    )}
+                    {isAdminProfile && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-100">
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2l3 7h7l-5.5 4.5L18 22l-6-3.5L6 22l1.5-8.5L2 9h7z" />
+                        </svg>
+                        Yönetici
+                      </span>
+                    )}
+                  </div>
+                </div>
                 {user.email && <p className="mt-1 text-sm text-gray-400">{user.email}</p>}
                 {!isOwnProfile && !user.email && showPublicProfile && (
                   <p className="mt-1 text-sm text-gray-500">Email gizli</p>
@@ -256,6 +304,18 @@ export default async function ProfilePage({ searchParams }: Props) {
             </div>
           </div>
         </div>
+
+        {isAdminProfile && (
+          <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-transparent p-6 shadow-lg shadow-amber-500/10">
+            <h3 className="mb-2 text-lg font-semibold text-white flex items-center gap-2">
+              <span>🛡️</span> Yönetici Kontrol Noktası
+            </h3>
+            <p className="text-sm text-amber-100/80">
+              Bu profil NapiBase yönetici yetkilerine sahiptir. Topluluk moderasyonu, içerik onayı ve kritik ayarlar için ekstra
+              girişimler burada görünür. Lütfen hassas bilgileri düzenlerken dikkatli olun.
+            </p>
+          </div>
+        )}
 
         {/* Stats Grid */}
         {(user.age || user.gender || user.targetWeight || user.dailySteps) && (

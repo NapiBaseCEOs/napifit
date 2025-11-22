@@ -274,6 +274,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("AI calorie validation error:", error.errors);
       return NextResponse.json({ message: "Geçersiz istek", errors: error.errors }, { status: 400 });
     }
     

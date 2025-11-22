@@ -75,7 +75,7 @@ Deploy tamamlandıktan sonra:
 
 ## 📝 Notlar
 
-- Versiyon: `0.1.52`
+- Versiyon: `0.1.53`
 - Ana branch: `feat/supabase-migration`
 - Commit: `8978632`
 

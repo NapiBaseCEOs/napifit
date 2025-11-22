@@ -81,6 +81,22 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     error: null,
   });
 
+  const buildSanitizedUserProfile = () => {
+    if (!userProfile) return undefined;
+    const sanitize = (value: number | null | undefined) =>
+      typeof value === "number" ? value : value === null ? null : null;
+
+    const payload = {
+      height: sanitize(userProfile.height),
+      weight: sanitize(userProfile.weight),
+      age: sanitize(userProfile.age),
+      gender: userProfile.gender ?? null,
+    };
+
+    const hasValue = Object.values(payload).some((value) => value !== null);
+    return hasValue ? payload : undefined;
+  };
+
   // Kullanıcı profilini yükle (BMR ve sağlık değerlendirmesi için)
   useEffect(() => {
     fetch("/api/profile")
@@ -263,44 +279,30 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   };
 
   const addFoodField = () => {
-    setMealData({
-      ...mealData,
+    setMealData((prev) => ({
+      ...prev,
       foods: [
-        ...mealData.foods,
-        { 
-          name: "", 
-          calories: "", 
-          quantity: "", 
-          customQuantity: "", 
-          quantityCalories: {} as Record<string, number>, 
+        ...prev.foods,
+        {
+          name: "",
+          calories: "",
+          quantity: "",
+          customQuantity: "",
+          quantityCalories: {} as Record<string, number>,
           caloriesPerGram: 0,
           preparationMethod: "",
           preparationMethods: [],
           loadingMethods: false,
         },
       ],
-    });
-    setMealData({
-      ...mealData,
-      foods: [...mealData.foods, { 
-        name: "", 
-        calories: "", 
-        quantity: "", 
-        customQuantity: "", 
-        quantityCalories: {}, 
-        caloriesPerGram: 0,
-        preparationMethod: "",
-        preparationMethods: [],
-        loadingMethods: false,
-      }],
-    });
+    }));
   };
 
   const removeFoodField = (index: number) => {
-    setMealData({
-      ...mealData,
-      foods: mealData.foods.filter((_, i) => i !== index),
-    });
+    setMealData((prev) => ({
+      ...prev,
+      foods: prev.foods.filter((_, i) => i !== index),
+    }));
   };
 
   // Miktar seçeneklerinin gram karşılıkları (yaklaşık)
@@ -375,9 +377,12 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   const fetchFoodPreparationMethods = async (index: number, foodName: string) => {
     if (!foodName || foodName.length < 2) return;
 
-    const newFoods = [...mealData.foods];
-    newFoods[index] = { ...newFoods[index], loadingMethods: true };
-    setMealData({ ...mealData, foods: newFoods });
+    setMealData((prev) => {
+      const newFoods = [...prev.foods];
+      if (!newFoods[index]) return prev;
+      newFoods[index] = { ...newFoods[index], loadingMethods: true };
+      return { ...prev, foods: newFoods };
+    });
 
     try {
       const response = await fetch("/api/ai/preparation-methods", {
@@ -391,24 +396,28 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
 
       const data = await response.json();
       
-      if (response.ok && Array.isArray(data.methods)) {
-        const updatedFoods = [...mealData.foods];
-        updatedFoods[index] = {
-          ...updatedFoods[index],
-          preparationMethods: data.methods,
-          loadingMethods: false,
-        };
-        setMealData({ ...mealData, foods: updatedFoods });
-      } else {
-        const updatedFoods = [...mealData.foods];
-        updatedFoods[index] = { ...updatedFoods[index], loadingMethods: false };
-        setMealData({ ...mealData, foods: updatedFoods });
-      }
+      setMealData((prev) => {
+        const updatedFoods = [...prev.foods];
+        if (!updatedFoods[index]) return prev;
+        if (response.ok && Array.isArray(data.methods)) {
+          updatedFoods[index] = {
+            ...updatedFoods[index],
+            preparationMethods: data.methods,
+            loadingMethods: false,
+          };
+        } else {
+          updatedFoods[index] = { ...updatedFoods[index], loadingMethods: false };
+        }
+        return { ...prev, foods: updatedFoods };
+      });
     } catch (error) {
       console.error("Food preparation methods fetch error:", error);
-      const updatedFoods = [...mealData.foods];
-      updatedFoods[index] = { ...updatedFoods[index], loadingMethods: false };
-      setMealData({ ...mealData, foods: updatedFoods });
+      setMealData((prev) => {
+        const updatedFoods = [...prev.foods];
+        if (!updatedFoods[index]) return prev;
+        updatedFoods[index] = { ...updatedFoods[index], loadingMethods: false };
+        return { ...prev, foods: updatedFoods };
+      });
     }
   };
 
@@ -494,18 +503,34 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
   };
 
   const updateFoodField = (index: number, field: string, value: string) => {
-    const newFoods = [...mealData.foods];
-    const currentFood = newFoods[index];
-
     // Önceki timeout'u temizle
     if (foodNameTimeouts.current[index]) {
       clearTimeout(foodNameTimeouts.current[index]);
       delete foodNameTimeouts.current[index];
     }
 
-    // Field'ı güncelle
-    newFoods[index] = { ...currentFood, [field]: value };
-    setMealData({ ...mealData, foods: newFoods });
+    setMealData((prev) => {
+      const newFoods = [...prev.foods];
+      const currentFood = newFoods[index];
+      if (!currentFood) return prev;
+
+      const updatedFood = { ...currentFood, [field]: value };
+      if (field === "quantity" && value && currentFood.quantityCalories?.[value]) {
+        updatedFood.calories = String(currentFood.quantityCalories[value]);
+        updatedFood.customQuantity = "";
+      }
+
+      if (field === "customQuantity" && value && currentFood.caloriesPerGram > 0) {
+        const grams = parseFloat(value);
+        if (!isNaN(grams) && grams > 0) {
+          updatedFood.calories = String(Math.round(currentFood.caloriesPerGram * grams));
+          updatedFood.quantity = "";
+        }
+      }
+
+      newFoods[index] = updatedFood;
+      return { ...prev, foods: newFoods };
+    });
 
     // Yiyecek adı yazıldığında sadece yapılış yöntemlerini al (kalori hesaplama butonla yapılacak)
     if (field === "name" && value.trim().length >= 2) {
@@ -514,37 +539,13 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         // Kalori hesaplama artık butonla yapılıyor, otomatik değil
       }, 1000);
     }
-
-    // Miktar seçildiğinde ilgili kaloriyi kullan
-    if (field === "quantity" && value && currentFood.quantityCalories?.[value]) {
-      newFoods[index] = {
-        ...newFoods[index],
-        calories: String(currentFood.quantityCalories[value]),
-        customQuantity: "", // Dropdown seçilince custom temizle
-      };
-      setMealData({ ...mealData, foods: newFoods });
-    }
-
-    // Özel gram girişi yapıldığında kalori hesapla
-    if (field === "customQuantity" && value && currentFood.caloriesPerGram > 0) {
-      const grams = parseFloat(value);
-      if (!isNaN(grams) && grams > 0) {
-        const calculatedCalories = Math.round(currentFood.caloriesPerGram * grams);
-        newFoods[index] = {
-          ...newFoods[index],
-          calories: String(calculatedCalories),
-          quantity: "", // Custom seçilince dropdown temizle
-        };
-        setMealData({ ...mealData, foods: newFoods });
-      }
-    }
   };
 
   // Egzersiz hazırlık yöntemlerini al
   const fetchWorkoutPreparationMethods = async (workoutName: string) => {
     if (!workoutName || workoutName.length < 2) return;
 
-    setWorkoutData({ ...workoutData, loadingMethods: true });
+    setWorkoutData((prev) => ({ ...prev, loadingMethods: true }));
 
     try {
       const response = await fetch("/api/ai/preparation-methods", {
@@ -559,13 +560,17 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
       const data = await response.json();
       
       if (response.ok && Array.isArray(data.methods)) {
-        setWorkoutData({ ...workoutData, preparationMethods: data.methods, loadingMethods: false });
+        setWorkoutData((prev) => ({
+          ...prev,
+          preparationMethods: data.methods,
+          loadingMethods: false,
+        }));
       } else {
-        setWorkoutData({ ...workoutData, loadingMethods: false });
+        setWorkoutData((prev) => ({ ...prev, loadingMethods: false }));
       }
     } catch (error) {
       console.error("Workout preparation methods fetch error:", error);
-      setWorkoutData({ ...workoutData, loadingMethods: false });
+      setWorkoutData((prev) => ({ ...prev, loadingMethods: false }));
     }
   };
 
@@ -595,6 +600,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
 
     const needsDistance = requiresDistance(workoutData.name);
     const needsSetsReps = requiresSetsReps(workoutData.name);
+    const parsedReps = workoutData.reps ? Number(workoutData.reps) : undefined;
 
     // Mesafe gerektiren egzersizler için mesafe kontrolü
     if (needsDistance && (!workoutData.distance || Number(workoutData.distance) <= 0)) {
@@ -605,6 +611,11 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     // Set/tekrar gerektiren egzersizler için kontrol
     if (needsSetsReps && (!workoutData.sets || Number(workoutData.sets) <= 0)) {
       setAiFeedback({ variant: "workout", message: null, error: "Bu egzersiz için set/tekrar bilgisi gereklidir" });
+      return;
+    }
+
+    if (needsSetsReps && (!parsedReps || parsedReps <= 0)) {
+      setAiFeedback({ variant: "workout", message: null, error: "Bu egzersiz için tekrar bilgisi gereklidir" });
       return;
     }
 
@@ -628,15 +639,10 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
             duration: Number(workoutData.duration),
             distance: workoutData.distance ? Number(workoutData.distance) : undefined,
             sets: workoutData.sets ? Number(workoutData.sets) : undefined,
-            reps: workoutData.reps ? Number(workoutData.reps) : undefined,
+            reps: parsedReps,
             notes: workoutData.notes || undefined,
           },
-          userProfile: userProfile ? {
-            height: userProfile.height,
-            weight: userProfile.weight,
-            age: userProfile.age,
-            gender: userProfile.gender,
-          } : undefined,
+          userProfile: buildSanitizedUserProfile(),
         }),
       });
       const data: CalorieAIResponse = await response.json();
@@ -695,12 +701,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
             notes: mealData.notes || undefined,
             foods: foodsToSend,
           },
-          userProfile: userProfile ? {
-            height: userProfile.height,
-            weight: userProfile.weight,
-            age: userProfile.age,
-            gender: userProfile.gender,
-          } : undefined,
+          userProfile: buildSanitizedUserProfile(),
         }),
       });
       const data: CalorieAIResponse = await response.json();
@@ -744,40 +745,66 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     }
   };
 
+  const tabCards = [
+    {
+      id: "metric" as const,
+      label: "Kilo Takibi",
+      emoji: "⚖️",
+      gradient: "from-primary-500/20 via-primary-500/10 to-transparent",
+      shadow: "shadow-primary-500/20",
+      description: "Güncel kilonu ve bağırsak durumunu kaydet.",
+    },
+    {
+      id: "workout" as const,
+      label: "Egzersiz",
+      emoji: "💪",
+      gradient: "from-fitness-orange/20 via-red-500/15 to-transparent",
+      shadow: "shadow-fitness-orange/20",
+      description: "Süre, set/tekrar ve AI kalori hesabı.",
+    },
+    {
+      id: "meal" as const,
+      label: "Öğün",
+      emoji: "🍽️",
+      gradient: "from-emerald-500/20 via-green-500/15 to-transparent",
+      shadow: "shadow-emerald-500/20",
+      description: "Yiyecekleri seç, AI kalori tahmini al.",
+    },
+  ];
+
   return (
-    <div className="rounded-3xl border border-primary-500/30 bg-gradient-to-br from-gray-900/90 via-primary-900/10 to-transparent backdrop-blur-xl p-6 shadow-2xl shadow-primary-500/20 sm:p-8">
-      {/* Modern Tabs */}
-      <div className="mb-6 flex gap-2 rounded-xl bg-gray-800/40 p-1 backdrop-blur-sm">
-        <button
-          onClick={() => setActiveTab("metric")}
-          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
-            activeTab === "metric"
-              ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30"
-              : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/60"
-          }`}
-        >
-          ⚖️ Kilo Takibi
-        </button>
-        <button
-          onClick={() => setActiveTab("workout")}
-          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
-            activeTab === "workout"
-              ? "bg-gradient-to-r from-fitness-orange to-red-500 text-white shadow-lg shadow-fitness-orange/30"
-              : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/60"
-          }`}
-        >
-          💪 Egzersiz
-        </button>
-        <button
-          onClick={() => setActiveTab("meal")}
-          className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${
-            activeTab === "meal"
-              ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30"
-              : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/60"
-          }`}
-        >
-          🍽️ Öğün
-        </button>
+    <div className="rounded-3xl border border-primary-500/20 bg-gray-900/80 backdrop-blur-xl p-6 shadow-2xl shadow-primary-500/10 sm:p-8">
+      <div className="mb-6 flex flex-col gap-2">
+        <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Hızlı Kayıt</p>
+        <h2 className="text-2xl font-semibold text-white">Tek panelden tüm kayıtlar</h2>
+        <p className="text-sm text-gray-400">
+          AI destekli alanlar doğru kaloriyi tahmin eder, hatırlatmalar ise seni yönlendirsin.
+        </p>
+      </div>
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        {tabCards.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setActiveTab(tab.id);
+              setError(null);
+              setSuccess(null);
+            }}
+            className={`relative rounded-2xl border border-white/5 bg-gradient-to-br ${tab.gradient} p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 ${tab.shadow} ${
+              activeTab === tab.id ? "ring-2 ring-white/40" : "opacity-80 hover:opacity-100"
+            }`}
+          >
+            <span className="text-2xl">{tab.emoji}</span>
+            <p className="mt-2 text-base font-semibold text-white">{tab.label}</p>
+            <p className="mt-1 text-xs text-gray-300">{tab.description}</p>
+            {activeTab === tab.id && (
+              <span className="absolute right-3 top-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-white">
+                AKTİF
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Messages */}
@@ -992,6 +1019,7 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
                     type="number"
                     min="1"
                     max="1000"
+                    required
                     value={workoutData.reps}
                     onChange={(e) => setWorkoutData({ ...workoutData, reps: e.target.value })}
                     className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"

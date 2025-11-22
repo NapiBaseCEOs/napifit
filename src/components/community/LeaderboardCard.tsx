@@ -17,19 +17,38 @@ interface LeaderboardCardProps {
   leaderboard: LeaderboardEntry[];
 }
 
+const headingsByMood = [
+  { title: "Öneri Kahramanları 🛠️", emoji: "🛠️" },
+  { title: "Topluluk MVP'leri 🌟", emoji: "🌟" },
+  { title: "İlham Verenler ✨", emoji: "✨" },
+];
+
 export default function LeaderboardCard({ leaderboard }: LeaderboardCardProps) {
+  const randomHeading = headingsByMood[Math.floor(Math.random() * headingsByMood.length)];
+  const headingLabel = leaderboard.length
+    ? `${randomHeading.title}`
+    : "İlk kahramanı bekliyoruz 💫";
+
   if (leaderboard.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6 backdrop-blur-lg">
-        <h3 className="mb-4 text-lg font-semibold text-white">Yılın Adamı 🏆</h3>
-        <p className="text-sm text-gray-400">Henüz uygulanmış öneri yok</p>
+        <h3 className="mb-4 text-lg font-semibold text-white">{headingLabel}</h3>
+        <p className="text-sm text-gray-400">Henüz uygulanmış öneri yok. İlk öneriyi gönderen sen ol!</p>
       </div>
     );
   }
 
   return (
     <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6 backdrop-blur-lg">
-      <h3 className="mb-4 text-lg font-semibold text-white">Yılın Adamı 🏆</h3>
+      <div className="mb-4">
+        <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Topluluk Gururu</p>
+        <h3 className="text-lg font-semibold text-white mt-1 flex items-center gap-2">
+          {randomHeading.emoji} {randomHeading.title}
+        </h3>
+        <p className="text-xs text-gray-400">
+          Uygulanan öneri sayısına göre haftalık motivasyon tablosu
+        </p>
+      </div>
       <div className="space-y-3">
         {leaderboard.slice(0, 10).map((entry, index) => (
           entry.showPublicProfile ? (

@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { ensureWaterSuggestionExists, getWaterPlaceholderLeaderboardEntry } from "@/lib/community/water-reminder";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Yılın adamı - en çok önerisi uygulanan kullanıcılar
 export async function GET() {
   try {
+    await ensureWaterSuggestionExists();
     // Uygulanan önerileri say
     const { data: implementedRequests, error: countError } = await supabaseAdmin
       .from("feature_requests")
       .select("user_id")
-      .eq("is_implemented", true);
+      .eq("is_implemented", true)
+      .is("deleted_at", null);
 
     if (countError) {
       console.error("Leaderboard fetch error:", countError);
@@ -54,7 +57,7 @@ export async function GET() {
       created_at: string;
     };
     
-    const leaderboard = topUserIds
+    let leaderboard = topUserIds
       .map((userId) => {
         const profile = (profiles as ProfileType[] | null)?.find((p) => p.id === userId);
         if (!profile) return null;
@@ -71,6 +74,10 @@ export async function GET() {
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)
       .sort((a, b) => b.implementedCount - a.implementedCount);
+
+    if (leaderboard.length === 0) {
+      leaderboard = [getWaterPlaceholderLeaderboardEntry()];
+    }
 
     return NextResponse.json({ leaderboard });
   } catch (error) {

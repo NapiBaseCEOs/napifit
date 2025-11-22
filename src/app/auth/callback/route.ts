@@ -13,18 +13,18 @@ export async function GET(request: Request) {
     
     // Onboarding kontrolü yap
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+    } = await supabase.auth.getUser();
     
-    if (session) {
-      const { data: profile } = await supabase
+    if (user) {
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("onboarding_completed")
-        .eq("id", session.user.id)
-        .single();
+        .eq("id", user.id)
+        .maybeSingle();
       
       // Eğer onboarding tamamlanmamışsa onboarding'e yönlendir
-      if (profile && !profile.onboarding_completed) {
+      if (!profileError && profile && !profile.onboarding_completed) {
         return NextResponse.redirect(new URL("/onboarding", requestUrl.origin));
       }
     }

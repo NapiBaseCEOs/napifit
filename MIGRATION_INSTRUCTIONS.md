@@ -59,7 +59,7 @@ INSERT INTO public.feature_requests (
   'USER_ID_BURAYA',
   'Su İçme Hatırlatıcısı',
   'Su içme hatırlatıcısı olsa çok güzel olur',
-  0, 0, true, now(), '0.1.52', now() - interval '7 days'
+  0, 0, true, now(), '0.1.53', now() - interval '7 days'
 );
 
 UPDATE public.profiles 

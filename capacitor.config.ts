@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'NapiFit',
   webDir: 'out',
   server: {
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://napifit.pages.dev',
+    url: 'https://napibase.com',
     cleartext: false
   },
   android: {

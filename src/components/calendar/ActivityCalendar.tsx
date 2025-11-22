@@ -34,6 +34,7 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
     hasMeal: boolean;
     hasWorkout: boolean;
   } | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const year = currentDate.getFullYear();
@@ -266,18 +267,22 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
               const today = new Date();
               const isToday = year === today.getFullYear() && month === today.getMonth() + 1 && day === today.getDate();
 
+              const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+              const isSelected = selectedDate === dateKey;
+
               return (
                 <button
                   key={day}
                   onClick={() => {
                     if (onDateClick) {
-                      const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
                       onDateClick(dateKey);
+                    } else {
+                      setSelectedDate((prev) => (prev === dateKey ? null : dateKey));
                     }
                   }}
-                  className={`aspect-square rounded-lg border transition-all hover:scale-110 hover:shadow-lg ${
+                  className={`aspect-square rounded-lg border transition-all hover:scale-105 hover:shadow-lg ${
                     getDayColor(status)
-                  } ${onDateClick ? "cursor-pointer" : "cursor-default"}`}
+                  } ${isSelected ? "ring-2 ring-white/70" : ""} ${onDateClick ? "cursor-pointer" : "cursor-pointer"}`}
                   title={getDayTooltip(day)}
                 >
                   <div className="flex flex-col items-center justify-center h-full p-1">
@@ -318,6 +323,50 @@ export default function ActivityCalendar({ onDateClick, className = "" }: Activi
               <div className="w-3 h-3 rounded bg-gray-800/30 border border-gray-700/50" />
               <span>Boş</span>
             </div>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-primary-500/20 bg-gray-900/70 p-4 text-sm text-gray-200">
+            {selectedDate ? (
+              <>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Seçilen Gün</p>
+                    <p className="text-lg font-semibold text-white">
+                      {new Date(selectedDate).toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" })}
+                    </p>
+                  </div>
+                  <button
+                    className="text-xs text-primary-300 hover:text-primary-200 underline"
+                    onClick={() => setSelectedDate(null)}
+                  >
+                    Temizle
+                  </button>
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
+                    <p className="text-xs text-emerald-200">Öğün</p>
+                    <p className="text-2xl font-semibold text-white">
+                      {activities[selectedDate]?.meals ?? 0}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-3">
+                    <p className="text-xs text-blue-200">Egzersiz</p>
+                    <p className="text-2xl font-semibold text-white">
+                      {activities[selectedDate]?.workouts ?? 0}
+                    </p>
+                  </div>
+                </div>
+                {!(activities[selectedDate]?.meals || activities[selectedDate]?.workouts) && (
+                  <p className="mt-3 text-xs text-gray-400">
+                    Bu gün için kayıt bulunmuyor. Hızlıca eklemek için aşağıdaki formu kullanabilirsiniz.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-center text-gray-400">
+                Bir günü seçerek öğün ve egzersiz özetini görüntüleyin.
+              </p>
+            )}
           </div>
         </>
       )}

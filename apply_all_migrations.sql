@@ -197,7 +197,7 @@ BEGIN
       0,
       true, -- Uygulandı olarak işaretle
       now(), -- Bugün uygulandı
-      '0.1.52', -- Versiyon numarası
+      '0.1.53', -- Versiyon numarası
       now() - interval '7 days' -- 7 gün önce oluşturulmuş gibi göster
     )
     ON CONFLICT DO NOTHING;

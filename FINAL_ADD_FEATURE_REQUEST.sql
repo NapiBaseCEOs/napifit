@@ -30,7 +30,7 @@ SELECT
   0,
   true,
   now(),
-  '0.1.52',
+  '0.1.53',
   now() - interval '7 days'
 FROM public.profiles p
 WHERE LOWER(p.full_name) LIKE '%mert%' AND LOWER(p.full_name) LIKE '%demir%'

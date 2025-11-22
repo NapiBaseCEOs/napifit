@@ -16,6 +16,8 @@ type FeatureRequest = {
   implementedAt: string | null;
   implementedVersion: string | null;
   createdAt: string;
+  deletedAt?: string | null;
+  deletedReason?: string | null;
   user: {
     id: string;
     name: string;
@@ -31,15 +33,26 @@ interface FeatureRequestCardProps {
   onLike: (id: string) => Promise<void>;
   onDislike: (id: string) => Promise<void>;
   currentUserId?: string;
+  isAdmin?: boolean;
+  onDelete?: (id: string) => Promise<void>;
 }
 
-export default function FeatureRequestCard({ request, onLike, onDislike, currentUserId }: FeatureRequestCardProps) {
+export default function FeatureRequestCard({
+  request,
+  onLike,
+  onDislike,
+  currentUserId,
+  isAdmin = false,
+  onDelete,
+}: FeatureRequestCardProps) {
+  const sanitizeCount = (value: number) => Math.max(0, value ?? 0);
   const [isLiked, setIsLiked] = useState(request.isLiked);
-  const [likeCount, setLikeCount] = useState(request.likeCount);
+  const [likeCount, setLikeCount] = useState(() => sanitizeCount(request.likeCount));
   const [isDisliked, setIsDisliked] = useState(request.isDisliked);
-  const [dislikeCount, setDislikeCount] = useState(request.dislikeCount);
+  const [dislikeCount, setDislikeCount] = useState(() => sanitizeCount(request.dislikeCount));
   const [isLiking, setIsLiking] = useState(false);
   const [isDisliking, setIsDisliking] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleLike = async () => {
     if (isLiking || isDisliking || !currentUserId) return;
@@ -52,12 +65,15 @@ export default function FeatureRequestCard({ request, onLike, onDislike, current
 
     // Optimistic update
     setIsLiked(!isLiked);
-    setLikeCount(previousLiked ? likeCount - 1 : likeCount + 1);
+    setLikeCount((prev) => {
+      const next = previousLiked ? prev - 1 : prev + 1;
+      return next < 0 ? 0 : next;
+    });
     
     // Eğer dislike varsa kaldır
     if (previousDisliked) {
       setIsDisliked(false);
-      setDislikeCount(Math.max(0, dislikeCount - 1));
+      setDislikeCount((prev) => (prev - 1 < 0 ? 0 : prev - 1));
     }
 
     try {
@@ -84,12 +100,15 @@ export default function FeatureRequestCard({ request, onLike, onDislike, current
 
     // Optimistic update
     setIsDisliked(!isDisliked);
-    setDislikeCount(previousDisliked ? dislikeCount - 1 : dislikeCount + 1);
+    setDislikeCount((prev) => {
+      const next = previousDisliked ? prev - 1 : prev + 1;
+      return next < 0 ? 0 : next;
+    });
     
     // Eğer like varsa kaldır
     if (previousLiked) {
       setIsLiked(false);
-      setLikeCount(Math.max(0, likeCount - 1));
+      setLikeCount((prev) => (prev - 1 < 0 ? 0 : prev - 1));
     }
 
     try {
@@ -102,6 +121,21 @@ export default function FeatureRequestCard({ request, onLike, onDislike, current
       setDislikeCount(previousDislikeCount);
     } finally {
       setIsDisliking(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!isAdmin || !onDelete || isDeleting) return;
+    const confirmed = window.confirm("Bu öneriyi silmek istediğine emin misin?");
+    if (!confirmed) return;
+    setIsDeleting(true);
+    try {
+      await onDelete(request.id);
+    } catch (error) {
+      console.error("Delete request failed:", error);
+      alert("Silme işlemi sırasında hata oluştu");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -131,41 +165,43 @@ export default function FeatureRequestCard({ request, onLike, onDislike, current
           </div>
           <p className="text-sm text-gray-400 leading-relaxed">{request.description}</p>
         </div>
+        {isAdmin && onDelete && (
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-300 hover:bg-red-500/20 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isDeleting ? "Siliniyor..." : "Sil"}
+          </button>
+        )}
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between">
         {/* User Info */}
-        {request.user.showPublicProfile ? (
-          <Link
-            href={`/profile?userId=${request.user.id}`}
-            className="flex items-center gap-2 text-sm text-gray-400 hover:text-primary-400 transition-colors"
-          >
-            {request.user.avatar ? (
-              <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                <Image src={request.user.avatar} alt={request.user.name} fill className="object-cover" unoptimized />
-              </div>
-            ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-xs font-semibold text-white">
-                {request.user.name[0].toUpperCase()}
-              </div>
-            )}
-            <span>{request.user.name}</span>
-          </Link>
-        ) : (
-          <div className="flex items-center gap-2 text-sm text-gray-400 cursor-not-allowed">
-            {request.user.avatar ? (
-              <div className="relative h-8 w-8 overflow-hidden rounded-full">
-                <Image src={request.user.avatar} alt={request.user.name} fill className="object-cover unoptimized" />
-              </div>
-            ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-gray-600 to-gray-700 text-xs font-semibold text-white">
-                {request.user.name[0].toUpperCase()}
-              </div>
-            )}
-            <span>{request.user.name}</span>
-          </div>
-        )}
+        <Link
+          href={`/profile?userId=${request.user.id}`}
+          className={`flex items-center gap-2 text-sm transition-colors ${
+            request.user.showPublicProfile ? "text-gray-400 hover:text-primary-400" : "text-gray-500"
+          }`}
+        >
+          {request.user.avatar ? (
+            <div className="relative h-8 w-8 overflow-hidden rounded-full">
+              <Image src={request.user.avatar} alt={request.user.name} fill className="object-cover" unoptimized />
+            </div>
+          ) : (
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                request.user.showPublicProfile
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
+                  : "bg-gradient-to-r from-gray-600 to-gray-700 text-white opacity-70"
+              } text-xs font-semibold`}
+            >
+              {request.user.name[0].toUpperCase()}
+            </div>
+          )}
+          <span>{request.user.showPublicProfile ? request.user.name : "Gizli Kullanıcı"}</span>
+        </Link>
 
         {/* Like/Dislike Buttons */}
         <div className="flex items-center gap-2">

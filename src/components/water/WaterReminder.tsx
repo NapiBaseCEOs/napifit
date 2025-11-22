@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { WATER_PROFILE_ID } from "@/lib/community/water-reminder";
 
 interface WaterIntake {
   id: string;
@@ -33,6 +35,7 @@ export default function WaterReminder({
   const [reminderInterval, setReminderInterval] = useState(initialReminderInterval);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
   const [animationKey, setAnimationKey] = useState(0);
+  const [supportsScheduledNotifications, setSupportsScheduledNotifications] = useState(false);
 
   // Bildirim iznini kontrol et
   useEffect(() => {
@@ -41,9 +44,78 @@ export default function WaterReminder({
     }
   }, []);
 
+  // Service worker kaydı
+  useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    navigator.serviceWorker
+      .getRegistration()
+      .then((reg) => {
+        if (!reg) {
+          navigator.serviceWorker.register("/sw.js").catch((err) => console.error("SW register failed", err));
+        }
+      })
+      .catch((err) => console.error("SW registration lookup failed", err));
+  }, []);
+
+  // Tarayıcı planlı bildirim destekliyor mu?
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const supported =
+      "serviceWorker" in navigator &&
+      "Notification" in window &&
+      "showTrigger" in (Notification.prototype as any) &&
+      "TimestampTrigger" in window;
+    setSupportsScheduledNotifications(supported);
+  }, []);
+
+  const cancelScheduledNotifications = useCallback(async () => {
+    if (typeof window === "undefined" || !supportsScheduledNotifications) return;
+    const registration = await navigator.serviceWorker.ready;
+    const existing = await registration.getNotifications({
+      tag: "water-reminder",
+      includeTriggered: true,
+    });
+    existing.forEach((notification) => notification.close());
+  }, [supportsScheduledNotifications]);
+
+  const scheduleBackgroundNotification = useCallback(async () => {
+    if (typeof window === "undefined" || !supportsScheduledNotifications) return false;
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      await cancelScheduledNotifications();
+      const TriggerConstructor = (window as any).TimestampTrigger;
+      if (!TriggerConstructor) {
+        return false;
+      }
+      const timestamp = Date.now() + reminderInterval * 60 * 1000;
+      await registration.showNotification("💧 Su Hatırlatıcısı", {
+        body: `Hedefine ulaşmak için su içme zamanı! ${Math.round(totalAmount)}ml / ${dailyGoal}ml`,
+        icon: "/icon-192.png",
+        badge: "/icon-192.png",
+        tag: "water-reminder",
+        requireInteraction: false,
+        showTrigger: new TriggerConstructor(timestamp),
+      });
+      return true;
+    } catch (error) {
+      console.error("Scheduled notification failed:", error);
+      return false;
+    }
+  }, [supportsScheduledNotifications, reminderInterval, totalAmount, dailyGoal, cancelScheduledNotifications]);
+
   // Bildirim zamanlayıcısı
   useEffect(() => {
-    if (!reminderEnabled || notificationPermission !== "granted") return;
+    if (!reminderEnabled || notificationPermission !== "granted") {
+      cancelScheduledNotifications();
+      return;
+    }
+
+    if (supportsScheduledNotifications) {
+      scheduleBackgroundNotification();
+      return () => {
+        cancelScheduledNotifications();
+      };
+    }
 
     const interval = reminderInterval * 60 * 1000; // Dakikayı milisaniyeye çevir
 
@@ -61,7 +133,16 @@ export default function WaterReminder({
 
     const timer = setInterval(showNotification, interval);
     return () => clearInterval(timer);
-  }, [reminderEnabled, reminderInterval, notificationPermission, totalAmount, dailyGoal]);
+  }, [
+    reminderEnabled,
+    reminderInterval,
+    notificationPermission,
+    totalAmount,
+    dailyGoal,
+    supportsScheduledNotifications,
+    scheduleBackgroundNotification,
+    cancelScheduledNotifications,
+  ]);
 
   // Bildirim izni iste
   const requestNotificationPermission = async () => {
@@ -72,6 +153,9 @@ export default function WaterReminder({
 
     if (Notification.permission === "granted") {
       setNotificationPermission("granted");
+      if (supportsScheduledNotifications) {
+        scheduleBackgroundNotification();
+      }
       return;
     }
 
@@ -85,6 +169,9 @@ export default function WaterReminder({
           body: "Artık düzenli olarak su içmenizi hatırlatacağız!",
           icon: "/icon-192.png",
         });
+        if (supportsScheduledNotifications) {
+          scheduleBackgroundNotification();
+        }
       }
     } else {
       alert("Bildirim izni reddedilmiş. Lütfen tarayıcı ayarlarından izin verin.");
@@ -229,6 +316,16 @@ export default function WaterReminder({
           </h1>
           <p className="mt-2 text-lg text-gray-300">
             Günlük su tüketiminizi takip edin ve sağlıklı kalın!
+          </p>
+          <p className="mt-3 text-sm text-cyan-200">
+            💡 Bu hatırlatıcı, topluluk üyemiz{" "}
+            <Link
+              href={`/profile?userId=${WATER_PROFILE_ID}`}
+              className="font-semibold text-cyan-100 underline decoration-dotted underline-offset-4 hover:text-white"
+            >
+              Mert Demir
+            </Link>
+            'in önerisi sayesinde eklendi. Teşekkürler!
           </p>
         </div>
 
@@ -466,6 +563,11 @@ export default function WaterReminder({
                     <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3">
                       <p className="text-xs text-emerald-300">
                         ✅ Bildirimler aktif - Her {reminderInterval} dakikada bir hatırlatılacaksınız
+                      </p>
+                      <p className="mt-1 text-[11px] text-emerald-200/80">
+                        {supportsScheduledNotifications
+                          ? "Tarayıcınız sekme kapalıyken bile zamanlanmış bildirim gösterebilir."
+                          : "Sekmeyi açık bırakmanız gerekir; arka plan bildirimleri tarayıcınızda desteklenmiyor."}
                       </p>
                     </div>
                   )}

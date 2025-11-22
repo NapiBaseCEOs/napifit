@@ -3,6 +3,9 @@ import { z } from "zod";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { hasSupabaseServiceRole, supabaseAdmin } from "@/lib/supabase/admin";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   const supabase = createSupabaseRouteClient();
   const {

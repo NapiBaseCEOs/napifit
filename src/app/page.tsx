@@ -65,18 +65,18 @@ export default async function HomePage() {
     try {
       const supabase = createSupabaseServerClient();
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (session) {
+      if (user) {
         // Kullanıcı profilini kontrol et
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("onboarding_completed")
-          .eq("id", session.user.id)
-          .single();
+          .eq("id", user.id)
+          .maybeSingle();
 
-        if (profile) {
+        if (profile && !profileError) {
           if (profile.onboarding_completed) {
             // Onboarding tamamlanmışsa dashboard'a yönlendir
             redirect("/dashboard");

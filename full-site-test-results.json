@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-20T13:51:09.049Z",
+  "timestamp": "2025-11-22T17:04:27.103Z",
   "siteUrl": "https://napibase.com",
   "tests": [
     {
@@ -23,19 +23,19 @@
     {
       "name": "Dashboard",
       "path": "/dashboard",
-      "status": 307,
+      "status": 200,
       "success": true
     },
     {
       "name": "Health",
       "path": "/health",
-      "status": 307,
+      "status": 200,
       "success": true
     },
     {
       "name": "Profile",
       "path": "/profile",
-      "status": 307,
+      "status": 200,
       "success": true
     },
     {

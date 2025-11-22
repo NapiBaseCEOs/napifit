@@ -212,6 +212,8 @@ export interface Database {
           implemented_version: string | null;
           created_at: string;
           updated_at: string;
+          deleted_at: string | null;
+          deleted_reason: string | null;
         };
         Insert: {
           id?: string;
@@ -225,6 +227,8 @@ export interface Database {
           implemented_version?: string | null;
           created_at?: string;
           updated_at?: string;
+          deleted_at?: string | null;
+          deleted_reason?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["feature_requests"]["Insert"]>;
       };

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,16 @@ export async function POST(_request: Request, { params }: { params: { id: string
     }
 
     const featureRequestId = params.id;
+
+    const { data: targetRequest } = await supabaseAdmin
+      .from("feature_requests")
+      .select("deleted_at")
+      .eq("id", featureRequestId)
+      .maybeSingle();
+
+    if ((targetRequest as { deleted_at: string | null } | null)?.deleted_at) {
+      return NextResponse.json({ error: "Feature request not available" }, { status: 410 });
+    }
 
     // Önce beğenmeme var mı kontrol et
     const { data: existingDislike } = await supabase
@@ -36,6 +47,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
         return NextResponse.json({ error: "Failed to undislike" }, { status: 500 });
       }
 
+      await syncDislikeCount(featureRequestId);
       return NextResponse.json({ disliked: false });
     } else {
       // Beğenme
@@ -51,6 +63,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
         return NextResponse.json({ error: "Failed to dislike" }, { status: 500 });
       }
 
+      await syncDislikeCount(featureRequestId);
       return NextResponse.json({ disliked: true });
     }
   } catch (error) {
@@ -58,4 +71,16 @@ export async function POST(_request: Request, { params }: { params: { id: string
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+async function syncDislikeCount(featureRequestId: string) {
+  const { count } = await supabaseAdmin
+    .from("feature_request_dislikes")
+    .select("id", { count: "exact", head: true })
+    .eq("feature_request_id", featureRequestId);
+
+  await (supabaseAdmin.from("feature_requests") as any)
+    .update({ dislike_count: count ?? 0 })
+    .eq("id", featureRequestId);
+}
+
 

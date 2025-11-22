@@ -9,6 +9,8 @@ type FeatureRequest = {
   likeCount: number;
   isImplemented: boolean;
   createdAt: string;
+  deletedAt?: string | null;
+  deletedReason?: string | null;
 };
 
 interface CommunityStatsProps {
@@ -17,7 +19,6 @@ interface CommunityStatsProps {
 
 export default function CommunityStats({ userId }: CommunityStatsProps) {
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
-  const [implementedCount, setImplementedCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,7 +28,6 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
         if (response.ok) {
           const data = await response.json();
           setRequests(data.requests || []);
-          setImplementedCount(data.implementedCount || 0);
         }
       } catch (error) {
         console.error("Failed to fetch community stats:", error);
@@ -39,6 +39,20 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
     fetchData();
   }, [userId]);
 
+  // Aynı başlığa sahip tekrar eden kayıtları filtrele (örn: su hatırlatıcısı migrasyonları)
+  const dedupeByTitle = (items: FeatureRequest[]) => {
+    const map = new Map<string, FeatureRequest>();
+    for (const item of items) {
+      const key = item.title.trim().toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, item);
+      }
+    }
+    return Array.from(map.values());
+  };
+
+  const uniqueRequests = dedupeByTitle(requests);
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6">
@@ -46,6 +60,9 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
       </div>
     );
   }
+
+  const activeRequests = uniqueRequests.filter((req) => !req.deletedAt);
+  const implementedCount = activeRequests.filter((req) => req.isImplemented).length;
 
   return (
     <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6 space-y-4">
@@ -62,7 +79,7 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-lg border border-gray-800/60 bg-gray-900/50 p-4">
           <p className="text-xs uppercase tracking-wide text-gray-500">Toplam Öneri</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{requests.length}</p>
+          <p className="mt-2 text-2xl font-semibold text-white">{activeRequests.length}</p>
         </div>
         <div className="rounded-lg border border-gray-800/60 bg-gray-900/50 p-4">
           <p className="text-xs uppercase tracking-wide text-gray-500">Uygulanan</p>
@@ -70,29 +87,53 @@ export default function CommunityStats({ userId }: CommunityStatsProps) {
         </div>
       </div>
 
-      {requests.length > 0 && (
+      {uniqueRequests.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-300">Son Öneriler</h4>
           <div className="space-y-2 max-h-48 overflow-y-auto">
-            {requests.slice(0, 5).map((request) => (
-              <Link
-                key={request.id}
-                href="/community"
-                className="block rounded-lg border border-gray-800/60 bg-gray-800/30 p-3 hover:border-primary-500/30 transition-all"
-              >
+            {uniqueRequests.slice(0, 5).map((request) => {
+              const content = (
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm font-medium text-white line-clamp-1">{request.title}</p>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {request.isImplemented && (
-                      <span className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-400">
-                        ✓
-                      </span>
-                    )}
-                    <span className="text-xs text-gray-400">{request.likeCount} beğeni</span>
-                  </div>
+                  <p className="text-sm font-medium text-white line-clamp-1">
+                    {request.deletedAt ? "Öneri silindi" : request.title}
+                  </p>
+                  {!request.deletedAt && (
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {request.isImplemented && (
+                        <span className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-400">
+                          ✓
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-400">{request.likeCount} beğeni</span>
+                    </div>
+                  )}
                 </div>
-              </Link>
-            ))}
+              );
+
+              if (request.deletedAt) {
+                return (
+                  <div
+                    key={request.id}
+                    className="block rounded-lg border border-gray-800/60 bg-gray-800/30 p-3 text-gray-400 text-sm"
+                  >
+                    {content}
+                    <p className="mt-1 text-xs text-gray-500">
+                      {request.deletedReason || "Bu öneri moderasyon tarafından kaldırıldı."}
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={request.id}
+                  href="/community"
+                  className="block rounded-lg border border-gray-800/60 bg-gray-800/30 p-3 hover:border-primary-500/30 transition-all"
+                >
+                  {content}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

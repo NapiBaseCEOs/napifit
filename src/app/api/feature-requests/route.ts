@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
-import { supabaseAdmin } from "@/lib/supabase/admin";
 import { z } from "zod";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { ensureWaterSuggestionExists, getWaterPlaceholderFeatureResponse } from "@/lib/community/water-reminder";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const createFeatureRequestSchema = z.object({
   title: z.string().min(3).max(200),
@@ -13,6 +14,7 @@ const createFeatureRequestSchema = z.object({
 // Özellik önerilerini listele (beğeni sayısına göre sıralı)
 export async function GET(request: Request) {
   try {
+    await ensureWaterSuggestionExists();
     const { searchParams } = new URL(request.url);
     const sortBy = searchParams.get("sort") || "likes"; // "likes" | "newest" | "implemented"
     const limit = parseInt(searchParams.get("limit") || "50");
@@ -22,6 +24,7 @@ export async function GET(request: Request) {
       .from("feature_requests")
       .select(`
         id,
+        user_id,
         title,
         description,
         like_count,
@@ -31,6 +34,8 @@ export async function GET(request: Request) {
         implemented_version,
         created_at,
         updated_at,
+        deleted_at,
+        deleted_reason,
         profiles(
           id,
           full_name,
@@ -39,7 +44,8 @@ export async function GET(request: Request) {
           show_community_stats,
           created_at
         )
-      `);
+      `)
+      .is("deleted_at", null);
 
     // Sıralama (range'den ÖNCE yapılmalı)
     if (sortBy === "likes") {
@@ -82,39 +88,48 @@ export async function GET(request: Request) {
       userDislikes = dislikes?.map((d) => d.feature_request_id) || [];
     }
 
-    const formattedRequests = requests?.map((req: any) => {
-      // Profil yoksa default değerler kullan
-      const profile = req.profiles || {
-        id: req.user_id,
-        full_name: null,
-        avatar_url: null,
-        show_public_profile: true,
-        show_community_stats: true,
-        created_at: req.created_at,
-      };
+    let formattedRequests =
+      requests?.map((req: any) => {
+        const sanitizedLikeCount = Math.max(0, req.like_count ?? 0);
+        const sanitizedDislikeCount = Math.max(0, req.dislike_count ?? 0);
+        // Profil yoksa default değerler kullan
+        const profile = req.profiles || {
+          id: req.user_id,
+          full_name: null,
+          avatar_url: null,
+          show_public_profile: true,
+          show_community_stats: true,
+          created_at: req.created_at,
+        };
 
-      return {
-        id: req.id,
-        title: req.title,
-        description: req.description,
-        likeCount: req.like_count || 0,
-        dislikeCount: req.dislike_count || 0,
-        isLiked: user ? userLikes.includes(req.id) : false,
-        isDisliked: user ? userDislikes.includes(req.id) : false,
-        isImplemented: req.is_implemented,
-        implementedAt: req.implemented_at,
-        implementedVersion: req.implemented_version,
-        createdAt: req.created_at,
-        user: {
-          id: profile.id,
-          name: profile.show_public_profile ? (profile.full_name || "Kullanıcı") : "Gizli Kullanıcı",
-          avatar: profile.show_public_profile ? profile.avatar_url : null,
-          joinedAt: profile.created_at,
-          showStats: profile.show_community_stats ?? true,
-          showPublicProfile: profile.show_public_profile ?? true,
-        },
-      };
-    }) || [];
+        return {
+          id: req.id,
+          title: req.title,
+          description: req.description,
+          likeCount: sanitizedLikeCount,
+          dislikeCount: sanitizedDislikeCount,
+          isLiked: user ? userLikes.includes(req.id) : false,
+          isDisliked: user ? userDislikes.includes(req.id) : false,
+          isImplemented: req.is_implemented,
+          implementedAt: req.implemented_at,
+          implementedVersion: req.implemented_version,
+          createdAt: req.created_at,
+          deletedAt: req.deleted_at,
+          deletedReason: req.deleted_reason,
+          user: {
+            id: profile.id,
+            name: profile.show_public_profile ? (profile.full_name || "Kullanıcı") : "Gizli Kullanıcı",
+            avatar: profile.show_public_profile ? profile.avatar_url : null,
+            joinedAt: profile.created_at,
+            showStats: profile.show_community_stats ?? true,
+            showPublicProfile: profile.show_public_profile ?? true,
+          },
+        };
+      }) || [];
+
+    if (formattedRequests.length === 0) {
+      formattedRequests = [getWaterPlaceholderFeatureResponse()];
+    }
 
     return NextResponse.json({ requests: formattedRequests });
   } catch (error) {

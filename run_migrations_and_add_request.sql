@@ -192,7 +192,7 @@ BEGIN
       0,
       true,
       now(),
-      '0.1.52',
+      '0.1.53',
       now() - interval '1 day'  -- 1 gün önce eklenmiş gibi görünsün (test için)
     )
     ON CONFLICT DO NOTHING;

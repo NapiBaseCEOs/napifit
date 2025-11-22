@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,16 @@ export async function POST(_request: Request, { params }: { params: { id: string
     }
 
     const featureRequestId = params.id;
+
+    const { data: targetRequest } = await supabaseAdmin
+      .from("feature_requests")
+      .select("deleted_at")
+      .eq("id", featureRequestId)
+      .maybeSingle();
+
+    if ((targetRequest as { deleted_at: string | null } | null)?.deleted_at) {
+      return NextResponse.json({ error: "Feature request not available" }, { status: 410 });
+    }
 
     // Önce beğenme var mı kontrol et
     const { data: existingLike } = await supabase
@@ -36,6 +47,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
         return NextResponse.json({ error: "Failed to unlike" }, { status: 500 });
       }
 
+      await syncLikeCount(featureRequestId);
       return NextResponse.json({ liked: false });
     } else {
       // Beğen
@@ -51,6 +63,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
         return NextResponse.json({ error: "Failed to like" }, { status: 500 });
       }
 
+      await syncLikeCount(featureRequestId);
       return NextResponse.json({ liked: true });
     }
   } catch (error) {
@@ -58,4 +71,16 @@ export async function POST(_request: Request, { params }: { params: { id: string
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+async function syncLikeCount(featureRequestId: string) {
+  const { count } = await supabaseAdmin
+    .from("feature_request_likes")
+    .select("id", { count: "exact", head: true })
+    .eq("feature_request_id", featureRequestId);
+
+  await (supabaseAdmin.from("feature_requests") as any)
+    .update({ like_count: count ?? 0 })
+    .eq("id", featureRequestId);
+}
+
 

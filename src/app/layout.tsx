@@ -12,6 +12,8 @@ import { hasSupabaseClientEnv } from "@/lib/supabase/config";
 import MobileInstallPrompt from "@/components/MobileInstallPrompt";
 import MobilePerformanceTuner from "@/components/MobilePerformanceTuner";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
+import { NetworkStatusProvider } from "@/context/NetworkStatusContext";
+import NetworkStatusOverlay from "@/components/NetworkStatusOverlay";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://napifit.vercel.app";
 const metadataBase = new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`);
@@ -57,6 +59,9 @@ export const viewport: Viewport = {
   ],
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const fontSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -95,16 +100,19 @@ export default async function RootLayout({
       <body className="font-sans">
         <ThemeProvider>
           <LocaleProvider>
-          <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
-            <GoogleOAuthHandler />
-            <UpdateCheckerProvider>
-                <MobilePerformanceTuner />
-              <VersionUpdateBanner />
-              <Header />
-              {children}
-              <MobileInstallPrompt />
-            </UpdateCheckerProvider>
-          </SupabaseProvider>
+            <NetworkStatusProvider>
+              <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
+                <GoogleOAuthHandler />
+                <UpdateCheckerProvider>
+                  <MobilePerformanceTuner />
+                  <NetworkStatusOverlay />
+                  <VersionUpdateBanner />
+                  <Header />
+                  {children}
+                  <MobileInstallPrompt />
+                </UpdateCheckerProvider>
+              </SupabaseProvider>
+            </NetworkStatusProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

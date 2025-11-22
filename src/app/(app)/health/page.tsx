@@ -2,66 +2,160 @@ import { redirect } from "next/navigation";
 import HealthForms from "../../../components/HealthForms";
 import ActivityCalendar from "../../../components/calendar/ActivityCalendar";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/types";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function HealthPage() {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  try {
+    // Create Supabase client with error handling
+    let supabase;
+    try {
+      supabase = createSupabaseServerClient();
+    } catch (supabaseError) {
+      console.error("Failed to create Supabase client:", supabaseError);
+      throw new Error("Database bağlantısı kurulamadı");
+    }
 
-  if (!session) redirect("/login");
+    let userId: string | null = null;
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError) {
+        console.error("User fetch error:", userError);
+        redirect("/login");
+        return null;
+      }
+      if (!user) {
+        redirect("/login");
+        return null;
+      }
+      userId = user.id;
+    } catch (authError) {
+      console.error("Auth user error:", authError);
+      redirect("/login");
+      return null;
+    }
+    
+    if (!userId) {
+      console.error("User ID is missing from authenticated user");
+      redirect("/login");
+      return null;
+    }
 
-  const userId = session.user.id;
+    let healthMetricsData = null;
+    let workoutsData = null;
+    let mealsData = null;
+    let healthMetricsError = null;
+    let workoutsError = null;
+    let mealsError = null;
 
-  const [{ data: healthMetricsData }, { data: workoutsData }, { data: mealsData }] = await Promise.all([
-    supabase
-      .from("health_metrics")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("workouts")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("meals")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(10),
-  ]);
+    try {
+      const results = await Promise.allSettled([
+        supabase
+          .from("health_metrics")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("workouts")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("meals")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+      ]);
 
-  const healthMetrics =
-    (healthMetricsData as Database["public"]["Tables"]["health_metrics"]["Row"][] | null)?.map((metric) => ({
-      id: metric.id,
-      weight: metric.weight_kg,
-      bowelMovementDays: metric.bowel_movement_days,
-      createdAt: new Date(metric.created_at),
-    })) ?? [];
+      // Process health_metrics result
+      if (results[0].status === "fulfilled") {
+        healthMetricsData = results[0].value.data ?? null;
+        healthMetricsError = results[0].value.error ?? null;
+      } else {
+        console.error("Health metrics query failed:", results[0].reason);
+        healthMetricsError = results[0].reason instanceof Error ? results[0].reason : new Error(String(results[0].reason));
+      }
 
-  const workouts =
-    (workoutsData as Database["public"]["Tables"]["workouts"]["Row"][] | null)?.map((workout) => ({
-      id: workout.id,
-      name: workout.name,
-      duration: workout.duration_minutes,
-      calories: workout.calories,
-      createdAt: new Date(workout.created_at),
-    })) ?? [];
+      // Process workouts result
+      if (results[1].status === "fulfilled") {
+        workoutsData = results[1].value.data ?? null;
+        workoutsError = results[1].value.error ?? null;
+      } else {
+        console.error("Workouts query failed:", results[1].reason);
+        workoutsError = results[1].reason instanceof Error ? results[1].reason : new Error(String(results[1].reason));
+      }
 
-  const meals =
-    (mealsData as Database["public"]["Tables"]["meals"]["Row"][] | null)?.map((meal) => ({
-      id: meal.id,
-      mealType: meal.meal_type,
-      foods: meal.foods,
-      totalCalories: meal.total_calories,
-      createdAt: new Date(meal.created_at),
-    })) ?? [];
+      // Process meals result
+      if (results[2].status === "fulfilled") {
+        mealsData = results[2].value.data ?? null;
+        mealsError = results[2].value.error ?? null;
+      } else {
+        console.error("Meals query failed:", results[2].reason);
+        mealsError = results[2].reason instanceof Error ? results[2].reason : new Error(String(results[2].reason));
+      }
+    } catch (queryError) {
+      console.error("Database queries error:", queryError);
+      // Continue with empty data - don't fail the page
+      healthMetricsData = null;
+      workoutsData = null;
+      mealsData = null;
+    }
 
-  return (
+    // Log errors but don't fail the page - use empty data instead
+    if (healthMetricsError) {
+      console.error("Health metrics fetch error:", healthMetricsError);
+    }
+    if (workoutsError) {
+      console.error("Workouts fetch error:", workoutsError);
+    }
+    if (mealsError) {
+      console.error("Meals fetch error:", mealsError);
+    }
+
+    // Safely map data with error handling
+    const healthMetrics = Array.isArray(healthMetricsData)
+      ? healthMetricsData
+          .filter((metric) => metric != null)
+          .map((metric) => ({
+            id: metric.id,
+            weight: metric.weight_kg ?? null,
+            bowelMovementDays: metric.bowel_movement_days ?? null,
+            createdAt: metric.created_at ? new Date(metric.created_at) : new Date(),
+          }))
+      : [];
+
+    const workouts = Array.isArray(workoutsData)
+      ? workoutsData
+          .filter((workout) => workout != null)
+          .map((workout) => ({
+            id: workout.id,
+            name: workout.name ?? "Egzersiz",
+            duration: workout.duration_minutes ?? null,
+            calories: workout.calories ?? null,
+            createdAt: workout.created_at ? new Date(workout.created_at) : new Date(),
+          }))
+      : [];
+
+    const meals = Array.isArray(mealsData)
+      ? mealsData
+          .filter((meal) => meal != null)
+          .map((meal) => ({
+            id: meal.id,
+            mealType: meal.meal_type ?? "snack",
+            foods: Array.isArray(meal.foods) ? meal.foods : [],
+            totalCalories: meal.total_calories ?? 0,
+            createdAt: meal.created_at ? new Date(meal.created_at) : new Date(),
+          }))
+      : [];
+
+    return (
     <main className="relative min-h-screen px-4 py-8 sm:px-6 overflow-hidden bg-[#0a0a0a]">
       {/* Modern Background Effects */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -86,6 +180,24 @@ export default async function HealthPage() {
           <p className="mt-2 text-lg text-gray-300">
             Metriklerinizi kaydedin, egzersizlerinizi takip edin ve öğünlerinizi kaydedin.
           </p>
+        </div>
+
+        {/* Quick Nav */}
+        <div className="flex flex-wrap gap-3">
+          {[
+            { href: "#quick-log", label: "Hızlı Kayıt", icon: "⚡" },
+            { href: "#calendar", label: "Takvim", icon: "🗓️" },
+            { href: "#insights", label: "İpuçları", icon: "💡" },
+          ].map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-200 hover:border-primary-500/40 hover:bg-primary-500/10 transition-all"
+            >
+              <span>{link.icon}</span>
+              {link.label}
+            </a>
+          ))}
         </div>
 
         {/* Modern Quick Stats */}
@@ -232,19 +344,33 @@ export default async function HealthPage() {
           </div>
         </div>
 
-        {/* Activity Calendar */}
-        <ActivityCalendar 
-          onDateClick={(date) => {
-            // Gelecekte bu güne ait detayları gösterebiliriz
-            console.log("Selected date:", date);
-          }}
-        />
+        {/* Quick Log Section */}
+        <section id="quick-log" className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Hızlı Kayıt</p>
+              <h3 className="text-2xl font-semibold text-white">Kilo, egzersiz ve öğünlerini anında kaydet</h3>
+            </div>
+            <span className="rounded-full border border-primary-500/30 bg-primary-500/10 px-4 py-1 text-xs text-primary-200">
+              1 dakikada kayıt
+            </span>
+          </div>
+          <HealthForms />
+        </section>
 
-        {/* Add Forms */}
-        <HealthForms />
+        {/* Activity Calendar */}
+        <section id="calendar" className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Takvim</p>
+              <h3 className="text-2xl font-semibold text-white">Günün boş mu dolu mu?</h3>
+            </div>
+          </div>
+          <ActivityCalendar />
+        </section>
 
         {/* Modern Info Card */}
-        <div className="rounded-2xl border border-gray-800/60 bg-gradient-to-br from-gray-900/80 via-primary-900/5 to-transparent backdrop-blur-sm p-6 shadow-lg">
+        <section id="insights" className="rounded-2xl border border-gray-800/60 bg-gradient-to-br from-gray-900/80 via-primary-900/5 to-transparent backdrop-blur-sm p-6 shadow-lg">
           <h3 className="mb-4 text-lg font-semibold text-white flex items-center gap-2">
             <span>💡</span>
             Nasıl Kullanılır?
@@ -267,8 +393,33 @@ export default async function HealthPage() {
               <p>Bağırsak sağlığınızı takip ederek genel sağlığınızı koruyun</p>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );
+  } catch (error) {
+    // Log the error for debugging
+    console.error("Health page error:", error);
+    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : "Unknown",
+    });
+    
+    // If it's an authentication error, redirect to login
+    if (error instanceof Error && (error.message.includes("auth") || error.message.includes("session") || error.message.includes("cookie"))) {
+      try {
+        redirect("/login");
+        return null;
+      } catch (redirectError) {
+        console.error("Redirect failed:", redirectError);
+        // Fall through to throw error
+      }
+    }
+    
+    // For other errors, throw a proper error page
+    // Next.js will catch this and show the error page
+    const errorMessage = error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu";
+    throw new Error(`Sağlık sayfası yüklenirken hata: ${errorMessage}`);
+  }
 }

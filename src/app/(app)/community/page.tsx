@@ -5,6 +5,11 @@ import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import type { Database } from "@/lib/supabase/types";
 import FeatureRequestCard from "@/components/community/FeatureRequestCard";
 import LeaderboardCard from "@/components/community/LeaderboardCard";
+import { isAdminEmail } from "@/config/admins";
+import {
+  getWaterPlaceholderFeatureResponse,
+  getWaterPlaceholderLeaderboardEntry,
+} from "@/lib/community/water-reminder";
 
 type FeatureRequest = {
   id: string;
@@ -18,6 +23,8 @@ type FeatureRequest = {
   implementedAt: string | null;
   implementedVersion: string | null;
   createdAt: string;
+  deletedAt?: string | null;
+  deletedReason?: string | null;
   user: {
     id: string;
     name: string;
@@ -38,6 +45,15 @@ type LeaderboardEntry = {
   showPublicProfile: boolean;
 };
 
+const defaultWaterRequest = getWaterPlaceholderFeatureResponse() as FeatureRequest;
+const defaultLeaderboardEntry = getWaterPlaceholderLeaderboardEntry() as LeaderboardEntry;
+
+const withFallbackRequests = (items: FeatureRequest[]) =>
+  items.length > 0 ? items : [defaultWaterRequest];
+
+const withFallbackLeaderboard = (items: LeaderboardEntry[]) =>
+  items.length > 0 ? items : [defaultLeaderboardEntry];
+
 export default function CommunityPage() {
   const supabase = useSupabaseClient<Database>();
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
@@ -49,12 +65,14 @@ export default function CommunityPage() {
   const [formDescription, setFormDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
+      setCurrentUserEmail(user?.email ?? null);
     };
     fetchUser();
   }, [supabase]);
@@ -74,33 +92,81 @@ export default function CommunityPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy]);
 
+  const isAdmin = isAdminEmail(currentUserEmail ?? undefined);
+  const sortOptions: { id: typeof sortBy; label: string; emoji: string }[] = [
+    { id: "likes", label: "En Beğenilenler", emoji: "💚" },
+    { id: "newest", label: "En Yeni", emoji: "🆕" },
+    { id: "implemented", label: "Uygulananlar", emoji: "🚀" },
+  ];
+
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`/api/feature-requests?sort=${sortBy}&limit=50`);
+      const response = await fetch(`/api/feature-requests?sort=${sortBy}&limit=50`, {
+        cache: "no-store",
+      });
       if (response.ok) {
         const data = await response.json();
-        setRequests(data.requests || []);
+        const incoming = (data.requests as FeatureRequest[] | undefined) ?? [];
+        setRequests(withFallbackRequests(incoming));
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Failed to fetch requests:", errorData.error || response.statusText);
+        console.error("Failed to fetch requests:", {
+          status: response.status,
+          error: errorData.error || response.statusText,
+        });
+        setRequests([defaultWaterRequest]);
       }
     } catch (error) {
       console.error("Failed to fetch requests:", error);
+      setRequests([defaultWaterRequest]);
+    }
+  };
+
+  const handleDeleteRequest = async (id: string) => {
+    if (!isAdmin) return;
+    const confirmed = window.confirm("Bu topluluk mesajını silmek istediğine emin misin?");
+    if (!confirmed) return;
+    try {
+      const response = await fetch(`/api/feature-requests/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reason: "Topluluk kurallarına aykırı içerik",
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Silme işlemi başarısız");
+      }
+      await fetchRequests();
+    } catch (error) {
+      console.error("Failed to delete feature request:", error);
+      alert(error instanceof Error ? error.message : "Silme işlemi başarısız");
     }
   };
 
   const fetchLeaderboard = async () => {
     try {
-      const response = await fetch("/api/feature-requests/leaderboard");
+      const response = await fetch("/api/feature-requests/leaderboard", {
+        cache: "no-store",
+      });
       if (response.ok) {
         const data = await response.json();
-        setLeaderboard(data.leaderboard || []);
+        const incoming = (data.leaderboard as LeaderboardEntry[] | undefined) ?? [];
+        setLeaderboard(withFallbackLeaderboard(incoming));
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Failed to fetch leaderboard:", errorData.error || response.statusText);
+        console.error("Failed to fetch leaderboard:", {
+          status: response.status,
+          error: errorData.error || response.statusText,
+        });
+        setLeaderboard([defaultLeaderboardEntry]);
       }
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);
+      setLeaderboard([defaultLeaderboardEntry]);
     }
   };
 
@@ -217,18 +283,23 @@ export default function CommunityPage() {
     <main className="min-h-screen px-4 py-8 sm:px-6 bg-[#03060f]">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold text-white">Topluluk</h1>
-            <p className="mt-1 text-sm text-gray-400">Özellik önerileri ve topluluk liderlik tablosu</p>
+        <div className="rounded-3xl border border-primary-500/20 bg-gradient-to-br from-gray-900/90 via-primary-900/10 to-fitness-orange/10 p-6 shadow-xl">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Topluluk Ateş Hattı</p>
+              <h1 className="mt-2 text-3xl font-semibold text-white">Fikrini paylaş, ürünü şekillendir ✨</h1>
+              <p className="mt-2 text-sm text-gray-300 max-w-2xl">
+                En çok oylanan önerileri ürün yol haritasına taşıyoruz. Bir espri, bir emoji, bir fikir… hepsi burada değerli.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              disabled={!currentUserId}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {showForm ? "Formu Kapat ✖" : "Yeni Öneri Yaz 💡"}
+            </button>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            disabled={!currentUserId}
-            className="rounded-lg bg-gradient-to-r from-primary-500 to-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {showForm ? "İptal" : "+ Öner"}
-          </button>
         </div>
 
         {/* Submit Form */}
@@ -294,45 +365,42 @@ export default function CommunityPage() {
           {/* Requests List */}
           <div className="lg:col-span-2 space-y-4">
             {/* Sort Buttons */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSortBy("likes")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  sortBy === "likes"
-                    ? "bg-primary-500/20 text-primary-400 border border-primary-500/30"
-                    : "bg-gray-800/50 text-gray-400 border border-gray-700 hover:border-primary-500/30"
-                }`}
-              >
-                En Beğenilenler
-              </button>
-              <button
-                onClick={() => setSortBy("newest")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  sortBy === "newest"
-                    ? "bg-primary-500/20 text-primary-400 border border-primary-500/30"
-                    : "bg-gray-800/50 text-gray-400 border border-gray-700 hover:border-primary-500/30"
-                }`}
-              >
-                En Yeni
-              </button>
-              <button
-                onClick={() => setSortBy("implemented")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  sortBy === "implemented"
-                    ? "bg-primary-500/20 text-primary-400 border border-primary-500/30"
-                    : "bg-gray-800/50 text-gray-400 border border-gray-700 hover:border-primary-500/30"
-                }`}
-              >
-                Uygulananlar
-              </button>
+            <div className="flex flex-wrap gap-2">
+              {sortOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setSortBy(option.id)}
+                  className={`flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition-all ${
+                    sortBy === option.id
+                      ? "bg-primary-500/20 text-primary-300 border border-primary-500/40 shadow-inner shadow-primary-500/20"
+                      : "bg-gray-800/50 text-gray-400 border border-gray-700 hover:border-primary-500/30"
+                  }`}
+                >
+                  <span>{option.emoji}</span>
+                  {option.label}
+                </button>
+              ))}
             </div>
 
             {/* Requests */}
             {loading ? (
-              <div className="text-center text-gray-400 py-8">Yükleniyor...</div>
+              <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-8 text-center text-gray-400">
+                Yükleniyor...
+              </div>
             ) : requests.length === 0 ? (
-              <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-8 text-center">
-                <p className="text-gray-400">Henüz öneri yok</p>
+              <div className="rounded-2xl border border-primary-500/20 bg-primary-500/5 p-8 text-center space-y-3">
+                <p className="text-lg text-white">İlk fikir senden gelsin! 🚀</p>
+                <p className="text-sm text-primary-100">
+                  “Su hatırlatıcısı” gibi harika bir özellik bile tek bir topluluk üyesinin fikriydi.
+                </p>
+                {!showForm && (
+                  <button
+                    onClick={() => setShowForm(true)}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-primary-500/40 bg-primary-500/20 px-5 py-2 text-sm font-semibold text-white hover:bg-primary-500/30"
+                  >
+                    Fikrimi Paylaşayım 💬
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -343,6 +411,8 @@ export default function CommunityPage() {
                     onLike={handleLike}
                     onDislike={handleDislike}
                     currentUserId={currentUserId || undefined}
+                    isAdmin={isAdmin}
+                    onDelete={handleDeleteRequest}
                   />
                 ))}
               </div>
