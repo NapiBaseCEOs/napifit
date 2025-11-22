@@ -11,6 +11,7 @@ import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import type { Database } from "@/lib/supabase/types";
 import NetworkStatusIndicator from "./NetworkStatusIndicator";
 import NotificationBell from "./NotificationBell";
+import AIAssistant from "./ai/AIAssistant";
 
 export default function Header() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function Header() {
   const isAuth = !!session;
   const [signingOut, setSigningOut] = useState(false);
   const [navigatingLogin, setNavigatingLogin] = useState(false);
+  const [aiAssistantOpen, setAIAssistantOpen] = useState(false);
   const { checkForUpdate } = useUpdateChecker();
 
   const handleSignOut = async () => {
@@ -118,11 +120,26 @@ export default function Header() {
               </>
             )}
             
-            {/* Bildirim Butonu - Nav'ın içinde, en sağda */}
+            {/* AI Asistan ve Bildirim Butonları - Nav'ın içinde, en sağda */}
             {isAuth && (
-              <div className="ml-1 sm:ml-2">
-                <NotificationBell />
-              </div>
+              <>
+                <button
+                  onClick={() => setAIAssistantOpen(true)}
+                  className="relative flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:from-purple-500/30 hover:to-pink-500/30 text-purple-300 hover:text-purple-200 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/30"
+                  title="AI Asistanı"
+                >
+                  <svg className="h-5 w-5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                  </span>
+                </button>
+                <div className="ml-1 sm:ml-2">
+                  <NotificationBell />
+                </div>
+              </>
             )}
             
             {/* Auth Butonları */}
@@ -157,6 +174,15 @@ export default function Header() {
           </nav>
         </div>
       </div>
+      
+      {/* AI Assistant Modal */}
+      {isAuth && session?.user && (
+        <AIAssistant
+          isOpen={aiAssistantOpen}
+          onClose={() => setAIAssistantOpen(false)}
+          userId={session.user.id}
+        />
+      )}
     </header>
   );
 }
