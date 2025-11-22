@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, X, Send, Sparkles, Loader2, Minimize2, Maximize2 } from "lucide-react";
+import { X, Send, Sparkles, Loader2, Minimize2, Maximize2 } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 
 interface Message {
@@ -51,49 +51,48 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
     if (!userId) return;
 
     try {
-      try {
-        const response = await fetch("/api/ai/proactive-message", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-        });
+      const response = await fetch("/api/ai/proactive-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.message && data.message !== proactiveMessage) {
-            setProactiveMessage(data.message);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.message && data.message !== proactiveMessage) {
+          setProactiveMessage(data.message);
+          
+          // Yeni proaktif mesaj ekle
+          const newMessage: Message = {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: data.message,
+            timestamp: new Date(),
+            isProactive: true,
+          };
+          
+          setMessages((prev) => [...prev, newMessage]);
+          
+          // Eğer widget kapalıysa unread count artır
+          if (!isOpen) {
+            setUnreadCount((prev) => prev + 1);
             
-            // Yeni proaktif mesaj ekle
-            const newMessage: Message = {
-              id: Date.now().toString(),
-              role: "assistant",
-              content: data.message,
-              timestamp: new Date(),
-              isProactive: true,
-            };
-            
-            setMessages((prev) => [...prev, newMessage]);
-            
-            // Eğer widget kapalıysa unread count artır
-            if (!isOpen) {
-              setUnreadCount((prev) => prev + 1);
-              
-              // Bildirim göster
-              if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("🤖 NapiFit AI Asistanı", {
-                  body: data.message.substring(0, 100),
-                  icon: "/icon-192.png",
-                  badge: "/icon-192.png",
-                  tag: "ai-assistant",
-                });
-              }
+            // Bildirim göster
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification("🤖 NapiFit AI Asistanı", {
+                body: data.message.substring(0, 100),
+                icon: "/icon-192.png",
+                badge: "/icon-192.png",
+                tag: "ai-assistant",
+              });
             }
           }
         }
-      } catch (error) {
-        console.error("Proactive message check error:", error);
       }
-    };
+    } catch (error) {
+      console.error("Proactive message check error:", error);
+    }
+  };
 
   // Proaktif mesaj kontrolünü başlat
   useEffect(() => {
@@ -208,9 +207,10 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
 
   return (
     <>
-      {/* Floating Button */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button
+      {/* Floating Button - Sadece widget kapalıyken göster */}
+      {!isOpen && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <button
           onClick={() => {
             setIsOpen(true);
             setIsMinimized(false);
@@ -240,7 +240,8 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
             </div>
           </div>
         </button>
-      </div>
+        </div>
+      )}
 
       {/* Chat Window */}
       {isOpen && (

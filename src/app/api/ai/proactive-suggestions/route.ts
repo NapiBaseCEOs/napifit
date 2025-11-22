@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSupabaseRouteClient } from "@/lib/supabase/server";
+import { createSupabaseRouteClient } from "@/lib/supabase/route";
 
 export async function POST(request: Request) {
   try {

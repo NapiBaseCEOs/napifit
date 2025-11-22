@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createSupabaseRouteClient } from "@/lib/supabase/server";
+import { createSupabaseRouteClient } from "@/lib/supabase/route";
 
 const geminiApiKey = process.env.GEMINI_API_KEY;
 
@@ -99,10 +99,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: null }, { status: 200 });
     }
 
+    const now = new Date();
     const {
       profile,
-      todayMeals,
-      todayWorkouts,
       totalWater,
       waterGoal,
       lastActivityTime,

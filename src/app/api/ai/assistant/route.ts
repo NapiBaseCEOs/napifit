@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { createSupabaseRouteClient } from "@/lib/supabase/server";
+import { createSupabaseRouteClient } from "@/lib/supabase/route";
 
 const geminiApiKey = process.env.GEMINI_API_KEY;
 
@@ -170,8 +170,20 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     console.error("AI Assistant error:", error);
+    
+    // Daha detaylı hata mesajı
+    let errorMessage = "AI Assistant hatası oluştu";
+    if (error.message) {
+      errorMessage = error.message;
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
     return NextResponse.json(
-      { error: error.message || "AI Assistant hatası oluştu" },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
