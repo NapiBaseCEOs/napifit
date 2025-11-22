@@ -212,6 +212,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Kullanıcının profilinin olup olmadığını kontrol et
+    const { data: existingProfile, error: profileCheckError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    // Eğer profil yoksa oluştur
+    if (!existingProfile && !profileCheckError) {
+      const { error: profileCreateError } = await supabase
+        .from("profiles")
+        .insert({
+          id: user.id,
+          email: user.email || null,
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+          avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+          show_public_profile: true,
+          show_community_stats: true,
+        });
+
+      if (profileCreateError) {
+        console.error("Profile creation error:", profileCreateError);
+        // Profil oluşturulamazsa devam et, belki zaten var
+      }
+    }
+
     const body = await request.json();
     const parsed = createFeatureRequestSchema.parse(body);
 
@@ -227,6 +253,16 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Feature request creation error:", error);
+      
+      // Foreign key hatası ise daha açıklayıcı mesaj
+      if (error.code === "23503" || error.message?.includes("foreign key")) {
+        return NextResponse.json({ 
+          error: "Profil kaydınız bulunamadı. Lütfen önce profil sayfanıza gidip bilgilerinizi tamamlayın.",
+          code: error.code,
+          details: "Kullanıcı profili oluşturulamadı. Lütfen profil sayfasından bilgilerinizi güncelleyin."
+        }, { status: 400 });
+      }
+      
       // Daha detaylı hata mesajı
       const errorMessage = error.message || "Failed to create feature request";
       return NextResponse.json({ 
