@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import HealthForms from "../../../components/HealthForms";
 import ActivityCalendar from "../../../components/calendar/ActivityCalendar";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import QuickLogButton from "../../../components/health/QuickLogButton";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -182,10 +183,11 @@ export default async function HealthPage() {
           </p>
         </div>
 
-        {/* Quick Nav */}
+        {/* Quick Nav with Floating Quick Log Button */}
+        <QuickLogButton />
+        
         <div className="flex flex-wrap gap-3">
           {[
-            { href: "#quick-log", label: "Hızlı Kayıt", icon: "⚡" },
             { href: "#calendar", label: "Takvim", icon: "🗓️" },
             { href: "#insights", label: "İpuçları", icon: "💡" },
           ].map((link) => (
@@ -477,16 +479,13 @@ export default async function HealthPage() {
           </div>
         </section>
 
-        {/* Quick Log Section */}
+        {/* Quick Log Section - Compact */}
         <section id="quick-log" className="space-y-3 md:space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Hızlı Kayıt</p>
-              <h3 className="text-xl sm:text-2xl font-semibold text-white">Kilo, egzersiz ve öğünlerini anında kaydet</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-white">Kilo, egzersiz ve öğünlerini anında kaydet</h3>
             </div>
-            <span className="rounded-full border border-primary-500/30 bg-primary-500/10 px-4 py-1 text-xs text-primary-200">
-              1 dakikada kayıt
-            </span>
           </div>
           <HealthForms />
         </section>
