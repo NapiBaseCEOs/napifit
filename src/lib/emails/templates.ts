@@ -397,6 +397,55 @@ export const emailTemplates: Record<Locale, Record<EmailTemplateType, (params?: 
     welcome: () => ({ subject: "", html: "", text: "" }),
     password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
   },
+  // Other locales - will fallback to default via getEmailTemplate
+  pt: {
+    email_verification: () => ({ subject: "", html: "", text: "" }),
+    password_reset: () => ({ subject: "", html: "", text: "" }),
+    welcome: () => ({ subject: "", html: "", text: "" }),
+    password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
+  },
+  zh: {
+    email_verification: () => ({ subject: "", html: "", text: "" }),
+    password_reset: () => ({ subject: "", html: "", text: "" }),
+    welcome: () => ({ subject: "", html: "", text: "" }),
+    password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
+  },
+  ja: {
+    email_verification: () => ({ subject: "", html: "", text: "" }),
+    password_reset: () => ({ subject: "", html: "", text: "" }),
+    welcome: () => ({ subject: "", html: "", text: "" }),
+    password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
+  },
+  ko: {
+    email_verification: () => ({ subject: "", html: "", text: "" }),
+    password_reset: () => ({ subject: "", html: "", text: "" }),
+    welcome: () => ({ subject: "", html: "", text: "" }),
+    password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
+  },
+  hi: {
+    email_verification: () => ({ subject: "", html: "", text: "" }),
+    password_reset: () => ({ subject: "", html: "", text: "" }),
+    welcome: () => ({ subject: "", html: "", text: "" }),
+    password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
+  },
+  nl: {
+    email_verification: () => ({ subject: "", html: "", text: "" }),
+    password_reset: () => ({ subject: "", html: "", text: "" }),
+    welcome: () => ({ subject: "", html: "", text: "" }),
+    password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
+  },
+  sv: {
+    email_verification: () => ({ subject: "", html: "", text: "" }),
+    password_reset: () => ({ subject: "", html: "", text: "" }),
+    welcome: () => ({ subject: "", html: "", text: "" }),
+    password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
+  },
+  pl: {
+    email_verification: () => ({ subject: "", html: "", text: "" }),
+    password_reset: () => ({ subject: "", html: "", text: "" }),
+    welcome: () => ({ subject: "", html: "", text: "" }),
+    password_change_confirmation: () => ({ subject: "", html: "", text: "" }),
+  },
 };
 
 // E-posta şablonu alma fonksiyonu
@@ -405,8 +454,15 @@ export function getEmailTemplate(
   type: EmailTemplateType,
   params?: any
 ): EmailTemplate {
-  const defaultLocale: Locale = "tr";
+  const defaultLocale: Locale = "en"; // Default to English
   const selectedLocale = emailTemplates[locale] ? locale : defaultLocale;
-  return emailTemplates[selectedLocale][type](params);
+  const template = emailTemplates[selectedLocale][type](params);
+  
+  // If template is empty, fallback to default locale
+  if (!template.subject || !template.html) {
+    return emailTemplates[defaultLocale][type](params);
+  }
+  
+  return template;
 }
 

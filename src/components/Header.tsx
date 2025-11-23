@@ -11,6 +11,7 @@ import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import type { Database } from "@/lib/supabase/types";
 import NetworkStatusIndicator from "./NetworkStatusIndicator";
 import NotificationBell from "./NotificationBell";
+import LanguageSwitcher from "./i18n/LanguageSwitcher";
 
 export default function Header() {
   const router = useRouter();
@@ -73,6 +74,9 @@ export default function Header() {
           </div>
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+          
           {/* Network Status - Sadece desktop'ta, küçük */}
           <div className="hidden lg:block">
             <NetworkStatusIndicator />
