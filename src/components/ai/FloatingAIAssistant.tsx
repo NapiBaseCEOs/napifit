@@ -158,33 +158,56 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error("Yanıt alınamadı");
+      // Response'u parse et
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error(`Sunucu yanıtı işlenemedi (${response.status})`);
       }
 
-      const data = await response.json();
+      // Hata kontrolü
+      if (!response.ok) {
+        const errorMsg = data?.error || data?.message || `Sunucu hatası (${response.status})`;
+        throw new Error(errorMsg);
+      }
       
       if (data.error) {
         throw new Error(data.error);
       }
       
+      if (!data.response) {
+        throw new Error("AI'dan yanıt alınamadı");
+      }
+      
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.response || "Yanıt alınamadı.",
+        content: data.response,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error: any) {
       console.error("AI Assistant error:", error);
-      const errorMessage: Message = {
+      
+      // Network hatası kontrolü
+      let errorMessage = "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.";
+      
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        errorMessage = "Bağlantı hatası. İnternet bağlantınızı kontrol edin.";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: error?.message || "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.",
+        content: errorMessage,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
     }

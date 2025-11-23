@@ -151,9 +151,36 @@ export async function POST(request: Request) {
 
     const fullPrompt = contextString + historyContext + `\n\nYanıtını ver (sadece yanıt, başka açıklama ekleme):`;
 
-    const result = await model.generateContent(fullPrompt);
-    const response = result.response;
-    const text = response.text();
+    let result;
+    let response;
+    let text;
+    
+    try {
+      result = await model.generateContent(fullPrompt);
+      response = result.response;
+      text = response.text();
+      
+      if (!text || text.trim().length === 0) {
+        throw new Error("AI'dan boş yanıt alındı");
+      }
+    } catch (geminiError: any) {
+      console.error("Gemini API error:", geminiError);
+      
+      // Gemini API hatalarını daha iyi yakala
+      let errorMessage = "AI servisi yanıt veremedi";
+      
+      if (geminiError.message?.includes("API_KEY") || geminiError.message?.includes("403")) {
+        errorMessage = "AI API anahtarı geçersiz veya eksik";
+      } else if (geminiError.message?.includes("quota") || geminiError.message?.includes("429")) {
+        errorMessage = "AI servisi kota limitine ulaştı. Lütfen daha sonra tekrar deneyin.";
+      } else if (geminiError.message?.includes("model") || geminiError.message?.includes("404")) {
+        errorMessage = "AI model bulunamadı";
+      } else if (geminiError.message) {
+        errorMessage = geminiError.message;
+      }
+      
+      throw new Error(errorMessage);
+    }
 
     // Öneriler oluştur (mesaj tipine göre)
     const suggestions: string[] = [];
