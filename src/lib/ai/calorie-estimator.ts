@@ -136,14 +136,24 @@ Sadece JSON döndür, başka metin ekleme.`;
       confidence: json.confidence || "medium",
       references: json.references || [],
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini workout estimation error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Bilinmeyen hata";
-    if (errorMessage.includes("404") || errorMessage.includes("model")) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDetails = error?.errorDetails || [];
+    
+    // HTTP referrer kısıtlaması kontrolü
+    const isReferrerBlocked = errorMessage.includes("REFERRER") || 
+                              errorMessage.includes("referer") ||
+                              errorDetails.some((d: any) => d?.reason === "API_KEY_HTTP_REFERRER_BLOCKED");
+    
+    if (isReferrerBlocked) {
+      throw new Error("AI API anahtarı HTTP referrer kısıtlaması nedeniyle çalışmıyor. Lütfen Google AI Studio'da API key kısıtlamalarını kaldırın.");
+    } else if (errorMessage.includes("404") || errorMessage.includes("model") || errorMessage.includes("not found")) {
       throw new Error("AI model bulunamadı. Lütfen yöneticiye bildirin.");
-    }
-    if (errorMessage.includes("API_KEY") || errorMessage.includes("403")) {
-      throw new Error("API anahtarı geçersiz. Lütfen yöneticiye bildirin.");
+    } else if (errorMessage.includes("API_KEY") || errorMessage.includes("403") || errorMessage.includes("401")) {
+      throw new Error("API anahtarı geçersiz veya eksik. Lütfen yöneticiye bildirin.");
+    } else if (errorMessage.includes("quota") || errorMessage.includes("429") || errorMessage.includes("rate limit")) {
+      throw new Error("API kota limiti aşıldı. Lütfen daha sonra tekrar deneyin.");
     }
     throw new Error(`Egzersiz kalori tahmini yapılamadı: ${errorMessage}`);
   }
@@ -228,14 +238,24 @@ Sadece JSON döndür, başka metin ekleme. Tüm kalori değerleri gerçekçi olm
       breakdown,
       explanation: json.explanation || "Kalori tahmini yapıldı.",
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini meal estimation error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Bilinmeyen hata";
-    if (errorMessage.includes("404") || errorMessage.includes("model")) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDetails = error?.errorDetails || [];
+    
+    // HTTP referrer kısıtlaması kontrolü
+    const isReferrerBlocked = errorMessage.includes("REFERRER") || 
+                              errorMessage.includes("referer") ||
+                              errorDetails.some((d: any) => d?.reason === "API_KEY_HTTP_REFERRER_BLOCKED");
+    
+    if (isReferrerBlocked) {
+      throw new Error("AI API anahtarı HTTP referrer kısıtlaması nedeniyle çalışmıyor. Lütfen Google AI Studio'da API key kısıtlamalarını kaldırın.");
+    } else if (errorMessage.includes("404") || errorMessage.includes("model") || errorMessage.includes("not found")) {
       throw new Error("AI model bulunamadı. Lütfen yöneticiye bildirin.");
-    }
-    if (errorMessage.includes("API_KEY") || errorMessage.includes("403")) {
-      throw new Error("API anahtarı geçersiz. Lütfen yöneticiye bildirin.");
+    } else if (errorMessage.includes("API_KEY") || errorMessage.includes("403") || errorMessage.includes("401")) {
+      throw new Error("API anahtarı geçersiz veya eksik. Lütfen yöneticiye bildirin.");
+    } else if (errorMessage.includes("quota") || errorMessage.includes("429") || errorMessage.includes("rate limit")) {
+      throw new Error("API kota limiti aşıldı. Lütfen daha sonra tekrar deneyin.");
     }
     throw new Error(`Öğün kalori tahmini yapılamadı: ${errorMessage}`);
   }

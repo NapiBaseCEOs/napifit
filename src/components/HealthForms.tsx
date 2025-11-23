@@ -488,10 +488,18 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     } catch (error) {
       console.error("Food calories calculation error:", error);
       // Hata durumunda kullanıcıyı bilgilendir
+      let errorMessage = "Kalori hesaplanamadı";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        // HTTP referrer hatası için özel mesaj
+        if (error.message.includes("HTTP referrer kısıtlaması")) {
+          errorMessage = "AI API anahtarı HTTP referrer kısıtlaması nedeniyle çalışmıyor. Lütfen yöneticiye bildirin.";
+        }
+      }
       setAiFeedback({
         variant: "meal",
         message: null,
-        error: error instanceof Error ? error.message : "Kalori hesaplanamadı",
+        error: errorMessage,
       });
     } finally {
       setFoodAiLoading((prev) => {
@@ -662,10 +670,19 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         error: null,
       });
     } catch (err: any) {
+      console.error("Workout calories calculation error:", err);
+      let errorMessage = "AI tahmini yapılamadı";
+      if (err.message) {
+        errorMessage = err.message;
+        // HTTP referrer hatası için özel mesaj
+        if (err.message.includes("HTTP referrer kısıtlaması")) {
+          errorMessage = "AI API anahtarı HTTP referrer kısıtlaması nedeniyle çalışmıyor. Lütfen yöneticiye bildirin.";
+        }
+      }
       setAiFeedback({
         variant: "workout",
         message: null,
-        error: err.message || "AI tahmini yapılamadı",
+        error: errorMessage,
       });
     } finally {
       setWorkoutAiLoading(false);
