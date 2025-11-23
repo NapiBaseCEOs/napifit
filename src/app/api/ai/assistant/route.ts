@@ -168,15 +168,24 @@ export async function POST(request: Request) {
       
       // Gemini API hatalarını daha iyi yakala
       let errorMessage = "AI servisi yanıt veremedi";
+      const errorMsg = geminiError.message || String(geminiError);
+      const errorDetails = geminiError.errorDetails || [];
       
-      if (geminiError.message?.includes("API_KEY") || geminiError.message?.includes("403")) {
-        errorMessage = "AI API anahtarı geçersiz veya eksik";
-      } else if (geminiError.message?.includes("quota") || geminiError.message?.includes("429")) {
+      // HTTP referrer kısıtlaması kontrolü
+      const isReferrerBlocked = errorMsg.includes("REFERRER") || 
+                                errorMsg.includes("referer") ||
+                                errorDetails.some((d: any) => d.reason === "API_KEY_HTTP_REFERRER_BLOCKED");
+      
+      if (isReferrerBlocked) {
+        errorMessage = "AI API anahtarı HTTP referrer kısıtlaması nedeniyle çalışmıyor. Lütfen Google AI Studio'da API key kısıtlamalarını kaldırın.";
+      } else if (errorMsg.includes("API_KEY") || errorMsg.includes("403") || errorMsg.includes("401")) {
+        errorMessage = "AI API anahtarı geçersiz veya eksik. Lütfen Vercel environment variables'ı kontrol edin.";
+      } else if (errorMsg.includes("quota") || errorMsg.includes("429")) {
         errorMessage = "AI servisi kota limitine ulaştı. Lütfen daha sonra tekrar deneyin.";
-      } else if (geminiError.message?.includes("model") || geminiError.message?.includes("404")) {
+      } else if (errorMsg.includes("model") || errorMsg.includes("404")) {
         errorMessage = "AI model bulunamadı";
-      } else if (geminiError.message) {
-        errorMessage = geminiError.message;
+      } else if (errorMsg) {
+        errorMessage = errorMsg;
       }
       
       throw new Error(errorMessage);

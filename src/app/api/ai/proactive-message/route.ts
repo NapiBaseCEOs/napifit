@@ -246,9 +246,20 @@ export async function POST(request: Request) {
       messageType,
       timestamp: Date.now(),
     });
-  } catch (error: any) {
-    console.error("Proactive message error:", error);
-    return NextResponse.json({ message: null }, { status: 200 });
-  }
+    } catch (error: any) {
+      console.error("Proactive message error:", error);
+      
+      // HTTP referrer kısıtlaması kontrolü
+      const errorMsg = error.message || String(error);
+      const isReferrerBlocked = errorMsg.includes("REFERRER") || 
+                                errorMsg.includes("referer") ||
+                                errorMsg.includes("API_KEY_HTTP_REFERRER_BLOCKED");
+      
+      if (isReferrerBlocked) {
+        console.error("API key HTTP referrer kısıtlaması var - Google AI Studio'da düzenleme gerekli");
+      }
+      
+      return NextResponse.json({ message: null }, { status: 200 });
+    }
 }
 

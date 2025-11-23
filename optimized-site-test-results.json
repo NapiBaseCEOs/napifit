@@ -1,67 +1,72 @@
 {
-  "timestamp": "2025-11-22T21:15:53.691Z",
+  "timestamp": "2025-11-23T01:31:02.913Z",
   "siteUrl": "https://napibase.com",
   "tests": [
-    {
-      "name": "Community",
-      "path": "/community",
-      "status": 200,
-      "duration": 595,
-      "success": true
-    },
     {
       "name": "Login",
       "path": "/login",
       "status": 200,
-      "duration": 629,
+      "duration": 662,
+      "success": true
+    },
+    {
+      "name": "Community",
+      "path": "/community",
+      "status": 200,
+      "duration": 664,
       "success": true
     },
     {
       "name": "Register",
       "path": "/register",
       "status": 200,
-      "duration": 638,
+      "duration": 720,
       "success": true
     },
     {
       "name": "Ana Sayfa",
       "path": "/",
       "status": 200,
-      "duration": 869,
+      "duration": 1069,
       "success": true
     },
     {
       "name": "Ping",
       "path": "/api/ping",
       "status": 200,
-      "duration": 315,
+      "duration": 285,
       "success": true
     },
     {
       "name": "Notifications",
       "path": "/api/notifications",
       "status": 200,
-      "duration": 417,
+      "duration": 452,
       "success": true
     },
     {
       "name": "Stats",
       "path": "/api/stats",
       "status": 200,
-      "duration": 916,
+      "duration": 886,
       "success": true
     },
     {
       "name": "Feature Requests",
       "path": "/api/feature-requests",
       "status": 200,
-      "duration": 1322,
+      "duration": 1935,
       "success": true
     }
   ],
   "performance": {
-    "avgResponseTime": 713,
-    "slowEndpoints": []
+    "avgResponseTime": 834,
+    "slowEndpoints": [
+      {
+        "name": "Feature Requests",
+        "duration": 1935
+      }
+    ]
   },
   "summary": {
     "total": 8,
