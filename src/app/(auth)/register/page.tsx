@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
@@ -8,10 +8,13 @@ import GoogleIcon from "../../../components/icons/GoogleIcon";
 import Spinner from "../../../components/icons/Spinner";
 import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
 import type { Database } from "@/lib/supabase/types";
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import CountrySelector from "@/components/i18n/CountrySelector";
 
 export default function RegisterPage() {
   const router = useRouter();
   const supabase = useSupabaseClient<Database>();
+  const { t } = useLocale();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -20,6 +23,8 @@ export default function RegisterPage() {
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [gender, setGender] = useState("");
+  const [countryCode, setCountryCode] = useState<string | null>(null);
+  const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +32,21 @@ export default function RegisterPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendFeedback, setResendFeedback] = useState<string | null>(null);
   const [hasConsented, setHasConsented] = useState(false);
+
+  // Detect country on mount
+  useEffect(() => {
+    fetch("/api/detect-locale")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.countryCode) {
+          setDetectedCountry(data.countryCode);
+          if (!countryCode) {
+            setCountryCode(data.countryCode);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const passwordPolicy = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
@@ -54,15 +74,20 @@ export default function RegisterPage() {
     
     // Validasyon
     if (!firstName.trim()) {
-      setError("Ad zorunludur");
+      setError(t("auth.register.errors.required").replace("{}", t("auth.register.firstName")));
       return;
     }
     if (!lastName.trim()) {
-      setError("Soyad zorunludur");
+      setError(t("auth.register.errors.required").replace("{}", t("auth.register.lastName")));
       return;
     }
     if (!dateOfBirth) {
-      setError("Doğum tarihi zorunludur");
+      setError(t("auth.register.errors.required").replace("{}", t("auth.register.dateOfBirth")));
+      return;
+    }
+    
+    if (!countryCode) {
+      setError(t("country.required"));
       return;
     }
     
@@ -144,6 +169,7 @@ export default function RegisterPage() {
           weight_kg: parseFloat(weight),
           age: calculatedAge,
           gender: gender as "male" | "female" | "other",
+          country_code: countryCode,
         });
       }
 
@@ -421,6 +447,12 @@ export default function RegisterPage() {
                 required
               />
             </div>
+            <CountrySelector
+              value={countryCode}
+              onChange={setCountryCode}
+              detectedCountry={detectedCountry}
+              required
+            />
             <div className="space-y-2">
                 <label className="block text-xs uppercase tracking-wide text-gray-400">
                 Şifre <span className="text-red-400">*</span>

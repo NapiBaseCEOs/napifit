@@ -133,7 +133,51 @@ export type TranslationKey =
   | "healthForms.workout.title"
   | "healthForms.workout.description"
   | "healthForms.meal.title"
-  | "healthForms.meal.description";
+  | "healthForms.meal.description"
+  // Auth - Login
+  | "auth.login.welcome"
+  | "auth.login.subtitle"
+  | "auth.login.emailLabel"
+  | "auth.login.passwordLabel"
+  | "auth.login.submit"
+  | "auth.login.googleContinue"
+  | "auth.login.googleNote"
+  | "auth.login.noAccount"
+  | "auth.login.forgotPassword"
+  | "auth.login.errors.invalidCredentials"
+  | "auth.login.errors.emailNotConfirmed"
+  | "auth.login.errors.sessionError"
+  | "auth.login.errors.googleError"
+  | "auth.login.info.resendVerification"
+  // Auth - Register
+  | "auth.register.title"
+  | "auth.register.subtitle"
+  | "auth.register.firstName"
+  | "auth.register.lastName"
+  | "auth.register.dateOfBirth"
+  | "auth.register.gender"
+  | "auth.register.height"
+  | "auth.register.weight"
+  | "auth.register.targetWeight"
+  | "auth.register.activityLevel"
+  | "auth.register.passwordHint"
+  | "auth.register.consent"
+  | "auth.register.errors.required"
+  | "auth.register.errors.ageRestriction"
+  | "auth.register.errors.passwordPolicy"
+  | "auth.register.success"
+  // Country Selection
+  | "country.select"
+  | "country.selectTitle"
+  | "country.selectDescription"
+  | "country.detected"
+  | "country.change"
+  | "country.save"
+  | "country.required"
+  // Profile & Community
+  | "profile.country"
+  | "community.country"
+  | "community.from";
 
 export const translations: Record<Locale, Record<TranslationKey, string>> = {
   // TÜRKÇE
@@ -253,6 +297,46 @@ export const translations: Record<Locale, Record<TranslationKey, string>> = {
     "healthForms.workout.description": "Koşu, spor salonu, yoga gibi aktiviteleri kaydet.",
     "healthForms.meal.title": "Öğün",
     "healthForms.meal.description": "Yiyecekleri seç, AI kalori tahmini al.",
+    "auth.login.welcome": "Tekrar Hoş Geldin",
+    "auth.login.subtitle": "Hesabına erişmek için giriş yap veya Google ile devam et.",
+    "auth.login.emailLabel": "EMAİL",
+    "auth.login.passwordLabel": "ŞİFRE",
+    "auth.login.submit": "Giriş Yap",
+    "auth.login.googleContinue": "Google ile devam et",
+    "auth.login.googleNote": "Google ile girişte doğrulama gerekmez.",
+    "auth.login.noAccount": "Hesabın yok mu?",
+    "auth.login.forgotPassword": "Şifremi Unuttum",
+    "auth.login.errors.invalidCredentials": "Email veya şifre hatalı. Lütfen kontrol edip tekrar deneyin.",
+    "auth.login.errors.emailNotConfirmed": "E-posta adresin doğrulanmamış görünüyor.",
+    "auth.login.errors.sessionError": "Oturum oluşturulamadı. Lütfen tekrar deneyin.",
+    "auth.login.errors.googleError": "Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.",
+    "auth.login.info.resendVerification": "Doğrulama mailini teslim almadıysan aşağıdan yeniden gönderebilirsin.",
+    "auth.register.title": "Hesap Oluştur",
+    "auth.register.subtitle": "NapiFit'e katıl ve sağlıklı yaşam yolculuğuna başla.",
+    "auth.register.firstName": "Ad",
+    "auth.register.lastName": "Soyad",
+    "auth.register.dateOfBirth": "Doğum Tarihi",
+    "auth.register.gender": "Cinsiyet",
+    "auth.register.height": "Boy (cm)",
+    "auth.register.weight": "Kilo (kg)",
+    "auth.register.targetWeight": "Hedef Kilo (kg)",
+    "auth.register.activityLevel": "Aktivite Seviyesi",
+    "auth.register.passwordHint": "En az 8 karakter, içinde büyük harf ve rakam bulunmalı.",
+    "auth.register.consent": "Kullanım şartlarını ve gizlilik politikasını kabul ediyorum.",
+    "auth.register.errors.required": "zorunludur",
+    "auth.register.errors.ageRestriction": "18 yaşından küçükler kayıt olamaz",
+    "auth.register.errors.passwordPolicy": "Şifren 8+ karakter olmalı ve en az bir büyük harf ile rakam içermeli.",
+    "auth.register.success": "Kayıt başarılı! E-posta adresini kontrol et.",
+    "country.select": "Ülke Seç",
+    "country.selectTitle": "Ülkenizi Seçin",
+    "country.selectDescription": "Hangi ülkeden bağlanıyorsunuz? Bu bilgi toplulukta ve profilde görünecek.",
+    "country.detected": "Tespit Edilen",
+    "country.change": "Değiştir",
+    "country.save": "Kaydet",
+    "country.required": "Ülke seçimi zorunludur",
+    "profile.country": "Ülke",
+    "community.country": "Ülke",
+    "community.from": "den",
   },
 
   // ENGLISH
@@ -372,6 +456,46 @@ export const translations: Record<Locale, Record<TranslationKey, string>> = {
     "healthForms.workout.description": "Log activities like running, gym, yoga.",
     "healthForms.meal.title": "Meal",
     "healthForms.meal.description": "Select foods, get AI calorie estimates.",
+    "auth.login.welcome": "Welcome Back",
+    "auth.login.subtitle": "Sign in to access your account or continue with Google.",
+    "auth.login.emailLabel": "EMAIL",
+    "auth.login.passwordLabel": "PASSWORD",
+    "auth.login.submit": "Sign In",
+    "auth.login.googleContinue": "Continue with Google",
+    "auth.login.googleNote": "No email verification required with Google sign-in.",
+    "auth.login.noAccount": "Don't have an account?",
+    "auth.login.forgotPassword": "Forgot Password",
+    "auth.login.errors.invalidCredentials": "Invalid email or password. Please check and try again.",
+    "auth.login.errors.emailNotConfirmed": "Your email address appears to be unverified.",
+    "auth.login.errors.sessionError": "Could not create session. Please try again.",
+    "auth.login.errors.googleError": "An error occurred while signing in with Google. Please try again.",
+    "auth.login.info.resendVerification": "If you didn't receive the verification email, you can resend it below.",
+    "auth.register.title": "Create Account",
+    "auth.register.subtitle": "Join NapiFit and start your healthy living journey.",
+    "auth.register.firstName": "First Name",
+    "auth.register.lastName": "Last Name",
+    "auth.register.dateOfBirth": "Date of Birth",
+    "auth.register.gender": "Gender",
+    "auth.register.height": "Height (cm)",
+    "auth.register.weight": "Weight (kg)",
+    "auth.register.targetWeight": "Target Weight (kg)",
+    "auth.register.activityLevel": "Activity Level",
+    "auth.register.passwordHint": "At least 8 characters, must contain uppercase letter and number.",
+    "auth.register.consent": "I accept the terms of service and privacy policy.",
+    "auth.register.errors.required": "is required",
+    "auth.register.errors.ageRestriction": "Users under 18 cannot register",
+    "auth.register.errors.passwordPolicy": "Password must be 8+ characters and contain at least one uppercase letter and number.",
+    "auth.register.success": "Registration successful! Please check your email.",
+    "country.select": "Select Country",
+    "country.selectTitle": "Select Your Country",
+    "country.selectDescription": "Which country are you connecting from? This will be shown in community and profile.",
+    "country.detected": "Detected",
+    "country.change": "Change",
+    "country.save": "Save",
+    "country.required": "Country selection is required",
+    "profile.country": "Country",
+    "community.country": "Country",
+    "community.from": "from",
   },
 
   // DEUTSCH (German)
@@ -491,6 +615,46 @@ export const translations: Record<Locale, Record<TranslationKey, string>> = {
     "healthForms.workout.description": "Aktivitäten wie Laufen, Fitnessstudio, Yoga protokollieren.",
     "healthForms.meal.title": "Mahlzeit",
     "healthForms.meal.description": "Lebensmittel auswählen, KI-Kalorienschätzung erhalten.",
+    "auth.login.welcome": "Willkommen zurück",
+    "auth.login.subtitle": "Melden Sie sich an, um auf Ihr Konto zuzugreifen, oder fahren Sie mit Google fort.",
+    "auth.login.emailLabel": "E-MAIL",
+    "auth.login.passwordLabel": "PASSWORT",
+    "auth.login.submit": "Anmelden",
+    "auth.login.googleContinue": "Mit Google fortfahren",
+    "auth.login.googleNote": "Bei Google-Anmeldung ist keine E-Mail-Bestätigung erforderlich.",
+    "auth.login.noAccount": "Haben Sie kein Konto?",
+    "auth.login.forgotPassword": "Passwort vergessen",
+    "auth.login.errors.invalidCredentials": "Ungültige E-Mail oder Passwort. Bitte überprüfen und erneut versuchen.",
+    "auth.login.errors.emailNotConfirmed": "Ihre E-Mail-Adresse scheint nicht bestätigt zu sein.",
+    "auth.login.errors.sessionError": "Sitzung konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+    "auth.login.errors.googleError": "Beim Anmelden mit Google ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "auth.login.info.resendVerification": "Wenn Sie die Bestätigungs-E-Mail nicht erhalten haben, können Sie sie unten erneut senden.",
+    "auth.register.title": "Konto erstellen",
+    "auth.register.subtitle": "Treten Sie NapiFit bei und beginnen Sie Ihre gesunde Lebensreise.",
+    "auth.register.firstName": "Vorname",
+    "auth.register.lastName": "Nachname",
+    "auth.register.dateOfBirth": "Geburtsdatum",
+    "auth.register.gender": "Geschlecht",
+    "auth.register.height": "Größe (cm)",
+    "auth.register.weight": "Gewicht (kg)",
+    "auth.register.targetWeight": "Zielgewicht (kg)",
+    "auth.register.activityLevel": "Aktivitätsniveau",
+    "auth.register.passwordHint": "Mindestens 8 Zeichen, muss Großbuchstaben und Zahl enthalten.",
+    "auth.register.consent": "Ich akzeptiere die Nutzungsbedingungen und die Datenschutzrichtlinie.",
+    "auth.register.errors.required": "ist erforderlich",
+    "auth.register.errors.ageRestriction": "Benutzer unter 18 können sich nicht registrieren",
+    "auth.register.errors.passwordPolicy": "Passwort muss 8+ Zeichen lang sein und mindestens einen Großbuchstaben und eine Zahl enthalten.",
+    "auth.register.success": "Registrierung erfolgreich! Bitte überprüfen Sie Ihre E-Mail.",
+    "country.select": "Land auswählen",
+    "country.selectTitle": "Wählen Sie Ihr Land",
+    "country.selectDescription": "Aus welchem Land verbinden Sie sich? Dies wird in Community und Profil angezeigt.",
+    "country.detected": "Erkannt",
+    "country.change": "Ändern",
+    "country.save": "Speichern",
+    "country.required": "Länderauswahl ist erforderlich",
+    "profile.country": "Land",
+    "community.country": "Land",
+    "community.from": "aus",
   },
 
   // FRANÇAIS (French) - Shortened for brevity, pattern continues
@@ -610,6 +774,46 @@ export const translations: Record<Locale, Record<TranslationKey, string>> = {
     "healthForms.workout.description": "Enregistrer des activités comme la course, la salle de sport, le yoga.",
     "healthForms.meal.title": "Repas",
     "healthForms.meal.description": "Sélectionner des aliments, obtenir des estimations de calories IA.",
+    "auth.login.welcome": "Bon retour",
+    "auth.login.subtitle": "Connectez-vous pour accéder à votre compte ou continuez avec Google.",
+    "auth.login.emailLabel": "E-MAIL",
+    "auth.login.passwordLabel": "MOT DE PASSE",
+    "auth.login.submit": "Se connecter",
+    "auth.login.googleContinue": "Continuer avec Google",
+    "auth.login.googleNote": "Aucune vérification d'e-mail requise avec la connexion Google.",
+    "auth.login.noAccount": "Vous n'avez pas de compte?",
+    "auth.login.forgotPassword": "Mot de passe oublié",
+    "auth.login.errors.invalidCredentials": "E-mail ou mot de passe invalide. Veuillez vérifier et réessayer.",
+    "auth.login.errors.emailNotConfirmed": "Votre adresse e-mail semble non vérifiée.",
+    "auth.login.errors.sessionError": "Impossible de créer une session. Veuillez réessayer.",
+    "auth.login.errors.googleError": "Une erreur s'est produite lors de la connexion avec Google. Veuillez réessayer.",
+    "auth.login.info.resendVerification": "Si vous n'avez pas reçu l'e-mail de vérification, vous pouvez le renvoyer ci-dessous.",
+    "auth.register.title": "Créer un compte",
+    "auth.register.subtitle": "Rejoignez NapiFit et commencez votre parcours de vie saine.",
+    "auth.register.firstName": "Prénom",
+    "auth.register.lastName": "Nom de famille",
+    "auth.register.dateOfBirth": "Date de naissance",
+    "auth.register.gender": "Genre",
+    "auth.register.height": "Taille (cm)",
+    "auth.register.weight": "Poids (kg)",
+    "auth.register.targetWeight": "Poids cible (kg)",
+    "auth.register.activityLevel": "Niveau d'activité",
+    "auth.register.passwordHint": "Au moins 8 caractères, doit contenir une lettre majuscule et un chiffre.",
+    "auth.register.consent": "J'accepte les conditions d'utilisation et la politique de confidentialité.",
+    "auth.register.errors.required": "est requis",
+    "auth.register.errors.ageRestriction": "Les utilisateurs de moins de 18 ans ne peuvent pas s'inscrire",
+    "auth.register.errors.passwordPolicy": "Le mot de passe doit contenir 8+ caractères et au moins une lettre majuscule et un chiffre.",
+    "auth.register.success": "Inscription réussie! Veuillez vérifier votre e-mail.",
+    "country.select": "Sélectionner le pays",
+    "country.selectTitle": "Sélectionnez votre pays",
+    "country.selectDescription": "De quel pays vous connectez-vous? Ceci sera affiché dans la communauté et le profil.",
+    "country.detected": "Détecté",
+    "country.change": "Changer",
+    "country.save": "Enregistrer",
+    "country.required": "La sélection du pays est requise",
+    "profile.country": "Pays",
+    "community.country": "Pays",
+    "community.from": "de",
   },
 
   // TODO: Add full translations for other languages (ES, IT, RU, AR, PT, ZH, JA, KO, HI, NL, SV, PL)

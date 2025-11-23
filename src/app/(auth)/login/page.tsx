@@ -9,18 +9,20 @@ import { useSession, useSessionContext, useSupabaseClient } from "@supabase/auth
 import type { Database } from "@/lib/supabase/types";
 import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
 import { AuthError } from "@supabase/supabase-js";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 function ErrorHandler() {
   const searchParams = useSearchParams();
+  const { t } = useLocale();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // URL'den error parametresini al
     const errorParam = searchParams.get("error");
     if (errorParam) {
-      setError("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+      setError(t("auth.login.errors.googleError"));
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   return error ? (
     <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
@@ -34,6 +36,7 @@ export default function LoginPage() {
   const supabase = useSupabaseClient<Database>();
   const session = useSession();
   const { isLoading } = useSessionContext();
+  const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -73,7 +76,7 @@ export default function LoginPage() {
       } = await supabase.auth.getSession();
 
       if (!activeSession) {
-        setError("Oturum oluşturulamadı. Lütfen tekrar deneyin.");
+        setError(t("auth.login.errors.sessionError"));
         return;
       }
 
@@ -94,15 +97,15 @@ export default function LoginPage() {
       if (err instanceof AuthError) {
         const normalized = err.message.toLowerCase();
         if (normalized.includes("email not confirmed")) {
-          setError("E-posta adresin doğrulanmamış görünüyor.");
-          setInfoMessage("Doğrulama mailini teslim almadıysan aşağıdan yeniden gönderebilirsin.");
+          setError(t("auth.login.errors.emailNotConfirmed"));
+          setInfoMessage(t("auth.login.info.resendVerification"));
         } else if (normalized.includes("invalid login credentials")) {
-          setError("Email veya şifre hatalı. Lütfen kontrol edip tekrar deneyin.");
+          setError(t("auth.login.errors.invalidCredentials"));
         } else {
-          setError(err.message || "Geçersiz email veya şifre.");
+          setError(err.message || t("auth.login.errors.invalidCredentials"));
         }
       } else {
-        setError("Geçersiz email veya şifre ya da Supabase bağlantı hatası.");
+        setError(t("auth.login.errors.invalidCredentials"));
       }
     } finally {
       setLoading(false);
@@ -172,7 +175,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error("Google OAuth error:", err);
-      setError("Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+      setError(t("auth.login.errors.googleError"));
       return;
     } finally {
       setGoogleLoading(false);
@@ -197,8 +200,8 @@ export default function LoginPage() {
               NapiFit
             </p>
             <div>
-              <h1 className="text-3xl font-bold text-white">Tekrar Hoş Geldin</h1>
-              <p className="text-gray-400">Hesabına erişmek için giriş yap veya Google ile devam et.</p>
+              <h1 className="text-3xl font-bold text-white">{t("auth.login.welcome")}</h1>
+              <p className="text-gray-400">{t("auth.login.subtitle")}</p>
             </div>
           </div>
 
@@ -220,7 +223,7 @@ export default function LoginPage() {
           <form onSubmit={onSubmit} className="space-y-6" autoComplete="on">
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-300 mb-2">
-                EMAİL
+                {t("auth.login.emailLabel")}
               </label>
               <input
                 id="email"
@@ -239,7 +242,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-300 mb-2">
-                ŞİFRE
+                {t("auth.login.passwordLabel")}
               </label>
               <input
                 id="password"
@@ -265,7 +268,7 @@ export default function LoginPage() {
                   <span>Giriş yapılıyor...</span>
                 </>
               ) : (
-                "Giriş Yap"
+                t("auth.login.submit")
               )}
             </button>
           </form>
@@ -309,7 +312,7 @@ export default function LoginPage() {
               ) : (
                 <>
                   <GoogleIcon className="h-5 w-5" />
-                  <span>Google ile devam et</span>
+                  <span>{t("auth.login.googleContinue")}</span>
                 </>
               )}
             </button>
@@ -320,14 +323,14 @@ export default function LoginPage() {
             <ul className="space-y-1">
               <li>• Doğrulama maili spam klasörüne düşmüş olabilir.</li>
               <li>• E-postan doğrulandıktan sonra giriş otomatik tamamlanır.</li>
-              <li>• Google ile girişte doğrulama gerekmez.</li>
+              <li>• {t("auth.login.googleNote")}</li>
             </ul>
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-400">
-            Hesabın yok mu?{" "}
+            {t("auth.login.noAccount")}{" "}
             <Link href="/register" className="text-primary-400 hover:text-primary-300 font-semibold transition-colors">
-              Kayıt Ol
+              {t("nav.register")}
             </Link>
           </p>
         </div>

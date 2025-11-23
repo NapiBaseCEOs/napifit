@@ -31,6 +31,7 @@ export interface Database {
           daily_water_goal_ml: number | null;
           water_reminder_enabled: boolean | null;
           water_reminder_interval_minutes: number | null;
+          country_code: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -55,6 +56,7 @@ export interface Database {
           daily_water_goal_ml?: number | null;
           water_reminder_enabled?: boolean | null;
           water_reminder_interval_minutes?: number | null;
+          country_code?: string | null;
           created_at?: string;
           updated_at?: string;
         };
