@@ -53,7 +53,7 @@ export async function GET() {
     // Kullanıcı bilgilerini al
     const { data: profiles, error: profilesError } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, avatar_url, show_public_profile, show_community_stats, created_at")
+      .select("id, full_name, avatar_url, show_public_profile, show_community_stats, country_code, created_at")
       .in("id", topUserIds);
 
     if (profilesError) {
@@ -68,6 +68,7 @@ export async function GET() {
       avatar_url: string | null;
       show_public_profile: boolean | null;
       show_community_stats: boolean | null;
+      country_code: string | null;
       created_at: string;
     };
     
@@ -84,6 +85,7 @@ export async function GET() {
           joinedAt: profile.created_at,
           showStats: profile.show_community_stats ?? true,
           showPublicProfile: profile.show_public_profile ?? true,
+          countryCode: profile.country_code,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null)

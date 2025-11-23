@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { getCountryFlag } from "@/lib/country-flags";
 
 type FeatureRequest = {
   id: string;
@@ -27,6 +28,7 @@ type FeatureRequest = {
     joinedAt: string;
     showStats: boolean;
     showPublicProfile: boolean;
+    countryCode?: string | null;
   };
 };
 
@@ -235,7 +237,14 @@ export default function FeatureRequestCard({
               {request.user.name[0].toUpperCase()}
             </div>
           )}
-          <span>{request.user.showPublicProfile ? request.user.name : "Gizli Kullanıcı"}</span>
+          <div className="flex items-center gap-1.5">
+            <span>{request.user.showPublicProfile ? request.user.name : "Gizli Kullanıcı"}</span>
+            {request.user.countryCode && request.user.showPublicProfile && (
+              <span className="text-sm" title={request.user.countryCode}>
+                {getCountryFlag(request.user.countryCode)}
+              </span>
+            )}
+          </div>
         </Link>
 
         {/* Like/Dislike Buttons */}

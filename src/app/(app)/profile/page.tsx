@@ -7,6 +7,7 @@ import ProfileEditForm from "@/components/profile/ProfileEditForm";
 import CommunityStats from "@/components/profile/CommunityStats";
 import { isAdminEmail, isFounderEmail } from "@/config/admins";
 import { WATER_PROFILE_ID, WATER_PROFILE_PLACEHOLDER } from "@/lib/community/water-reminder";
+import { getCountryFlag } from "@/lib/country-flags";
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +50,7 @@ export default async function ProfilePage({ searchParams }: Props) {
   const { data: profileData, error: profileError } = await profileClient
     .from("profiles")
     .select(
-      "id,email,full_name,avatar_url,created_at,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,show_public_profile,show_community_stats"
+      "id,email,full_name,avatar_url,created_at,height_cm,weight_kg,age,gender,target_weight_kg,daily_steps,show_public_profile,show_community_stats,country_code"
     )
     .eq("id", targetUserId)
     .maybeSingle();
@@ -122,6 +123,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     daily_steps: number | null;
     show_public_profile: boolean | null;
     show_community_stats: boolean | null;
+    country_code: string | null;
   };
 
   const showPublicProfile = profile.show_public_profile ?? true;
@@ -171,6 +173,7 @@ export default async function ProfilePage({ searchParams }: Props) {
     gender: profile.gender,
     targetWeight: profile.target_weight_kg,
     dailySteps: profile.daily_steps,
+    countryCode: profile.country_code,
   };
 
   // BMI hesapla
@@ -234,7 +237,14 @@ export default async function ProfilePage({ searchParams }: Props) {
             <div className="flex-1 space-y-4 text-center sm:text-left">
               <div>
                 <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3">
-                  <h2 className="text-2xl font-semibold text-white">{user.name || "İsimsiz Kullanıcı"}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-2xl font-semibold text-white">{user.name || "İsimsiz Kullanıcı"}</h2>
+                    {user.countryCode && (
+                      <span className="text-2xl" title={user.countryCode}>
+                        {getCountryFlag(user.countryCode)}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap items-center gap-2">
                     {isFounderProfile && (
                       <span className="inline-flex items-center gap-1 rounded-full border border-violet-400/40 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-100">

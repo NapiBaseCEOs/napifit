@@ -34,6 +34,7 @@ type FeatureRequest = {
     joinedAt: string;
     showStats: boolean;
     showPublicProfile: boolean;
+    countryCode?: string | null;
   };
 };
 
@@ -45,6 +46,7 @@ type LeaderboardEntry = {
   joinedAt: string;
   showStats: boolean;
   showPublicProfile: boolean;
+  countryCode?: string | null;
 };
 
 const defaultWaterRequest = getWaterPlaceholderFeatureResponse() as FeatureRequest;

@@ -65,6 +65,7 @@ export function getWaterPlaceholderFeatureResponse() {
       joinedAt: WATER_CREATED_AT,
       showStats: true,
       showPublicProfile: true,
+      countryCode: "TR",
     },
   };
 }
@@ -78,6 +79,7 @@ export function getWaterPlaceholderLeaderboardEntry() {
     joinedAt: WATER_CREATED_AT,
     showStats: true,
     showPublicProfile: true,
+    countryCode: "TR",
   };
 }
 

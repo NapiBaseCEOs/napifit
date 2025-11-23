@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { getCountryFlag } from "@/lib/country-flags";
 
 type LeaderboardEntry = {
   userId: string;
@@ -11,6 +12,7 @@ type LeaderboardEntry = {
   joinedAt: string;
   showStats: boolean;
   showPublicProfile: boolean;
+  countryCode?: string | null;
 };
 
 interface LeaderboardCardProps {
@@ -77,6 +79,11 @@ export default function LeaderboardCard({ leaderboard }: LeaderboardCardProps) {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-white">{entry.name}</span>
+                {entry.countryCode && (
+                  <span className="text-sm" title={entry.countryCode}>
+                    {getCountryFlag(entry.countryCode)}
+                  </span>
+                )}
                 {index === 0 && <span className="text-lg">👑</span>}
               </div>
               {entry.showStats && (

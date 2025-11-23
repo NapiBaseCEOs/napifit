@@ -43,6 +43,7 @@ export async function GET(request: Request) {
           avatar_url,
           show_public_profile,
           show_community_stats,
+          country_code,
           created_at
         )
       `)
@@ -186,6 +187,7 @@ export async function GET(request: Request) {
             joinedAt: profile.created_at,
             showStats: profile.show_community_stats ?? true,
             showPublicProfile: profile.show_public_profile ?? true,
+            countryCode: profile.country_code,
           },
         };
       }) || [];
