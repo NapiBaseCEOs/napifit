@@ -17,6 +17,8 @@ export async function GET() {
 
     const userId = user.id;
 
+    const assistantNotifications = await fetchAssistantNotifications(supabase, userId);
+
     // 1. Admin/Kurucu beğenisi bildirimleri (feature_request_likes tablosundan)
     const { data: userRequests } = await supabaseAdmin
       .from("feature_requests")
@@ -69,7 +71,7 @@ export async function GET() {
                       ? "bg-yellow-500/20 text-yellow-400"
                       : "bg-blue-500/20 text-blue-400",
                     link: `/community`,
-                    read: false, // TODO: notifications tablosu oluşturulduğunda gerçek okunma durumu
+                    read: true,
                     createdAt: like.created_at,
                   });
                 }
@@ -110,18 +112,19 @@ export async function GET() {
           icon: "🚀",
           color: "bg-green-500/20 text-green-400",
           link: `/community`,
-          read: false,
+          read: true,
           createdAt: request.implemented_at || new Date().toISOString(),
         });
       }
     }
 
     // Tüm bildirimleri birleştir ve sırala
-    const allNotifications = [...adminLikeNotifications, ...implementedNotifications].sort(
+    const staticNotifications = [...adminLikeNotifications, ...implementedNotifications];
+    const allNotifications = [...assistantNotifications, ...staticNotifications].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    const unreadCount = allNotifications.filter((n) => !n.read).length;
+    const unreadCount = assistantNotifications.filter((n) => !n.read).length;
 
     return NextResponse.json({
       notifications: allNotifications.slice(0, 20), // Son 20 bildirim
@@ -131,5 +134,34 @@ export async function GET() {
     console.error("Notifications API error:", error);
     return NextResponse.json({ notifications: [], unreadCount: 0 }, { status: 500 });
   }
+}
+
+async function fetchAssistantNotifications(supabase: ReturnType<typeof createSupabaseRouteClient>, userId: string) {
+  const { data, error } = await supabase
+    .from("assistant_notifications")
+    .select("id, title, message, type, link, metadata, read_at, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("Assistant notifications fetch error:", error);
+    return [];
+  }
+
+  return (data || []).map((row) => {
+    const isProactive = row.type === "assistant_proactive";
+    return {
+      id: row.id,
+      type: row.type,
+      title: row.title || (isProactive ? "💡 AI Hatırlatıcısı" : "🤖 AI Asistanı"),
+      message: row.message,
+      icon: isProactive ? "💡" : "🤖",
+      color: isProactive ? "bg-blue-500/20 text-blue-300" : "bg-purple-500/20 text-purple-300",
+      link: row.link || "/health",
+      read: Boolean(row.read_at),
+      createdAt: row.created_at,
+    };
+  });
 }
 

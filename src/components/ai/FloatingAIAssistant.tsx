@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Send, Sparkles, Loader2, Minimize2, Maximize2 } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
+import { useRouter } from "next/navigation";
 
 interface Message {
   id: string;
@@ -10,23 +11,69 @@ interface Message {
   content: string;
   timestamp: Date;
   isProactive?: boolean;
+  quickActions?: QuickAction[];
+  autoLogs?: AutoLogResult[];
 }
 
 interface FloatingAIAssistantProps {}
 
+interface QuickAction {
+  id: string;
+  label: string;
+  href: string;
+}
+
+interface AutoLogResult {
+  id: string;
+  type: "water" | "meal";
+  message: string;
+  status: "success" | "error";
+}
+
+const PROACTIVE_MESSAGE_MIN_INTERVAL = 30 * 60 * 1000; // 30 dakika
+const PROACTIVE_CHECK_INTERVAL = 5 * 60 * 1000; // 5 dakika
+const LAST_MESSAGE_STORAGE_KEY = "ai-assistant-last-proactive";
+
 export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
   const session = useSession();
   const userId = session?.user?.id;
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [proactiveMessage, setProactiveMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastProactiveAtRef = useRef<number>(0);
+  const lastProactiveContentRef = useRef<string | null>(null);
+  const lastProactiveVariantRef = useRef<string | null>(null);
+  const isCheckingRef = useRef(false);
+
+  // Local storage'dan son proaktif mesaj bilgisini al
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const stored = window.localStorage.getItem(LAST_MESSAGE_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (typeof parsed?.timestamp === "number") {
+          lastProactiveAtRef.current = parsed.timestamp;
+        }
+        if (typeof parsed?.message === "string") {
+          lastProactiveContentRef.current = parsed.message;
+        }
+        if (typeof parsed?.variant === "string") {
+          lastProactiveVariantRef.current = parsed.variant;
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to parse last proactive message from storage", error);
+    }
+  }, []);
 
   // Service Worker'dan mesaj dinle
   useEffect(() => {
@@ -44,40 +91,67 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
     return () => {
       navigator.serviceWorker.removeEventListener("message", handleMessage);
     };
-  }, [userId, isOpen, proactiveMessage]);
+  }, [userId]);
 
   // Proaktif mesajları kontrol et
   const checkProactiveMessages = async () => {
-    if (!userId) return;
+    if (!userId || isCheckingRef.current) return;
+
+    const now = Date.now();
+    if (now - lastProactiveAtRef.current < PROACTIVE_MESSAGE_MIN_INTERVAL) {
+      return;
+    }
+
+    isCheckingRef.current = true;
 
     try {
       const response = await fetch("/api/ai/proactive-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({}),
       });
 
       if (response.ok) {
         const data = await response.json();
-        if (data.message && data.message !== proactiveMessage) {
-          setProactiveMessage(data.message);
-          
-          // Yeni proaktif mesaj ekle
+        const incomingVariant: string | undefined = data.variant || data.message;
+        const isDuplicate =
+          data.message &&
+          (incomingVariant
+            ? incomingVariant === lastProactiveVariantRef.current
+            : data.message === lastProactiveContentRef.current);
+
+        if (data.message && !isDuplicate) {
+          const timestamp = Date.now();
+          lastProactiveAtRef.current = timestamp;
+          lastProactiveContentRef.current = data.message;
+          lastProactiveVariantRef.current = incomingVariant || null;
+
+          const serverTimestamp = data.sentAt ? new Date(data.sentAt) : new Date();
+
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(
+              LAST_MESSAGE_STORAGE_KEY,
+              JSON.stringify({
+                timestamp,
+                message: data.message,
+                variant: incomingVariant || null,
+              })
+            );
+          }
+
           const newMessage: Message = {
             id: Date.now().toString(),
             role: "assistant",
             content: data.message,
-            timestamp: new Date(),
+            timestamp: serverTimestamp,
             isProactive: true,
           };
-          
+
           setMessages((prev) => [...prev, newMessage]);
-          
-          // Eğer widget kapalıysa unread count artır
+
           if (!isOpen) {
             setUnreadCount((prev) => prev + 1);
-            
-            // Bildirim göster
+
             if ("Notification" in window && Notification.permission === "granted") {
               new Notification("🤖 NapiFit AI Asistanı", {
                 body: data.message.substring(0, 100),
@@ -91,6 +165,8 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
       }
     } catch (error) {
       console.error("Proactive message check error:", error);
+    } finally {
+      isCheckingRef.current = false;
     }
   };
 
@@ -98,18 +174,16 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
   useEffect(() => {
     if (!userId) return;
 
-    // İlk kontrol
     checkProactiveMessages();
 
-    // Her 5 dakikada bir kontrol et
-    checkIntervalRef.current = setInterval(checkProactiveMessages, 5 * 60 * 1000);
+    checkIntervalRef.current = setInterval(checkProactiveMessages, PROACTIVE_CHECK_INTERVAL);
 
     return () => {
       if (checkIntervalRef.current) {
         clearInterval(checkIntervalRef.current);
       }
     };
-  }, [userId, isOpen, proactiveMessage]);
+  }, [userId]);
 
   // Widget açıldığında unread count'u sıfırla
   useEffect(() => {
@@ -154,7 +228,6 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
             role: m.role,
             content: m.content,
           })),
-          userId,
         }),
       });
 
@@ -186,6 +259,8 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
         role: "assistant",
         content: data.response,
         timestamp: new Date(),
+        quickActions: Array.isArray(data.quickActions) ? data.quickActions : undefined,
+        autoLogs: Array.isArray(data.autoLogs) ? data.autoLogs : undefined,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -218,6 +293,11 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleQuickActionClick = (action: QuickAction) => {
+    if (!action?.href) return;
+    router.push(action.href);
   };
 
   // İlk açılışta hoş geldin mesajı
@@ -344,6 +424,35 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
                           minute: "2-digit",
                         })}
                       </div>
+                      {message.autoLogs && message.autoLogs.length > 0 && (
+                        <div className="mt-2 space-y-2">
+                          {message.autoLogs.map((log) => (
+                            <div
+                              key={log.id}
+                              className={`rounded-lg border px-3 py-2 text-xs ${
+                                log.status === "success"
+                                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
+                                  : "border-red-500/40 bg-red-500/10 text-red-200"
+                              }`}
+                            >
+                              {log.message}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {message.quickActions && message.quickActions.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {message.quickActions.map((action) => (
+                            <button
+                              key={action.id}
+                              onClick={() => handleQuickActionClick(action)}
+                              className="rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-100 hover:bg-purple-500/20 transition-all"
+                            >
+                              {action.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

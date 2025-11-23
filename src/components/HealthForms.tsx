@@ -7,11 +7,12 @@ import { evaluateMealHealth, type MealHealthEvaluation } from "@/lib/ai/meal-hea
 
 interface HealthFormsProps {
   onSuccess?: () => void;
+  initialTab?: "metric" | "workout" | "meal";
 }
 
-export default function HealthForms({ onSuccess }: HealthFormsProps) {
+export default function HealthForms({ onSuccess, initialTab = "metric" }: HealthFormsProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"metric" | "workout" | "meal">("metric");
+  const [activeTab, setActiveTab] = useState<"metric" | "workout" | "meal">(initialTab);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -80,6 +81,10 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
     message: null,
     error: null,
   });
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   const buildSanitizedUserProfile = () => {
     if (!userProfile) return undefined;

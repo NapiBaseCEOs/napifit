@@ -7,7 +7,14 @@ import Link from "next/link";
 
 type Notification = {
   id: string;
-  type: "admin_like" | "founder_like" | "water_reminder" | "feature_implemented" | "system";
+  type:
+    | "admin_like"
+    | "founder_like"
+    | "water_reminder"
+    | "feature_implemented"
+    | "system"
+    | "assistant_chat"
+    | "assistant_proactive";
   title: string;
   message: string;
   icon: string;

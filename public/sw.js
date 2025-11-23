@@ -327,6 +327,7 @@ if (reminderSettings.enabled) {
 
 // AI Assistant proaktif mesajları için
 let aiAssistantCheckInterval = null;
+const AI_ASSISTANT_INTERVAL_MS = 30 * 60 * 1000; // 30 dakika
 
 // AI Assistant mesaj kontrolü
 async function checkAIAssistantMessages() {
@@ -349,10 +350,8 @@ function startAIAssistantCheck() {
     clearInterval(aiAssistantCheckInterval);
   }
   
-  // Her 5 dakikada bir kontrol et
-  aiAssistantCheckInterval = setInterval(checkAIAssistantMessages, 5 * 60 * 1000);
+  aiAssistantCheckInterval = setInterval(checkAIAssistantMessages, AI_ASSISTANT_INTERVAL_MS);
   
-  // İlk kontrolü hemen yap
   setTimeout(checkAIAssistantMessages, 10000); // 10 saniye sonra
 }
 

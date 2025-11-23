@@ -13,8 +13,12 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // TODO: notifications tablosu oluşturulduğunda gerçek okunma durumunu kaydet
-    // Şimdilik sadece başarılı response döndür
+    await supabase
+      .from("assistant_notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("user_id", user.id)
+      .is("read_at", null);
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Mark all notifications as read error:", error);

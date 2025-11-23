@@ -13,9 +13,14 @@ export async function POST(_request: Request, { params }: { params: { id: string
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // TODO: notifications tablosu oluşturulduğunda gerçek okunma durumunu kaydet
-    // params.id kullanılacak: await markNotificationAsRead(params.id, user.id);
-    // Şimdilik sadece başarılı response döndür
+    if (params.id) {
+      await supabase
+        .from("assistant_notifications")
+        .update({ read_at: new Date().toISOString() })
+        .eq("id", params.id)
+        .eq("user_id", user.id);
+    }
+
     return NextResponse.json({ success: true, notificationId: params.id });
   } catch (error) {
     console.error("Mark notification as read error:", error);

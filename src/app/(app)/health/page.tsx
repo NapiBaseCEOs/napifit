@@ -7,7 +7,13 @@ import QuickLogButton from "../../../components/health/QuickLogButton";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function HealthPage() {
+type HealthPageProps = {
+  searchParams?: {
+    tab?: string;
+  };
+};
+
+export default async function HealthPage({ searchParams }: HealthPageProps = {}) {
   try {
     // Create Supabase client with error handling
     let supabase;
@@ -155,6 +161,12 @@ export default async function HealthPage() {
             createdAt: meal.created_at ? new Date(meal.created_at) : new Date(),
           }))
       : [];
+
+    const tabParam = (searchParams?.tab || "").toString().toLowerCase();
+    const allowedTabs = new Set(["metric", "workout", "meal"]);
+    const initialTab = allowedTabs.has(tabParam)
+      ? (tabParam as "metric" | "workout" | "meal")
+      : undefined;
 
     return (
     <main className="relative min-h-screen px-4 py-6 sm:px-5 md:px-6 overflow-hidden bg-[#0a0a0a]">
@@ -487,7 +499,7 @@ export default async function HealthPage() {
               <h3 className="text-lg sm:text-xl font-semibold text-white">Kilo, egzersiz ve öğünlerini anında kaydet</h3>
             </div>
           </div>
-          <HealthForms />
+          <HealthForms initialTab={initialTab} />
         </section>
 
         {/* Modern Info Card */}
