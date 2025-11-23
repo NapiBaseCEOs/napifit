@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { X, Send, Sparkles, Loader2, Minimize2, Maximize2 } from "lucide-react";
 import { useSession } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 interface Message {
   id: string;
@@ -38,6 +39,7 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
   const session = useSession();
   const userId = session?.user?.id;
   const router = useRouter();
+  const { locale } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -108,7 +110,7 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
       const response = await fetch("/api/ai/proactive-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ locale }), // Kullanıcının dili
       });
 
       if (response.ok) {
@@ -224,6 +226,7 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: messageContent,
+          locale: locale, // Kullanıcının dili
           conversationHistory: messages.slice(-10).map((m) => ({
             role: m.role,
             content: m.content,

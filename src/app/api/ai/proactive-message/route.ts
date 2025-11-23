@@ -421,7 +421,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    await request.json().catch(() => ({}));
+    // Get locale from request body or headers (middleware sets x-detected-locale)
+    let requestBody: { locale?: string } = {};
+    try {
+      requestBody = await request.json();
+    } catch {}
+    
+    const locale = requestBody.locale || request.headers.get("x-detected-locale") || "en";
 
     const supabase = createSupabaseRouteClient();
     const {
@@ -533,7 +539,16 @@ export async function POST(request: Request) {
     const client = getGeminiClient();
     const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    let contextString = `Sen NapiFit uygulamasının AI asistanısın. Kullanıcıya samimi, arkadaşça ve motive edici bir şekilde mesaj göndereceksin. Türkçe konuşuyorsun.\n\n`;
+    // Language mapping
+    const languageNames: Record<string, string> = {
+      tr: "Türkçe", en: "English", de: "Deutsch", fr: "Français",
+      es: "Español", it: "Italiano", ru: "Русский", ar: "العربية",
+      pt: "Português", zh: "中文", ja: "日本語", ko: "한국어",
+      hi: "हिन्दी", nl: "Nederlands", sv: "Svenska", pl: "Polski",
+    };
+    const userLanguage = languageNames[locale] || "English";
+
+    let contextString = `You are NapiFit's AI assistant. You send friendly, motivating messages to users. You speak in ${userLanguage}.\n\nIMPORTANT: You MUST respond in ${userLanguage}. Do not use English or any other language.\n\n`;
 
     if (profile?.full_name) {
       contextString += `Kullanıcının adı: ${profile.full_name}\n`;

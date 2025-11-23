@@ -353,7 +353,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { message, conversationHistory } = body;
+    const { message, conversationHistory, locale = "en" } = body;
 
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -379,8 +379,35 @@ export async function POST(request: Request) {
     const client = getGeminiClient();
     const model = client.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+    // Language mapping for AI responses
+    const languageNames: Record<string, string> = {
+      tr: "Türkçe",
+      en: "English",
+      de: "Deutsch (German)",
+      fr: "Français (French)",
+      es: "Español (Spanish)",
+      it: "Italiano (Italian)",
+      ru: "Русский (Russian)",
+      ar: "العربية (Arabic)",
+      pt: "Português (Portuguese)",
+      zh: "中文 (Chinese)",
+      ja: "日本語 (Japanese)",
+      ko: "한국어 (Korean)",
+      hi: "हिन्दी (Hindi)",
+      nl: "Nederlands (Dutch)",
+      sv: "Svenska (Swedish)",
+      pl: "Polski (Polish)",
+    };
+    
+    const userLanguage = languageNames[locale] || "English";
+
     // Context string'i oluştur
-    let contextString = `Sen NapiFit uygulamasının AI asistanısın. Kullanıcılara sağlık, fitness, beslenme ve egzersiz konularında yardımcı oluyorsun. Türkçe konuşuyorsun ve samimi, motive edici bir ton kullanıyorsun.\n\n`;
+    let contextString = `You are NapiFit's AI assistant. You help users with health, fitness, nutrition, and exercise. You speak in ${userLanguage} and use a friendly, motivating tone.\n\n`;
+    
+    // Add language-specific instruction
+    if (locale !== "en") {
+      contextString += `IMPORTANT: You MUST respond in ${userLanguage}. Do not use English unless the user explicitly asks for it.\n\n`;
+    }
 
     if (userContext && userContext.profile) {
       const { profile, todayMeals, todayWorkouts, weeklyStats } = userContext;
@@ -422,27 +449,28 @@ export async function POST(request: Request) {
         : "";
 
     const jsonInstruction = `
-Yanıtını sadece geçerli JSON olarak döndür.
-Şema:
+Return ONLY valid JSON in this exact schema:
 {
-  "reply": "Türkçe cevap",
+  "reply": "Your response in ${userLanguage}",
   "suggestedButtons": [
     {
       "action": "log_meal" | "log_workout" | "log_water" | "log_metric" | "open_calendar" | "open_health_page",
-      "label": "opsiyonel kısa buton etiketi"
+      "label": "optional short button label in ${userLanguage}"
     }
   ],
   "autoLogs": [
-    { "type": "water", "amountMl": 500, "note": "opsiyonel" },
-    { "type": "meal", "mealType": "breakfast" | "lunch" | "dinner" | "snack", "items": [{ "name": "yiyecek", "quantity": "opsiyonel" }], "notes": "opsiyonel" }
+    { "type": "water", "amountMl": 500, "note": "optional" },
+    { "type": "meal", "mealType": "breakfast" | "lunch" | "dinner" | "snack", "items": [{ "name": "food name", "quantity": "optional" }], "notes": "optional" }
   ]
 }
-Kurallar:
-- "reply" alanı en fazla 2-3 cümle olsun, motive edici ve samimi bir Türkçe kullan.
-- Kullanıcıya bir kayıt yapmasını öneriyorsan uygun "suggestedButtons" ekle (en fazla 3 adet).
-- "autoLogs" sadece kullanıcı açıkça bir şeyi yaptığını söylediğinde doldur (ör: "500ml su içtim", "öğle yemeklerinde tavuk yedim"). Açık ifade yoksa boş dizi kullan.
-- Auto log oluştururken yiyecek adlarını liste halinde ver ve miktarları tahmin etme, kullanıcı ne söylediyse onu kullan.
-- JSON dışında ekstra karakter veya açıklama ekleme.
+
+Rules:
+- "reply" field must be 2-3 sentences max in ${userLanguage}, motivating and friendly tone
+- Add appropriate "suggestedButtons" if you recommend logging something (max 3)
+- Fill "autoLogs" ONLY when user explicitly mentions they did something (e.g., "I drank 500ml water", "I ate chicken for lunch"). Empty array otherwise.
+- When creating auto logs, list food names and don't estimate quantities - use exactly what user said
+- Do NOT add any extra characters or explanations outside of JSON
+- CRITICAL: All text fields (reply, label, notes) MUST be in ${userLanguage}
 `;
 
     const fullPrompt = `${contextString}${historyContext}${jsonInstruction}\nKullanıcının mesajı: """${message}"""`;
