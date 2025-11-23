@@ -752,10 +752,19 @@ export default function HealthForms({ onSuccess }: HealthFormsProps) {
         error: null,
       });
     } catch (err: any) {
+      console.error("Meal calories calculation error:", err);
+      let errorMessage = "AI tahmini yapılamadı";
+      if (err.message) {
+        errorMessage = err.message;
+        // HTTP referrer hatası için özel mesaj
+        if (err.message.includes("HTTP referrer kısıtlaması")) {
+          errorMessage = "AI API anahtarı HTTP referrer kısıtlaması nedeniyle çalışmıyor. Lütfen yöneticiye bildirin.";
+        }
+      }
       setAiFeedback({
         variant: "meal",
         message: null,
-        error: err.message || "AI tahmini yapılamadı",
+        error: errorMessage,
       });
     } finally {
       setMealAiLoading(false);
