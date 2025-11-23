@@ -12,6 +12,7 @@ import type { Database } from "@/lib/supabase/types";
 import NetworkStatusIndicator from "./NetworkStatusIndicator";
 import NotificationBell from "./NotificationBell";
 import LanguageSwitcher from "./i18n/LanguageSwitcher";
+import { useLocale } from "./i18n/LocaleProvider";
 
 export default function Header() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function Header() {
   const [signingOut, setSigningOut] = useState(false);
   const [navigatingLogin, setNavigatingLogin] = useState(false);
   const { checkForUpdate } = useUpdateChecker();
+  const { t } = useLocale();
 
   const handleSignOut = async () => {
     if (signingOut) return;
@@ -91,20 +93,19 @@ export default function Header() {
                   href="/dashboard"
                   className="hidden sm:inline-flex px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-primary-500/10 hover:border-primary-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  <span className="hidden md:inline">Kontrol Paneli</span>
-                  <span className="md:hidden">Panel</span>
+                  {t("nav.dashboard")}
                 </Link>
                 <Link
                   href="/community"
                   className="hidden sm:inline-flex px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-cyan-500/10 hover:border-cyan-500/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  Topluluk
+                  {t("nav.community")}
                 </Link>
                 <Link
                   href="/health"
                   className="hidden md:inline-flex px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-fitness-orange/10 hover:border-fitness-orange/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  Sağlık
+                  {t("nav.health")}
                 </Link>
                 <Link
                   href="/water"
@@ -117,7 +118,7 @@ export default function Header() {
                   href="/profile"
                   className="hidden lg:inline-flex px-2.5 py-1.5 sm:px-3 sm:py-2 text-gray-300 hover:text-white rounded-lg hover:bg-fitness-purple/10 hover:border-fitness-purple/30 border border-transparent text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  Profil
+                  {t("nav.profile")}
                 </Link>
               </>
             )}
@@ -136,7 +137,7 @@ export default function Header() {
                 disabled={signingOut}
                 className="ml-2 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-primary-500/50 hover:shadow-primary-500/70 hover:scale-105 transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
               >
-                {signingOut ? <Spinner className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <span className="hidden sm:inline">Çıkış</span>}
+                {signingOut ? <Spinner className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <span className="hidden sm:inline">{t("nav.logout")}</span>}
                 {!signingOut && <span className="sm:hidden">✕</span>}
               </button>
             ) : (

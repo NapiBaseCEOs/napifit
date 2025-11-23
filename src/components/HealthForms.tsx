@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { CalorieAIResponse } from "@/types/ai-calories";
 import { evaluateMealHealth, type MealHealthEvaluation } from "@/lib/ai/meal-health-evaluator";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 interface HealthFormsProps {
   onSuccess?: () => void;
@@ -12,6 +13,7 @@ interface HealthFormsProps {
 
 export default function HealthForms({ onSuccess, initialTab = "metric" }: HealthFormsProps) {
   const router = useRouter();
+  const { t } = useLocale();
   const [activeTab, setActiveTab] = useState<"metric" | "workout" | "meal">(initialTab);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -779,37 +781,37 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
   const tabCards = [
     {
       id: "metric" as const,
-      label: "Kilo Takibi",
+      label: t("healthForms.metric.title"),
       emoji: "⚖️",
       gradient: "from-primary-500/20 via-primary-500/10 to-transparent",
       shadow: "shadow-primary-500/20",
-      description: "Güncel kilonu ve bağırsak durumunu kaydet.",
+      description: t("healthForms.metric.description"),
     },
     {
       id: "workout" as const,
-      label: "Egzersiz",
+      label: t("healthForms.workout.title"),
       emoji: "💪",
       gradient: "from-fitness-orange/20 via-red-500/15 to-transparent",
       shadow: "shadow-fitness-orange/20",
-      description: "Süre, set/tekrar ve AI kalori hesabı.",
+      description: t("healthForms.workout.description"),
     },
     {
       id: "meal" as const,
-      label: "Öğün",
+      label: t("healthForms.meal.title"),
       emoji: "🍽️",
       gradient: "from-emerald-500/20 via-green-500/15 to-transparent",
       shadow: "shadow-emerald-500/20",
-      description: "Yiyecekleri seç, AI kalori tahmini al.",
+      description: t("healthForms.meal.description"),
     },
   ];
 
   return (
     <div className="rounded-3xl border border-primary-500/20 bg-gray-900/80 backdrop-blur-xl p-6 shadow-2xl shadow-primary-500/10 sm:p-8">
       <div className="mb-6 flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Hızlı Kayıt</p>
-        <h2 className="text-2xl font-semibold text-white">Tek panelden tüm kayıtlar</h2>
+        <p className="text-xs uppercase tracking-[0.3em] text-primary-200">{t("healthForms.quickLog")}</p>
+        <h2 className="text-2xl font-semibold text-white">{t("healthForms.title")}</h2>
         <p className="text-sm text-gray-400">
-          AI destekli alanlar doğru kaloriyi tahmin eder, hatırlatmalar ise seni yönlendirsin.
+          {t("healthForms.description")}
         </p>
       </div>
 
@@ -831,7 +833,7 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
             <p className="mt-1 text-xs text-gray-300">{tab.description}</p>
             {activeTab === tab.id && (
               <span className="absolute right-3 top-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-white">
-                AKTİF
+                {t("healthForms.active")}
               </span>
             )}
           </button>

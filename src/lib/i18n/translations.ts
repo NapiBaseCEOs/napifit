@@ -122,7 +122,18 @@ export type TranslationKey =
   // Changelog
   | "changelog.title"
   | "changelog.subtitle"
-  | "changelog.previousReleases";
+  | "changelog.previousReleases"
+  // Health Forms
+  | "healthForms.quickLog"
+  | "healthForms.title"
+  | "healthForms.description"
+  | "healthForms.active"
+  | "healthForms.metric.title"
+  | "healthForms.metric.description"
+  | "healthForms.workout.title"
+  | "healthForms.workout.description"
+  | "healthForms.meal.title"
+  | "healthForms.meal.description";
 
 export const translations: Record<Locale, Record<TranslationKey, string>> = {
   // TÜRKÇE
@@ -232,6 +243,16 @@ export const translations: Record<Locale, Record<TranslationKey, string>> = {
     "changelog.title": "Sürüm Notları",
     "changelog.subtitle": "En son güncellemeler ve yeni özellikler",
     "changelog.previousReleases": "Önceki Sürümler",
+    "healthForms.quickLog": "Hızlı Kayıt",
+    "healthForms.title": "Tek panelden tüm kayıtlar",
+    "healthForms.description": "AI destekli alanlar doğru kaloriyi tahmin eder, hatırlatmalar ise seni yönlendirsin.",
+    "healthForms.active": "AKTİF",
+    "healthForms.metric.title": "Sağlık Metrikleri",
+    "healthForms.metric.description": "Kilo, tansiyon, nabız ve daha fazlası.",
+    "healthForms.workout.title": "Egzersiz",
+    "healthForms.workout.description": "Koşu, spor salonu, yoga gibi aktiviteleri kaydet.",
+    "healthForms.meal.title": "Öğün",
+    "healthForms.meal.description": "Yiyecekleri seç, AI kalori tahmini al.",
   },
 
   // ENGLISH
@@ -341,6 +362,16 @@ export const translations: Record<Locale, Record<TranslationKey, string>> = {
     "changelog.title": "Release Notes",
     "changelog.subtitle": "Latest updates and new features",
     "changelog.previousReleases": "Previous Releases",
+    "healthForms.quickLog": "Quick Log",
+    "healthForms.title": "All records from one panel",
+    "healthForms.description": "AI-powered fields estimate accurate calories, reminders guide you.",
+    "healthForms.active": "ACTIVE",
+    "healthForms.metric.title": "Health Metrics",
+    "healthForms.metric.description": "Weight, blood pressure, heart rate, and more.",
+    "healthForms.workout.title": "Workout",
+    "healthForms.workout.description": "Log activities like running, gym, yoga.",
+    "healthForms.meal.title": "Meal",
+    "healthForms.meal.description": "Select foods, get AI calorie estimates.",
   },
 
   // DEUTSCH (German)
@@ -450,6 +481,16 @@ export const translations: Record<Locale, Record<TranslationKey, string>> = {
     "changelog.title": "Versionshinweise",
     "changelog.subtitle": "Neueste Updates und neue Funktionen",
     "changelog.previousReleases": "Frühere Versionen",
+    "healthForms.quickLog": "Schnelleingabe",
+    "healthForms.title": "Alle Aufzeichnungen von einem Panel",
+    "healthForms.description": "KI-gestützte Felder schätzen genaue Kalorien, Erinnerungen leiten Sie.",
+    "healthForms.active": "AKTIV",
+    "healthForms.metric.title": "Gesundheitsmetriken",
+    "healthForms.metric.description": "Gewicht, Blutdruck, Herzfrequenz und mehr.",
+    "healthForms.workout.title": "Training",
+    "healthForms.workout.description": "Aktivitäten wie Laufen, Fitnessstudio, Yoga protokollieren.",
+    "healthForms.meal.title": "Mahlzeit",
+    "healthForms.meal.description": "Lebensmittel auswählen, KI-Kalorienschätzung erhalten.",
   },
 
   // FRANÇAIS (French) - Shortened for brevity, pattern continues
@@ -559,6 +600,16 @@ export const translations: Record<Locale, Record<TranslationKey, string>> = {
     "changelog.title": "Notes de version",
     "changelog.subtitle": "Dernières mises à jour et nouvelles fonctionnalités",
     "changelog.previousReleases": "Versions précédentes",
+    "healthForms.quickLog": "Enregistrement rapide",
+    "healthForms.title": "Tous les enregistrements depuis un seul panneau",
+    "healthForms.description": "Les champs alimentés par l'IA estiment les calories précises, les rappels vous guident.",
+    "healthForms.active": "ACTIF",
+    "healthForms.metric.title": "Métriques de santé",
+    "healthForms.metric.description": "Poids, tension artérielle, fréquence cardiaque et plus.",
+    "healthForms.workout.title": "Entraînement",
+    "healthForms.workout.description": "Enregistrer des activités comme la course, la salle de sport, le yoga.",
+    "healthForms.meal.title": "Repas",
+    "healthForms.meal.description": "Sélectionner des aliments, obtenir des estimations de calories IA.",
   },
 
   // TODO: Add full translations for other languages (ES, IT, RU, AR, PT, ZH, JA, KO, HI, NL, SV, PL)
