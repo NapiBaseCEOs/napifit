@@ -92,7 +92,12 @@ export async function POST(request: Request) {
     // Kullanıcı context'ini al
     let userContext = null;
     if (userId) {
-      userContext = await getUserContext(userId);
+      try {
+        userContext = await getUserContext(userId);
+      } catch (contextError) {
+        console.error("Error getting user context:", contextError);
+        // Context hatası olsa bile devam et
+      }
     }
 
     const client = getGeminiClient();
@@ -172,17 +177,21 @@ export async function POST(request: Request) {
     console.error("AI Assistant error:", error);
     
     // Daha detaylı hata mesajı
-    let errorMessage = "AI Assistant hatası oluştu";
+    let errorMessage = "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.";
     if (error.message) {
-      errorMessage = error.message;
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
+      if (error.message.includes("GEMINI_API_KEY")) {
+        errorMessage = "AI servisi şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.";
+      } else if (error.message.includes("network") || error.message.includes("fetch")) {
+        errorMessage = "Bağlantı hatası. İnternet bağlantınızı kontrol edin.";
+      } else {
+        errorMessage = error.message;
+      }
     }
     
     return NextResponse.json(
       { 
         error: errorMessage,
-        details: process.env.NODE_ENV === "development" ? error.stack : undefined
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined
       },
       { status: 500 }
     );

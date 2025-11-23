@@ -163,20 +163,25 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
       }
 
       const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.response,
+        content: data.response || "Yanıt alınamadı.",
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Assistant error:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.",
+        content: error?.message || "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -211,35 +216,37 @@ export default function FloatingAIAssistant({}: FloatingAIAssistantProps) {
       {!isOpen && (
         <div className="fixed bottom-6 right-6 z-50">
           <button
-          onClick={() => {
-            setIsOpen(true);
-            setIsMinimized(false);
-            setUnreadCount(0);
-          }}
-          className="group relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 transition-all duration-300 hover:scale-110 active:scale-95"
-        >
-          <Sparkles className="h-7 w-7 text-white transition-transform group-hover:rotate-12" />
-          
-          {/* Pulse Animation */}
-          <span className="absolute inset-0 rounded-full bg-purple-400 animate-ping opacity-20"></span>
-          
-          {/* Unread Badge */}
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-          
-          {/* Tooltip */}
-          <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block">
-            <div className="rounded-lg bg-gray-900 px-3 py-2 text-xs text-white shadow-xl whitespace-nowrap border border-gray-700">
-              AI Asistanı
-              {unreadCount > 0 && (
-                <span className="ml-2 text-red-400">({unreadCount} yeni mesaj)</span>
-              )}
+            onClick={() => {
+              setIsOpen(true);
+              setIsMinimized(false);
+              setUnreadCount(0);
+            }}
+            className="group relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 shadow-2xl shadow-purple-500/50 hover:shadow-purple-500/70 transition-all duration-300 hover:scale-110 active:scale-95"
+          >
+            <Sparkles className="h-7 w-7 text-white transition-transform group-hover:rotate-12" />
+            
+            {/* Pulse Animation - Sadece widget kapalıyken */}
+            {!isOpen && (
+              <span className="absolute inset-0 rounded-full bg-purple-400 animate-ping opacity-20"></span>
+            )}
+            
+            {/* Unread Badge */}
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg z-10">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+            
+            {/* Tooltip */}
+            <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block">
+              <div className="rounded-lg bg-gray-900 px-3 py-2 text-xs text-white shadow-xl whitespace-nowrap border border-gray-700">
+                AI Asistanı
+                {unreadCount > 0 && (
+                  <span className="ml-2 text-red-400">({unreadCount} yeni mesaj)</span>
+                )}
+              </div>
             </div>
-          </div>
-        </button>
+          </button>
         </div>
       )}
 
