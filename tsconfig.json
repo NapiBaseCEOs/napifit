@@ -42,7 +42,8 @@
     "node_modules",
     ".next",
     "out",
-    "dist"
+    "dist",
+    "api-server"
   ]
 }
 

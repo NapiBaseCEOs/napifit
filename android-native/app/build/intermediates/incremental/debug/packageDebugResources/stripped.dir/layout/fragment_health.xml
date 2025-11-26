@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/card_header"
+            app:cardBackgroundColor="@color/bg_gray_900_80"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="12dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/primary_500_40">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="HIZLI KAYIT"
+                    android:textColor="@color/primary_200"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.3"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🏥 Sağlık Takibi"
+                    android:textColor="@color/text_primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Öğün, antrenman ve sağlık metriklerinizi hızlıca kaydedin"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Tab Cards - Web sitesi gibi 3 tab -->
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:rowCount="1"
+            android:alignmentMode="alignMargins"
+            android:useDefaultMargins="true"
+            android:layout_marginBottom="20dp">
+
+            <!-- Metric Tab Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tab_metric"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_60">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📊"
+                        android:textSize="32sp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Metrik"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kilo, bağırsak"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:gravity="center" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Workout Tab Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tab_workout"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_60">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💪"
+                        android:textSize="32sp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Antrenman"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Egzersiz kaydı"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:gravity="center" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Meal Tab Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tab_meal"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_60">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🍽️"
+                        android:textSize="32sp"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Öğün"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Yemek kaydı"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:gravity="center" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </GridLayout>
+
+        <!-- Metric Form Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_metric"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone"
+            android:background="@drawable/card_style"
+            app:cardBackgroundColor="@color/bg_gray_900_80"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border_gray_800_70">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Kilo (kg)"
+                    android:layout_marginBottom="16dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@color/bg_gray_900_80"
+                    app:boxStrokeColor="@color/border_gray_700"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/metric_weight"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:inputType="numberDecimal"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:background="@drawable/input_field" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Bağırsak Sağlığı (Kaç günde bir?)"
+                    android:layout_marginBottom="20dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@color/bg_gray_900_80"
+                    app:boxStrokeColor="@color/border_gray_700"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/metric_bowel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:inputType="numberDecimal"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:background="@drawable/input_field" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/btn_save_metric"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:text="💾 Metriği Kaydet"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/button_primary"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Workout Form Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_workout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone"
+            android:background="@drawable/card_style"
+            app:cardBackgroundColor="@color/bg_gray_900_80"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border_gray_800_70">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Antrenman Adı"
+                    android:layout_marginBottom="16dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@color/bg_gray_900_80"
+                    app:boxStrokeColor="@color/border_gray_700"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/workout_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:background="@drawable/input_field" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Süre (dakika)"
+                    android:layout_marginBottom="16dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@color/bg_gray_900_80"
+                    app:boxStrokeColor="@color/border_gray_700"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/workout_duration"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:inputType="number"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:background="@drawable/input_field" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Kalori (opsiyonel)"
+                    android:layout_marginBottom="20dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@color/bg_gray_900_80"
+                    app:boxStrokeColor="@color/border_gray_700"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/workout_calories"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:inputType="number"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:background="@drawable/input_field" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/btn_save_workout"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:text="💾 Antrenmanı Kaydet"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/button_orange"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Meal Form Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_meal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/card_style"
+            app:cardBackgroundColor="@color/bg_gray_900_80"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border_gray_800_70">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Öğün Adı / Yiyecek"
+                    android:layout_marginBottom="16dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@color/bg_gray_900_80"
+                    app:boxStrokeColor="@color/border_gray_700"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/meal_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:background="@drawable/input_field" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Kalori"
+                    android:layout_marginBottom="20dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:boxBackgroundMode="outline"
+                    app:boxBackgroundColor="@color/bg_gray_900_80"
+                    app:boxStrokeColor="@color/border_gray_700"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/meal_calories"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:inputType="number"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_secondary"
+                        android:textSize="16sp"
+                        android:background="@drawable/input_field" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/btn_save_meal"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:text="💾 Öğünü Kaydet"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/button_primary"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

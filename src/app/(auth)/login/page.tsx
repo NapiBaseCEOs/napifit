@@ -241,9 +241,17 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-300 mb-2">
-                {t("auth.login.passwordLabel")}
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-300">
+                  {t("auth.login.passwordLabel")}
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary-400 hover:text-primary-300 font-semibold transition-colors"
+                >
+                  Şifremi Unuttum
+                </Link>
+              </div>
               <input
                 id="password"
                 type="password"

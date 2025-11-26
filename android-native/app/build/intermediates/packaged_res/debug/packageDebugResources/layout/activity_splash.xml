@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background">
+
+    <!-- Float Animation Circles (Web sitesiyle aynı) -->
+    <View
+        android:id="@+id/float_circle_1"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:background="@drawable/float_circle_primary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="-140dp"
+        android:layout_marginTop="64dp" />
+
+    <View
+        android:id="@+id/float_circle_2"
+        android:layout_width="320dp"
+        android:layout_height="320dp"
+        android:background="@drawable/float_circle_orange"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="-160dp"
+        android:layout_marginBottom="64dp" />
+
+    <!-- Radial Gradient Overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/radial_gradient_overlay" />
+
+    <!-- Logo and Text Container -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Logo/Brand -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🏋️"
+            android:textSize="80sp"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NapiFit"
+            android:textColor="@color/text_primary"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sağlıklı Yaşam Rehberiniz"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp" />
+
+        <!-- Loading Indicator -->
+        <ProgressBar
+            android:id="@+id/loading_indicator"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="48dp"
+            android:indeterminateTint="@color/primary" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+

@@ -1,0 +1,54 @@
+[
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/layout_activity_main.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/drawable_ic_profile.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_profile.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/navigation_mobile_navigation.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/navigation/mobile_navigation.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/menu_bottom_nav_menu.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/menu/bottom_nav_menu.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/drawable_ic_community.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_community.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/layout_fragment_health.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_health.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/layout_fragment_profile.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_profile.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/drawable_ic_dashboard.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_dashboard.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/layout_fragment_dashboard.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_dashboard.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/drawable_ic_health.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_health.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/layout_fragment_community.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_community.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/drawable_ic_water.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_water.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-merged_res-54:/layout_fragment_water.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_water.xml"
+    }
+]

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { calculateBMR, calculateTDEE, type ActivityLevel } from "@/lib/utils/bmr";
 import AdSenseAd from "@/components/ads/AdSenseAd";
 import ActivityCalendar from "@/components/calendar/ActivityCalendar";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 interface DashboardContentProps {
   user: {
@@ -55,6 +56,7 @@ export default function DashboardContent({
   todayWorkouts,
   bowelMovementDays,
 }: DashboardContentProps) {
+  const { t } = useLocale();
   const getColorClass = (color: string) => {
     switch (color) {
       case "green":
@@ -101,12 +103,12 @@ export default function DashboardContent({
 
   // Bağırsak sağlığı değerlendirmesi
   const getBowelHealthStatus = (days: number | null): { status: string; color: string; message: string } => {
-    if (days === null) return { status: "Bilinmiyor", color: "gray", message: "Henüz veri yok" };
-    if (days <= 1) return { status: "Çok Sağlıklı", color: "green", message: "Mükemmel! Her gün tuvalete çıkıyorsun." };
-    if (days <= 1.5) return { status: "Sağlıklı", color: "green", message: "Normal düzenli bağırsak hareketi." };
-    if (days <= 2) return { status: "Normal", color: "yellow", message: "Normal aralıkta, ancak daha fazla lif almayı dene." };
-    if (days <= 3) return { status: "Dikkat", color: "yellow", message: "Biraz yavaşlamış, daha fazla su ve lif tüket." };
-    return { status: "Sağlıksız", color: "red", message: "Kabızlık riski var. Doktora danış ve beslenmeyi gözden geçir." };
+    if (days === null) return { status: t("dashboard.bowelStatus.unknown"), color: "gray", message: t("dashboard.bowelMessage.noData") };
+    if (days <= 1) return { status: t("dashboard.bowelStatus.veryHealthy"), color: "green", message: t("dashboard.bowelMessage.perfect") };
+    if (days <= 1.5) return { status: t("dashboard.bowelStatus.healthy"), color: "green", message: t("dashboard.bowelMessage.normal") };
+    if (days <= 2) return { status: t("dashboard.bowelStatus.normal"), color: "yellow", message: t("dashboard.bowelMessage.needsFiber") };
+    if (days <= 3) return { status: t("dashboard.bowelStatus.warning"), color: "yellow", message: t("dashboard.bowelMessage.needsWater") };
+    return { status: t("dashboard.bowelStatus.unhealthy"), color: "red", message: t("dashboard.bowelMessage.risk") };
   };
 
   const bowelHealth = getBowelHealthStatus(bowelMovementDays);
@@ -128,10 +130,10 @@ export default function DashboardContent({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                 </span>
-                Sağlık Kontrol Paneli
+                {t("dashboard.healthPanel")}
               </div>
               <h1 className="mt-3 text-2xl sm:text-3xl font-bold text-white">
-                Hoş geldin, <span className="bg-gradient-to-r from-primary-400 to-fitness-orange bg-clip-text text-transparent">{user.name || user.email}</span>!
+                {t("dashboard.welcome")}, <span className="bg-gradient-to-r from-primary-400 to-fitness-orange bg-clip-text text-transparent">{user.name || user.email}</span>!
               </h1>
             </div>
             
@@ -150,7 +152,7 @@ export default function DashboardContent({
                     </div>
                     {weightDifference !== null && (
                       <div className={`mt-2 text-xs ${weightDifference > 0 ? "text-green-400" : weightDifference < 0 ? "text-red-400" : "text-gray-400"}`}>
-                        {weightDifference > 0 ? "+" : ""}{weightDifference} kg hedefe
+                        {weightDifference > 0 ? "+" : ""}{weightDifference} {t("dashboard.toGoal")}
                       </div>
                     )}
                   </div>
@@ -183,7 +185,7 @@ export default function DashboardContent({
         <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
           {/* Weight Card */}
           <div className="group relative rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-6 shadow-lg hover:border-fitness-orange/50 hover:shadow-fitness-orange/20 transition-all duration-300">
-            <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Mevcut Kilo</div>
+            <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">{t("dashboard.currentWeight")}</div>
             <div className="text-3xl font-bold text-white">{user.weight || "—"} kg</div>
             {weightDifference !== null && (
               <div
@@ -192,27 +194,27 @@ export default function DashboardContent({
                 }`}
               >
                 {weightDifference > 0 ? "+" : ""}
-                {weightDifference} kg hedefe
+                {weightDifference} {t("dashboard.toGoal")}
               </div>
             )}
           </div>
 
           {/* Target Weight Card */}
           <div className="group relative rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-6 shadow-lg hover:border-primary-500/50 hover:shadow-primary-500/20 transition-all duration-300">
-            <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">Hedef Kilo</div>
+            <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">{t("dashboard.targetWeight")}</div>
             <div className="text-3xl font-bold text-white">{user.targetWeight || "—"} kg</div>
             {weightDifference !== null && (
               <div className="mt-2 text-sm text-gray-400">
-                {Math.abs(weightDifference)} kg {weightDifference > 0 ? "alınmalı" : "verilmeli"}
+                {Math.abs(weightDifference)} kg {weightDifference > 0 ? t("dashboard.toGain") : t("dashboard.toLose")}
               </div>
             )}
           </div>
 
           {/* Daily Steps Card */}
           <div className="group relative rounded-2xl border border-gray-800/70 bg-gray-900/80 backdrop-blur-sm p-6 shadow-lg hover:border-fitness-purple/50 hover:shadow-fitness-purple/20 transition-all duration-300">
-            <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">Günlük Hedef</div>
-            <div className="text-3xl font-bold text-white">{user.dailySteps?.toLocaleString() || "—"} adım</div>
-            <div className="mt-2 text-sm text-gray-400">Ortalama adım sayısı</div>
+            <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">{t("dashboard.dailyGoal")}</div>
+            <div className="text-3xl font-bold text-white">{user.dailySteps?.toLocaleString() || "—"} {t("health.steps")}</div>
+            <div className="mt-2 text-sm text-gray-400">{t("dashboard.avgSteps")}</div>
           </div>
 
           {/* Today's Calories Card */}
@@ -221,12 +223,12 @@ export default function DashboardContent({
             className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-primary-500/20 via-primary-600/20 to-fitness-orange/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-primary-500/50 hover:shadow-primary-500/30 hover:scale-[1.02]"
           >
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs uppercase tracking-wide text-gray-400">Bugünkü Kalori</span>
-              <span className="text-xs text-primary-400 font-semibold group-hover:text-primary-300 transition-colors">+ Takip Et →</span>
+              <span className="text-xs uppercase tracking-wide text-gray-400">{t("dashboard.todayCalories")}</span>
+              <span className="text-xs text-primary-400 font-semibold group-hover:text-primary-300 transition-colors">{t("dashboard.track")}</span>
             </div>
             <div className="text-3xl font-bold text-white">{Math.round(todayCalories)} <span className="text-lg text-primary-400">kcal</span></div>
             <div className="mt-2 text-sm text-gray-400">
-              {todayMeals.length} öğün kaydedildi
+              {todayMeals.length} {t("dashboard.mealsLogged")}
             </div>
           </Link>
 
@@ -236,26 +238,26 @@ export default function DashboardContent({
             className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-fitness-orange/20 via-red-500/20 to-fitness-purple/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-fitness-orange/50 hover:shadow-fitness-orange/30 hover:scale-[1.02]"
           >
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs uppercase tracking-wide text-gray-400">Yakılan Kalori</span>
-              <span className="text-xs text-fitness-orange font-semibold group-hover:text-fitness-orange/80 transition-colors">+ Takip Et →</span>
+              <span className="text-xs uppercase tracking-wide text-gray-400">{t("dashboard.burnedCalories")}</span>
+              <span className="text-xs text-fitness-orange font-semibold group-hover:text-fitness-orange/80 transition-colors">{t("dashboard.track")}</span>
             </div>
             <div className="text-3xl font-bold text-white">{Math.round(todayBurnedCalories)} <span className="text-lg text-fitness-orange">kcal</span></div>
             <div className="mt-2 text-sm text-gray-400">
-              {todayWorkouts.length} egzersiz kaydedildi
+              {todayWorkouts.length} {t("dashboard.workoutsLogged")}
             </div>
           </Link>
 
           {/* BMR Card */}
           {bmr && (
             <div className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-blue-500/20 via-primary-500/20 to-purple-500/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-blue-500/50 hover:shadow-blue-500/30 hover:scale-[1.02]">
-              <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">BMR (Bazal Metabolizma)</div>
+              <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">{t("dashboard.bmr")}</div>
               <div className="text-3xl font-bold text-white">{bmr} <span className="text-lg text-blue-400">kcal</span></div>
               <div className="mt-2 text-sm text-gray-400">
-                Dinlenirken yaktığın kalori
+                {t("dashboard.bmrDesc")}
               </div>
               {tdee && (
                 <div className="mt-2 text-xs text-gray-500">
-                  TDEE: {tdee} kcal (aktivite ile)
+                  {t("dashboard.tdee").replace("{tdee}", tdee.toString())}
                 </div>
               )}
             </div>
@@ -264,16 +266,16 @@ export default function DashboardContent({
           {/* Daily Calorie Balance Card */}
           {dailyCalorieBalance !== null && (
             <div className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-emerald-500/20 via-green-500/20 to-teal-500/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/50 hover:shadow-emerald-500/30 hover:scale-[1.02]">
-              <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">Günlük Kalori Dengesi</div>
+              <div className="mb-2 text-xs uppercase tracking-wide text-gray-400">{t("dashboard.dailyBalance")}</div>
               <div className={`text-3xl font-bold ${dailyCalorieBalance > 0 ? 'text-emerald-400' : dailyCalorieBalance < 0 ? 'text-red-400' : 'text-gray-400'}`}>
                 {dailyCalorieBalance > 0 ? '+' : ''}{Math.round(dailyCalorieBalance)} <span className="text-lg text-gray-400">kcal</span>
               </div>
               <div className="mt-2 text-sm text-gray-400">
                 {dailyCalorieBalance > 0 
-                  ? 'Kalori açığı var (kilo vermeye uygun)'
+                  ? t("dashboard.calorieDeficit")
                   : dailyCalorieBalance < 0
-                  ? 'Kalori fazlası var (kilo almak için)'
-                  : 'Dengeli'}
+                  ? t("dashboard.calorieSurplus")
+                  : t("dashboard.balanced")}
               </div>
             </div>
           )}
@@ -285,14 +287,14 @@ export default function DashboardContent({
               className="group relative rounded-2xl border border-gray-800/70 bg-gradient-to-br from-amber-500/20 via-orange-500/20 to-red-500/20 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-amber-500/50 hover:shadow-amber-500/30 hover:scale-[1.02]"
             >
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wide text-gray-400">Bağırsak Sağlığı</span>
-                <span className="text-xs text-amber-400 font-semibold group-hover:text-amber-300 transition-colors">Takip Et →</span>
+                <span className="text-xs uppercase tracking-wide text-gray-400">{t("dashboard.bowelHealth")}</span>
+                <span className="text-xs text-amber-400 font-semibold group-hover:text-amber-300 transition-colors">{t("dashboard.track")}</span>
               </div>
               <div className={`text-3xl font-bold ${bowelHealth.color === 'green' ? 'text-green-400' : bowelHealth.color === 'yellow' ? 'text-yellow-400' : 'text-red-400'}`}>
                 {bowelHealth.status}
               </div>
               <div className="mt-2 text-sm text-gray-400">
-                {bowelMovementDays <= 1 ? `${bowelMovementDays} günde bir` : `${bowelMovementDays} günde bir`} tuvalet
+                {bowelMovementDays} {t("dashboard.bowelFrequency")}
               </div>
               <div className="mt-2 h-1.5 rounded-full bg-white/5 overflow-hidden">
                 <div
@@ -318,8 +320,8 @@ export default function DashboardContent({
           <div className="lg:col-span-2 space-y-3 md:space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Takvim</p>
-                <h3 className="text-xl sm:text-2xl font-semibold text-white">Aktivite Takvimi</h3>
+                <p className="text-xs uppercase tracking-[0.3em] text-primary-200">{t("common.calendar")}</p>
+                <h3 className="text-xl sm:text-2xl font-semibold text-white">{t("dashboard.activityCalendar")}</h3>
               </div>
             </div>
             <ActivityCalendar 
@@ -333,14 +335,14 @@ export default function DashboardContent({
           {/* Today's Activities - 1 column */}
           <div className="space-y-3 md:space-y-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Bugün</p>
-              <h3 className="text-xl sm:text-2xl font-semibold text-white">Bugünkü Aktiviteler</h3>
+              <p className="text-xs uppercase tracking-[0.3em] text-primary-200">{t("common.today")}</p>
+              <h3 className="text-xl sm:text-2xl font-semibold text-white">{t("dashboard.todayActivities")}</h3>
             </div>
             <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 backdrop-blur-sm p-5 shadow-lg space-y-4">
               {/* Today's Date */}
               <div className="pb-4 border-b border-gray-800/60">
                 <p className="text-sm font-medium text-gray-300">
-                  {new Date().toLocaleDateString("tr-TR", { 
+                  {new Date().toLocaleDateString(t("common.locale") || "en-US", { 
                     weekday: "long", 
                     year: "numeric", 
                     month: "long", 
@@ -354,23 +356,23 @@ export default function DashboardContent({
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">🍽️</span>
-                    <h4 className="text-sm font-semibold text-white">Bugünkü Öğünler</h4>
+                    <h4 className="text-sm font-semibold text-white">{t("dashboard.todayMeals")}</h4>
                   </div>
                   <Link
                     href="/health"
                     className="text-xs text-green-400 hover:text-green-300"
                   >
-                    + Ekle
+                    {t("dashboard.add")}
                   </Link>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {todayMeals.length > 0 ? (
                     todayMeals.map((meal) => {
                       const mealTypeLabels: Record<string, string> = {
-                        breakfast: "🌅 Kahvaltı",
-                        lunch: "☀️ Öğle",
-                        dinner: "🌙 Akşam",
-                        snack: "🍿 Atıştırmalık",
+                        breakfast: t("dashboard.mealTypes.breakfast"),
+                        lunch: t("dashboard.mealTypes.lunch"),
+                        dinner: t("dashboard.mealTypes.dinner"),
+                        snack: t("dashboard.mealTypes.snack"),
                       };
                       const foods = Array.isArray(meal.foods) ? meal.foods : [];
                       return (
@@ -379,17 +381,17 @@ export default function DashboardContent({
                           className="rounded-lg border border-emerald-500/20 bg-gray-800/40 p-3"
                         >
                           <div className="text-xs font-medium text-white">
-                            {mealTypeLabels[meal.mealType || ""] || "🍽️ Öğün"}
+                            {mealTypeLabels[meal.mealType || ""] || t("dashboard.mealTypes.meal")}
                           </div>
                           <div className="mt-1 text-xs text-gray-400 line-clamp-1">
-                            {foods.slice(0, 2).map((food: any) => food.name).join(", ") || "Yemek"}
+                            {foods.slice(0, 2).map((food: any) => food.name).join(", ") || t("dashboard.food")}
                             {foods.length > 2 && "..."}
                           </div>
                           <div className="mt-1 text-xs text-emerald-400">
                             {Math.round(meal.totalCalories)} kcal
                           </div>
                           <div className="mt-1 text-xs text-gray-500">
-                            {new Date(meal.createdAt).toLocaleTimeString("tr-TR", {
+                            {new Date(meal.createdAt).toLocaleTimeString(t("common.locale") || "en-US", {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
@@ -398,7 +400,7 @@ export default function DashboardContent({
                       );
                     })
                   ) : (
-                    <p className="text-xs text-gray-400 italic">Bugün henüz öğün kaydedilmedi</p>
+                    <p className="text-xs text-gray-400 italic">{t("dashboard.noMeals")}</p>
                   )}
                 </div>
               </div>
@@ -408,7 +410,7 @@ export default function DashboardContent({
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">💪</span>
-                    <h4 className="text-sm font-semibold text-white">Bugünkü Egzersizler</h4>
+                    <h4 className="text-sm font-semibold text-white">{t("dashboard.todayWorkouts")}</h4>
                   </div>
                   <Link
                     href="/health"
@@ -448,7 +450,7 @@ export default function DashboardContent({
                       );
                     })
                   ) : (
-                    <p className="text-xs text-gray-400 italic">Bugün henüz egzersiz kaydedilmedi</p>
+                    <p className="text-xs text-gray-400 italic">{t("dashboard.noWorkouts")}</p>
                   )}
                 </div>
               </div>

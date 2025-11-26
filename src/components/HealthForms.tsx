@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { CalorieAIResponse } from "@/types/ai-calories";
 import { evaluateMealHealth, type MealHealthEvaluation } from "@/lib/ai/meal-health-evaluator";
@@ -285,7 +285,7 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
     }
   };
 
-  const addFoodField = () => {
+  const addFoodField = useCallback(() => {
     setMealData((prev) => ({
       ...prev,
       foods: [
@@ -303,14 +303,14 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
         },
       ],
     }));
-  };
+  }, []);
 
-  const removeFoodField = (index: number) => {
+  const removeFoodField = useCallback((index: number) => {
     setMealData((prev) => ({
       ...prev,
       foods: prev.foods.filter((_, i) => i !== index),
     }));
-  };
+  }, []);
 
   // Miktar seçeneklerinin gram karşılıkları (yaklaşık)
   const quantityToGrams: Record<string, number> = {
@@ -517,7 +517,7 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
     }
   };
 
-  const updateFoodField = (index: number, field: string, value: string) => {
+  const updateFoodField = useCallback((index: number, field: string, value: string) => {
     // Önceki timeout'u temizle
     if (foodNameTimeouts.current[index]) {
       clearTimeout(foodNameTimeouts.current[index]);
@@ -554,7 +554,7 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
         // Kalori hesaplama artık butonla yapılıyor, otomatik değil
       }, 1000);
     }
-  };
+  }, []);
 
   // Egzersiz hazırlık yöntemlerini al
   const fetchWorkoutPreparationMethods = async (workoutName: string) => {
@@ -778,7 +778,7 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
     }
   };
 
-  const tabCards = [
+  const tabCards = useMemo(() => [
     {
       id: "metric" as const,
       label: t("healthForms.metric.title"),
@@ -803,19 +803,19 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
       shadow: "shadow-emerald-500/20",
       description: t("healthForms.meal.description"),
     },
-  ];
+  ], [t]);
 
   return (
-    <div className="rounded-3xl border border-primary-500/20 bg-gray-900/80 backdrop-blur-xl p-6 shadow-2xl shadow-primary-500/10 sm:p-8">
-      <div className="mb-6 flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.3em] text-primary-200">{t("healthForms.quickLog")}</p>
-        <h2 className="text-2xl font-semibold text-white">{t("healthForms.title")}</h2>
-        <p className="text-sm text-gray-400">
+    <div className="rounded-3xl border border-primary-500/20 bg-gray-900/80 backdrop-blur-xl p-4 sm:p-6 lg:p-8 shadow-2xl shadow-primary-500/10">
+      <div className="mb-4 sm:mb-6 flex flex-col gap-1.5 sm:gap-2">
+        <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-primary-200">{t("healthForms.quickLog")}</p>
+        <h2 className="text-xl sm:text-2xl font-semibold text-white">{t("healthForms.title")}</h2>
+        <p className="text-xs sm:text-sm text-gray-400">
           {t("healthForms.description")}
         </p>
       </div>
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+      <div className="mb-4 sm:mb-6 grid grid-cols-1 gap-2 sm:gap-3 sm:grid-cols-3">
         {tabCards.map((tab) => (
           <button
             key={tab.id}
@@ -824,15 +824,19 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
               setError(null);
               setSuccess(null);
             }}
-            className={`relative rounded-2xl border border-white/5 bg-gradient-to-br ${tab.gradient} p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 ${tab.shadow} ${
+            className={`relative rounded-2xl border border-white/5 bg-gradient-to-br ${tab.gradient} p-3 sm:p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 ${tab.shadow} min-h-[44px] ${
               activeTab === tab.id ? "ring-2 ring-white/40" : "opacity-80 hover:opacity-100"
             }`}
           >
-            <span className="text-2xl">{tab.emoji}</span>
-            <p className="mt-2 text-base font-semibold text-white">{tab.label}</p>
-            <p className="mt-1 text-xs text-gray-300">{tab.description}</p>
+            <div className="flex items-center gap-2 sm:block">
+              <span className="text-xl sm:text-2xl">{tab.emoji}</span>
+              <div className="flex-1 sm:flex-none">
+                <p className="mt-0 sm:mt-2 text-sm sm:text-base font-semibold text-white">{tab.label}</p>
+                <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-gray-300 line-clamp-2">{tab.description}</p>
+              </div>
+            </div>
             {activeTab === tab.id && (
-              <span className="absolute right-3 top-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-white">
+              <span className="absolute right-2 top-2 sm:right-3 sm:top-3 text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.3em] text-white">
                 {t("healthForms.active")}
               </span>
             )}
@@ -864,10 +868,10 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
 
       {/* Health Metric Form */}
       {activeTab === "metric" && (
-        <form onSubmit={handleMetricSubmit} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+        <form onSubmit={handleMetricSubmit} className="space-y-3 sm:space-y-4">
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm text-gray-400">Kilo (kg)</label>
+              <label className="mb-1 block text-xs sm:text-sm text-gray-400">Kilo (kg)</label>
               <input
                 type="number"
                 step="0.1"
@@ -875,12 +879,12 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
                 max="300"
                 value={metricData.weight}
                 onChange={(e) => setMetricData({ ...metricData, weight: e.target.value })}
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none min-h-[44px]"
                 placeholder="Örn: 70"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm text-gray-400">
+              <label className="mb-1 block text-xs sm:text-sm text-gray-400">
                 Bağırsak Sağlığı (Kaç günde bir tuvalete çıkıyorsunuz?)
               </label>
               <input
@@ -890,20 +894,20 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
                 max="7"
                 value={metricData.bowelMovementDays}
                 onChange={(e) => setMetricData({ ...metricData, bowelMovementDays: e.target.value })}
-                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+                className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none min-h-[44px]"
                 placeholder="Örn: 1 (her gün), 2 (2 günde bir)"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-[10px] sm:text-xs text-gray-500">
                 Sağlıklı: Her gün veya gün aşırı (1-2 gün)
               </p>
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm text-gray-400">Notlar</label>
+            <label className="mb-1 block text-xs sm:text-sm text-gray-400">Notlar</label>
             <textarea
               value={metricData.notes}
               onChange={(e) => setMetricData({ ...metricData, notes: e.target.value })}
-              className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
+              className="w-full rounded-lg border border-gray-800 bg-gray-900/60 px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none"
               placeholder="İsteğe bağlı notlar..."
               rows={3}
             />
@@ -911,7 +915,7 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
           <button
             type="submit"
             disabled={loading || (!metricData.weight && !metricData.bowelMovementDays)}
-            className="w-full rounded-lg bg-primary-500 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-lg bg-primary-500 px-4 py-3 sm:py-2 font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px]"
           >
             {loading ? "Kaydediliyor..." : "Kaydet"}
           </button>
@@ -1000,15 +1004,19 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
                   type="button"
                   onClick={handleWorkoutAiEstimate}
                   disabled={workoutAiLoading || !workoutData.name.trim() || !workoutData.duration || (requiresDistance(workoutData.name) && !workoutData.distance) || (requiresSetsReps(workoutData.name) && !workoutData.sets)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary-500 px-4 py-1.5 text-sm font-semibold text-white transition-all hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary-500"
+                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary-500 px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs lg:text-sm font-semibold text-white transition-all hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary-500 min-h-[36px] sm:min-h-0"
                 >
                   {workoutAiLoading ? (
-                    <span className="flex items-center gap-2">
-                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                      Hesaplanıyor...
+                    <span className="flex items-center gap-1 sm:gap-2">
+                      <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      <span className="hidden sm:inline">Hesaplanıyor...</span>
+                      <span className="sm:hidden">...</span>
                     </span>
                   ) : (
-                    "AI ile Hesapla"
+                    <>
+                      <span className="hidden sm:inline">AI ile Hesapla</span>
+                      <span className="sm:hidden">AI</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -1122,7 +1130,7 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
           <button
             type="submit"
             disabled={loading || !workoutData.name}
-            className="w-full rounded-lg bg-primary-500 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-lg bg-primary-500 px-4 py-3 sm:py-2 font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px]"
           >
             {loading ? "Kaydediliyor..." : "Kaydet"}
           </button>
@@ -1179,12 +1187,15 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
                         }
                       }}
                       disabled={foodAiLoading[index] || !food.name.trim() || food.name.trim().length < 2}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary-500"
+                      className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary-500 px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-white transition-all hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary-500 min-h-[36px] sm:min-h-0"
                     >
                       {foodAiLoading[index] ? (
-                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                       ) : (
-                        "AI ile Hesapla"
+                        <>
+                          <span className="hidden sm:inline">AI ile Hesapla</span>
+                          <span className="sm:hidden">AI</span>
+                        </>
                       )}
                     </button>
                   </div>
@@ -1373,7 +1384,7 @@ export default function HealthForms({ onSuccess, initialTab = "metric" }: Health
           <button
             type="submit"
             disabled={loading || mealData.foods.filter((f) => f.name.trim() && f.calories).length === 0}
-            className="w-full rounded-lg bg-primary-500 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-lg bg-primary-500 px-4 py-3 sm:py-2 font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px]"
           >
             {loading ? "Kaydediliyor..." : "Kaydet"}
           </button>

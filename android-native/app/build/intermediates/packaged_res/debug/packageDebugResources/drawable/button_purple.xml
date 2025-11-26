@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Purple gradient button -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pressed state -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#9333EA"
+                android:endColor="#7E22CE"
+                android:type="linear" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+    <!-- Default state -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="@color/fitness_purple"
+                android:endColor="#9333EA"
+                android:type="linear" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+</selector>
+
+

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Landscape optimized dimensions -->
+<resources>
+    <!-- Screen padding - Landscape için optimize edilmiş -->
+    <dimen name="screen_padding">24dp</dimen>
+    <dimen name="screen_padding_small">20dp</dimen>
+    
+    <!-- Section margins -->
+    <dimen name="section_margin">20dp</dimen>
+    <dimen name="section_margin_small">16dp</dimen>
+</resources>
+
+

@@ -50,6 +50,7 @@ export default function AdSenseAd({
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive={fullWidthResponsive ? "true" : "false"}
+        suppressHydrationWarning
       />
     </div>
   );

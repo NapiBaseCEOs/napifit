@@ -52,7 +52,7 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     // - Kullanıcı: sadece kendi isteğini ve like sayısı 0 ise silebilir
     if (!isAdmin && !(isOwner && likeCount === 0)) {
       return NextResponse.json(
-        { error: "Bu öneriyi sadece moderatörler veya hiç beğeni almamış kendi önerinin sahibi silebilir." },
+        { error: "Only moderators or the owner of a suggestion with no likes can delete it." },
         { status: 403 }
       );
     }
@@ -78,8 +78,8 @@ export async function DELETE(request: Request, { params }: RouteContext) {
         deleted_reason:
           deleteReason ||
           (isAdmin
-            ? "Moderasyon tarafından kaldırıldı."
-            : "Kullanıcı tarafından, hiç beğeni almadan önce silindi."),
+            ? "Deleted by moderator"
+            : "Deleted by user before receiving any likes"),
       })
       .eq("id", params.id)
       .is("deleted_at", null);

@@ -1,0 +1,32 @@
+<navigation
+xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:id="@+id/mobile_navigation"
+app:startDestination="@+id/navigation_dashboard" >
+<fragment
+    android:id="@+id/navigation_dashboard"
+    android:name="com.napibase.napifit.ui.dashboard.DashboardFragment"
+    android:label="@string/nav_dashboard"
+    tools:layout="@layout/fragment_dashboard" />
+<fragment
+    android:id="@+id/navigation_health"
+    android:name="com.napibase.napifit.ui.health.HealthFragment"
+    android:label="@string/nav_health"
+    tools:layout="@layout/fragment_health" />
+<fragment
+    android:id="@+id/navigation_water"
+    android:name="com.napibase.napifit.ui.water.WaterFragment"
+    android:label="@string/nav_water"
+    tools:layout="@layout/fragment_water" />
+<fragment
+    android:id="@+id/navigation_community"
+    android:name="com.napibase.napifit.ui.community.CommunityFragment"
+    android:label="@string/nav_community"
+    tools:layout="@layout/fragment_community" />
+<fragment
+    android:id="@+id/navigation_profile"
+    android:name="com.napibase.napifit.ui.profile.ProfileFragment"
+    android:label="@string/nav_profile"
+    tools:layout="@layout/fragment_profile" />
+</navigation>

@@ -1,0 +1,126 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+}
+
+android {
+    namespace 'com.napibase.napifit'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.napibase.napifit"
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // API base URL (must end with / for Retrofit)
+        // For local development (emulator): http://10.0.2.2:3001/api/
+        // For Vercel production: https://your-vercel-url.vercel.app/api/
+        buildConfigField "String", "API_BASE_URL", "\"http://10.0.2.2:3001/api/\""
+    }
+
+    signingConfigs {
+        // Debug signing uses default Android debug keystore automatically
+        release {
+            // Release signing config - keystore file should be created
+            // For now, using debug keystore (CHANGE IN PRODUCTION!)
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            // TODO: Create production keystore and update these values
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            // Production API URL
+            buildConfigField "String", "API_BASE_URL", "\"https://napifit-l1dp9pahz-sefas-projects-21462460.vercel.app/api/\""
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            // Debug signing will use default Android debug keystore (no explicit signingConfig needed)
+        }
+    }
+    
+    // APK/AAB configuration
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == "debug") {
+                // Debug: Generate APK
+                outputFileName = "NapiFit-${variant.versionName}-debug.apk"
+            } else if (variant.buildType.name == "release") {
+                // Release: Generate AAB (Android App Bundle)
+                // AAB is generated automatically by Gradle, no need to set outputFileName
+            }
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+}
+
+dependencies {
+    // Android Core
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // Lifecycle
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    
+    // Navigation
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.6'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.6'
+    
+    // Retrofit for API calls
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+    
+    // Supabase Auth - Removed: Using API server instead
+    // Android app connects to API server (api-server), not directly to Supabase
+    // API server handles all Supabase operations
+    // If you need direct Supabase access, check: https://github.com/supabase-community/supabase-kt
+    
+    // Room Database
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'
+    
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    
+    // Image Loading
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

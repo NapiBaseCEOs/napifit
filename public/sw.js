@@ -357,3 +357,4 @@ function startAIAssistantCheck() {
 
 // Service Worker aktif olduğunda AI Assistant kontrolünü başlat
 startAIAssistantCheck();
+

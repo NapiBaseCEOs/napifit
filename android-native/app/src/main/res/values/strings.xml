@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NapiFit</string>
+    
+    <!-- Auth -->
+    <string name="login">Giriş Yap</string>
+    <string name="register">Kayıt Ol</string>
+    <string name="email">E-posta</string>
+    <string name="password">Şifre</string>
+    <string name="logout">Çıkış Yap</string>
+    
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_health">Sağlık</string>
+    <string name="nav_water">Su</string>
+    <string name="nav_community">Topluluk</string>
+    <string name="nav_profile">Profil</string>
+    
+    <!-- Common -->
+    <string name="save">Kaydet</string>
+    <string name="cancel">İptal</string>
+    <string name="delete">Sil</string>
+    <string name="edit">Düzenle</string>
+    <string name="loading">Yükleniyor...</string>
+    <string name="error">Hata oluştu</string>
+    <string name="success">Başarılı</string>
+    
+    <!-- Profile -->
+    <string name="profile_badge_label">Profil Özeti</string>
+    <string name="profile_header_description">Hesap bilgilerin ve günlük ilerlemen tek ekranda.</string>
+    <string name="profile_stats_title">İstatistikler</string>
+    <string name="profile_actions_title">Hızlı İşlemler</string>
+    <string name="profile_card_meals_label">Toplam Öğün</string>
+    <string name="profile_card_workouts_label">Toplam Antrenman</string>
+    <string name="profile_card_habits_label">Rutin İlerlemesi</string>
+    <string name="profile_card_habits_value">Aktif</string>
+    <string name="profile_card_habits_hint">Günlük hedeflerini koru</string>
+    <string name="profile_insight_title">Veri Güvenliği</string>
+    <string name="profile_insight_subtitle">Tüm kayıtların cihazlar arasında senkronize edilir ve güvende tutulur.</string>
+    
+    <!-- Community -->
+    <string name="community_badge_label">Topluluk</string>
+    <string name="community_header_title">👥 Özellik Talepleri</string>
+    <string name="community_header_subtitle">Yeni fikirleri incele, oy ver ve önceliklendirmeye yardım et.</string>
+    <string name="community_filter_trending">Trend</string>
+    <string name="community_filter_recent">En Yeni</string>
+    <string name="community_status_done">Tamamlandı</string>
+    <string name="community_status_planned">Planlanıyor</string>
+    <string name="community_version_pending">Versiyon bekleniyor</string>
+    <string name="community_like_format">👍 %1$d</string>
+    <string name="community_dislike_format">👎 %1$d</string>
+    <string name="community_empty_title">📝 Henüz öneri yok</string>
+    <string name="community_empty_subtitle">İlk öneriyi sen paylaş!</string>
+    <string name="community_vote_like_success">Beğenin kaydedildi</string>
+    <string name="community_vote_dislike_success">Geri bildirimin kaydedildi</string>
+    <string name="community_vote_error">İşlem tamamlanamadı. Lütfen tekrar dene.</string>
+</resources>
+

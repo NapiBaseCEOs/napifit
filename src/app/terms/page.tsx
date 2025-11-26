@@ -1,64 +1,63 @@
-import Link from "next/link";
+"use client";
 
-const clauses = [
-  {
-    title: "Hizmet Tanımı",
-    content:
-      "NapiFit; sağlık metriklerini kaydetmenizi, Supabase üzerinde saklamanızı ve Vercel üzerinden sunulan web/mobil uygulamalarımızdan erişmenizi sağlar.",
-  },
-  {
-    title: "Kullanıcı Yükümlülükleri",
-    content:
-      "Hesap bilgilerinizin gizliliğinden siz sorumlusunuz. Yanlış veya saldırgan içerik göndermek, diğer kullanıcıların deneyimini bozacak davranışlarda bulunmak veya RLS politikalarını aşmaya çalışmak yasaktır.",
-  },
-  {
-    title: "Veri Güvenliği",
-    content:
-      "Supabase ve Vercel altyapılarıyla tüm veriler TLS üzerinden şifrelenir. Sistemler düzenli olarak güncellenir; ancak internet tabanlı hiçbir platform %100 güvenlik garantisi veremez.",
-  },
-  {
-    title: "Üçüncü Taraf Bağlantılar",
-    content:
-      "Google OAuth veya diğer sağlayıcılarla giriş yaptığınızda, ilgili hizmetlerin politikaları da geçerli olur. Giriş ekranında sunulan bilgileri inceleyerek ilerleyin.",
-  },
-  {
-    title: "Değişiklikler",
-    content:
-      "Bu şartlar zaman zaman güncellenebilir. Güncel versiyon her zaman bu sayfada yayınlanır. Kritik değişiklikler e-posta ile paylaşılır.",
-  },
-];
+import Link from "next/link";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export default function TermsPage() {
+  const { t } = useLocale();
+
+  const clauses = [
+    {
+      title: t("terms.clauses.service.title"),
+      content: t("terms.clauses.service.content"),
+    },
+    {
+      title: t("terms.clauses.user.title"),
+      content: t("terms.clauses.user.content"),
+    },
+    {
+      title: t("terms.clauses.security.title"),
+      content: t("terms.clauses.security.content"),
+    },
+    {
+      title: t("terms.clauses.thirdParty.title"),
+      content: t("terms.clauses.thirdParty.content"),
+    },
+    {
+      title: t("terms.clauses.changes.title"),
+      content: t("terms.clauses.changes.content"),
+    },
+  ];
+
   return (
     <main className="max-w-3xl mx-auto px-4 py-16 space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.4em] text-primary-300">Kullanım Koşulları</p>
-        <h1 className="mt-2 text-4xl font-semibold text-white">Kullanım Şartları</h1>
+        <p className="text-xs uppercase tracking-[0.4em] text-primary-300">{t("terms.title")}</p>
+        <h1 className="mt-2 text-4xl font-semibold text-white">{t("terms.subtitle")}</h1>
         <p className="mt-4 text-gray-300">
-          Bu doküman, NapiFit servislerini kullanırken uyulması gereken temel kuralları ve sorumlulukları belirtir.
-          Platformu kullanmaya devam ederek bu şartları kabul etmiş olursunuz.
+          {t("terms.description")}
         </p>
       </div>
 
-      {clauses.map((clause) => (
-        <section key={clause.title} className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-3">
+      {clauses.map((clause, index) => (
+        <section key={index} className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-3">
           <h2 className="text-xl font-semibold text-white">{clause.title}</h2>
           <p className="text-gray-300">{clause.content}</p>
         </section>
       ))}
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-3">
-        <h3 className="text-lg font-semibold text-white">İletişim</h3>
+        <h3 className="text-lg font-semibold text-white">{t("terms.contact.title")}</h3>
         <p className="text-gray-300">
-          Herhangi bir soru veya geribildirim için{" "}
-          <a className="text-primary-200 underline" href="mailto:legal@napibase.com">
-            legal@napibase.com
+          {t("terms.contact.content")}{" "}
+          <a className="text-primary-200 underline" href={`mailto:${t("terms.contact.email")}`}>
+            {t("terms.contact.email")}
           </a>{" "}
-          adresine e-posta gönderebilirsiniz. Gizlilikle ilgili sorular için{" "}
+          {t("terms.contact.emailAction")}{" "}
           <Link href="/privacy" className="text-primary-200 underline">
-            Gizlilik Politikası
+            {t("terms.contact.privacyLink")}
           </Link>{" "}
-          sayfasını inceleyin.
+          {t("terms.contact.privacyAction")}
         </p>
       </section>
     </main>

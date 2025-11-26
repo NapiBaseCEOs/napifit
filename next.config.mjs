@@ -5,6 +5,7 @@ const nextConfig = {
   // Experimental features
   experimental: {
     typedRoutes: true,
+    optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
   },
   
   // Image optimization
@@ -46,6 +47,56 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'],
     } : false,
+  },
+  
+  // Webpack optimizations for code splitting
+  webpack: (config, { isServer, dev }) => {
+    if (!isServer && !dev) {
+      // Code splitting optimizations
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunks
+            framework: {
+              name: 'framework',
+              chunks: 'all',
+              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+              priority: 40,
+              enforce: true,
+            },
+            lib: {
+              test: /[\\/]node_modules[\\/]/,
+              name(module) {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1];
+                return packageName?.replace('@', '');
+              },
+              priority: 30,
+              minChunks: 1,
+              reuseExistingChunk: true,
+            },
+            commons: {
+              name: 'commons',
+              minChunks: 2,
+              priority: 20,
+            },
+            shared: {
+              name(module, chunks) {
+                return 'shared';
+              },
+              priority: 10,
+              minChunks: 2,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+    }
+    
+    return config;
   },
   
   // Headers for security and performance

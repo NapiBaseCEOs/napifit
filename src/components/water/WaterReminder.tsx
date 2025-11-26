@@ -458,17 +458,21 @@ export default function WaterReminder({
             </div>
 
             {/* Hızlı Ekleme Butonları */}
-            <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-md">
+            <div className="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full max-w-md">
               {quickAddAmounts.map((amount) => (
                 <button
                   key={amount}
                   onClick={() => addWater(amount)}
                   disabled={loading}
-                  className="group relative rounded-xl border border-blue-500/30 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-sm p-4 transition-all hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="group relative rounded-xl border border-blue-500/30 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-sm p-3 sm:p-4 transition-all hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[44px] sm:min-h-0"
                 >
-                  <div className="text-2xl mb-1">💧</div>
-                  <div className="text-lg font-bold text-white">{amount}ml</div>
-                  <div className="text-xs text-gray-400 mt-1">Hızlı Ekle</div>
+                  <div className="flex items-center gap-2 sm:flex-col sm:items-center">
+                    <div className="text-xl sm:text-2xl">💧</div>
+                    <div className="flex-1 sm:flex-none text-center">
+                      <div className="text-base sm:text-lg font-bold text-white">{amount}ml</div>
+                      <div className="hidden sm:block text-xs text-gray-400 mt-1">Hızlı Ekle</div>
+                    </div>
+                  </div>
                   {loading && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
@@ -479,8 +483,8 @@ export default function WaterReminder({
             </div>
 
             {/* Özel Miktar Ekle */}
-            <div className="mt-6 w-full max-w-md">
-              <label className="mb-2 block text-sm text-gray-400">Özel Miktar (ml)</label>
+            <div className="mt-4 sm:mt-6 w-full max-w-md">
+              <label className="mb-2 block text-xs sm:text-sm text-gray-400">Özel Miktar (ml)</label>
               <div className="flex gap-2">
                 <input
                   type="number"
@@ -489,7 +493,7 @@ export default function WaterReminder({
                   max="10000"
                   step="50"
                   placeholder="Örn: 350"
-                  className="flex-1 rounded-lg border border-gray-800 bg-gray-900/60 px-4 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none"
+                  className="flex-1 rounded-lg border border-gray-800 bg-gray-900/60 px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none min-h-[44px]"
                 />
                 <button
                   onClick={() => {
@@ -501,7 +505,7 @@ export default function WaterReminder({
                     }
                   }}
                   disabled={loading}
-                  className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-2 font-semibold text-white transition-all hover:from-blue-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 px-4 sm:px-6 py-2 font-semibold text-sm sm:text-base text-white transition-all hover:from-blue-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                 >
                   Ekle
                 </button>

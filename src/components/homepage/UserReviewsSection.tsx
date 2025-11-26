@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 type UserReview = {
   id: string;
@@ -11,6 +12,7 @@ type UserReview = {
 };
 
 export default function UserReviewsSection() {
+  const { t } = useLocale();
   const [reviews, setReviews] = useState<UserReview[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +42,7 @@ export default function UserReviewsSection() {
   if (loading) {
     return (
       <section className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
-        <div className="text-center text-gray-400">Yorumlar yükleniyor...</div>
+        <div className="text-center text-gray-400">{t("reviews.loading")}</div>
       </section>
     );
   }
@@ -53,15 +55,15 @@ export default function UserReviewsSection() {
     <section className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl shadow-[0_20px_80px_rgba(3,4,12,0.45)]">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-white mb-2">Kullanıcı Yorumları</h2>
-          <p className="text-gray-400">Gerçek kullanıcılarımızın deneyimleri</p>
+          <h2 className="text-2xl font-semibold text-white mb-2">{t("reviews.title")}</h2>
+          <p className="text-gray-400">{t("reviews.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500" />
           </span>
-          <span className="text-xs text-primary-300 font-medium">Gerçek Zamanlı</span>
+          <span className="text-xs text-primary-300 font-medium">{t("reviews.realTime")}</span>
         </div>
       </div>
       

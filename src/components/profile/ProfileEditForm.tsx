@@ -2,18 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-
-const FIELD_LABELS = {
-  name: "Ad soyad",
-  height: "Boy",
-  weight: "Kilo",
-  age: "Yaş",
-  gender: "Cinsiyet",
-  targetWeight: "Hedef kilo",
-  dailySteps: "Günlük adım",
-  showPublicProfile: "Herkese açık profil",
-  showCommunityStats: "Topluluk istatistikleri",
-} as const;
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 type EditableProfile = {
   name: string | null;
@@ -31,14 +20,27 @@ type Props = {
   profile: EditableProfile;
 };
 
-const genderOptions = [
-  { value: "male", label: "Erkek" },
-  { value: "female", label: "Kadın" },
-  { value: "other", label: "Diğer" },
-];
-
 export default function ProfileEditForm({ profile }: Props) {
   const router = useRouter();
+  const { t } = useLocale();
+
+  const FIELD_LABELS = {
+    name: t("profile.edit.fieldLabels.name"),
+    height: t("profile.edit.fieldLabels.height"),
+    weight: t("profile.edit.fieldLabels.weight"),
+    age: t("profile.edit.fieldLabels.age"),
+    gender: t("profile.edit.fieldLabels.gender"),
+    targetWeight: t("profile.edit.fieldLabels.targetWeight"),
+    dailySteps: t("profile.edit.fieldLabels.dailySteps"),
+    showPublicProfile: t("profile.edit.fieldLabels.showPublicProfile"),
+    showCommunityStats: t("profile.edit.fieldLabels.showCommunityStats"),
+  } as const;
+
+  const genderOptions = [
+    { value: "male", label: t("profile.edit.genderOptions.male") },
+    { value: "female", label: t("profile.edit.genderOptions.female") },
+    { value: "other", label: t("profile.edit.genderOptions.other") },
+  ];
   const [formData, setFormData] = useState({
     name: profile.name ?? "",
     height: profile.height?.toString() ?? "",
@@ -64,7 +66,7 @@ export default function ProfileEditForm({ profile }: Props) {
         if (current !== previous) {
           changes.push({ 
             label: FIELD_LABELS[key as keyof typeof FIELD_LABELS] || key, 
-            value: current ? "Açık" : "Kapalı" 
+            value: current ? t("profile.edit.status.open") : t("profile.edit.status.closed")
           });
         }
         return;
@@ -77,10 +79,10 @@ export default function ProfileEditForm({ profile }: Props) {
         const valueText =
           key === "gender" && current
             ? current === "male"
-              ? "Erkek"
+              ? t("profile.edit.genderOptions.male")
               : current === "female"
-                ? "Kadın"
-                : "Diğer"
+                ? t("profile.edit.genderOptions.female")
+                : t("profile.edit.genderOptions.other")
             : current || "—";
         changes.push({ label: FIELD_LABELS[key as keyof typeof FIELD_LABELS] || key, value: valueText });
       }
@@ -105,7 +107,7 @@ export default function ProfileEditForm({ profile }: Props) {
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!isDirty) {
-      setMessage("Değişiklik bulunmuyor.");
+      setMessage(t("profile.edit.noChanges"));
       return;
     }
 
@@ -136,14 +138,14 @@ export default function ProfileEditForm({ profile }: Props) {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data?.message ?? "Profil güncellenemedi.");
+        throw new Error(data?.message ?? t("profile.edit.error"));
       }
 
-      setMessage("Profil bilgilerin güncellendi.");
+      setMessage(t("profile.edit.success"));
       router.refresh();
     } catch (err) {
       console.error("Profile update error:", err);
-      setError(err instanceof Error ? err.message : "Profil güncellenirken hata oluştu.");
+      setError(err instanceof Error ? err.message : t("profile.edit.errorUpdate"));
     } finally {
       setSaving(false);
     }
@@ -153,25 +155,25 @@ export default function ProfileEditForm({ profile }: Props) {
     <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-gray-500">Profilini Güncelle</p>
-          <h3 className="text-xl font-semibold text-white">Kişisel Bilgiler</h3>
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-500">{t("profile.edit.title")}</p>
+          <h3 className="text-xl font-semibold text-white">{t("profile.edit.subtitle")}</h3>
         </div>
       </div>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-xs uppercase tracking-wide text-gray-400">Ad Soyad</label>
+            <label className="text-xs uppercase tracking-wide text-gray-400">{FIELD_LABELS.name}</label>
             <input
               type="text"
               value={formData.name}
               onChange={handleChange("name")}
               className="w-full rounded-xl border border-white/10 bg-[#0b1325]/70 px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/40"
-              placeholder="Adını güncelle"
+              placeholder={t("form.name")}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs uppercase tracking-wide text-gray-400">Boy (cm)</label>
+            <label className="text-xs uppercase tracking-wide text-gray-400">{FIELD_LABELS.height} (cm)</label>
             <input
               type="number"
               min={50}
@@ -183,7 +185,7 @@ export default function ProfileEditForm({ profile }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs uppercase tracking-wide text-gray-400">Kilo (kg)</label>
+            <label className="text-xs uppercase tracking-wide text-gray-400">{FIELD_LABELS.weight} (kg)</label>
             <input
               type="number"
               min={20}
@@ -195,7 +197,7 @@ export default function ProfileEditForm({ profile }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs uppercase tracking-wide text-gray-400">Yaş</label>
+            <label className="text-xs uppercase tracking-wide text-gray-400">{FIELD_LABELS.age}</label>
             <input
               type="number"
               min={13}
@@ -207,13 +209,13 @@ export default function ProfileEditForm({ profile }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs uppercase tracking-wide text-gray-400">Cinsiyet</label>
+            <label className="text-xs uppercase tracking-wide text-gray-400">{FIELD_LABELS.gender}</label>
             <select
               value={formData.gender}
               onChange={handleChange("gender")}
               className="w-full rounded-xl border border-white/10 bg-[#0b1325]/70 px-4 py-3 text-sm text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/40"
             >
-              <option value="">Seçilmedi</option>
+              <option value="">{t("profile.edit.genderOptions.notSelected")}</option>
               {genderOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -222,7 +224,7 @@ export default function ProfileEditForm({ profile }: Props) {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs uppercase tracking-wide text-gray-400">Hedef Kilo (kg)</label>
+            <label className="text-xs uppercase tracking-wide text-gray-400">{FIELD_LABELS.targetWeight} (kg)</label>
             <input
               type="number"
               min={20}
@@ -234,7 +236,7 @@ export default function ProfileEditForm({ profile }: Props) {
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <label className="text-xs uppercase tracking-wide text-gray-400">Günlük Adım Hedefi</label>
+            <label className="text-xs uppercase tracking-wide text-gray-400">{FIELD_LABELS.dailySteps}</label>
             <input
               type="number"
               min={0}
@@ -249,12 +251,12 @@ export default function ProfileEditForm({ profile }: Props) {
 
         {/* Privacy Settings */}
         <div className="rounded-xl border border-white/10 bg-[#0b1325]/50 p-4 space-y-4">
-          <h4 className="text-sm font-semibold text-white">Gizlilik Ayarları</h4>
+          <h4 className="text-sm font-semibold text-white">{t("profile.edit.privacy.title")}</h4>
           <div className="space-y-3">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-medium text-gray-300">Herkese açık profil</span>
-                <p className="text-xs text-gray-500 mt-0.5">Profiliniz ve bilgileriniz toplulukta görünür olur</p>
+                <span className="text-sm font-medium text-gray-300">{FIELD_LABELS.showPublicProfile}</span>
+                <p className="text-xs text-gray-500 mt-0.5">{t("profile.edit.privacy.publicDesc")}</p>
               </div>
               <input
                 type="checkbox"
@@ -265,8 +267,8 @@ export default function ProfileEditForm({ profile }: Props) {
             </label>
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="text-sm font-medium text-gray-300">Topluluk istatistikleri</span>
-                <p className="text-xs text-gray-500 mt-0.5">Toplulukta öneri sayınız ve liderlik bilgileriniz görünür</p>
+                <span className="text-sm font-medium text-gray-300">{FIELD_LABELS.showCommunityStats}</span>
+                <p className="text-xs text-gray-500 mt-0.5">{t("profile.edit.privacy.statsDesc")}</p>
               </div>
               <input
                 type="checkbox"
@@ -280,7 +282,7 @@ export default function ProfileEditForm({ profile }: Props) {
 
         {changeSummary.length > 0 && (
           <div className="rounded-2xl border border-primary-500/30 bg-primary-500/10 px-4 py-3 space-y-2">
-            <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Güncellenecek alanlar</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-primary-200">{t("profile.edit.changes.title")}</p>
             <ul className="text-sm text-white/90 space-y-1">
               {changeSummary.map((change) => (
                 <li key={change.label} className="flex justify-between gap-4">
@@ -307,7 +309,7 @@ export default function ProfileEditForm({ profile }: Props) {
             disabled={saving || !isDirty}
             className="flex-1 rounded-2xl bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4)] animate-gradient px-4 py-3 text-sm font-semibold text-white shadow-[0_15px_45px_rgba(15,23,42,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
+            {saving ? t("profile.edit.saving") : t("profile.edit.save")}
           </button>
           <button
             type="button"
@@ -329,11 +331,11 @@ export default function ProfileEditForm({ profile }: Props) {
             }}
             className="rounded-2xl border border-white/20 px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/10 transition-colors disabled:opacity-50"
           >
-            Sıfırla
+            {t("profile.edit.reset")}
           </button>
         </div>
         <p className="text-xs text-gray-500">
-          Güncellemeler Supabase üzerinde güvenli olarak saklanır. Sağlık verilerini paylaşmadan önce kişisel sınırlarınızı göz önünde bulundurun.
+          {t("profile.edit.note")}
         </p>
       </form>
     </div>

@@ -1,0 +1,23 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        // Supabase Kotlin SDK repositories (try all possible sources)
+        maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/releases/") }
+        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
+        // Maven Central should have it too
+    }
+}
+
+rootProject.name = "NapiFit"
+include ':app'
+

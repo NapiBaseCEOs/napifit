@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bottom navigation bar background with border -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/bg_gray_900_90" />
+        </shape>
+    </item>
+    <!-- Top border -->
+    <item android:top="0dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/border_gray_800_60" />
+            <size android:height="1dp" />
+        </shape>
+    </item>
+</layer-list>
+
+

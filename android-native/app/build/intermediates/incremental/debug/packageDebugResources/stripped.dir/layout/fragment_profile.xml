@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding">
+
+        <!-- Header Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/profile_header_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/section_margin"
+            android:background="@drawable/card_header"
+            app:cardBackgroundColor="@color/bg_gray_900_90"
+            app:cardCornerRadius="@dimen/radius_2xl"
+            app:cardElevation="16dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border_gray_800_60">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_md"
+                    android:background="@drawable/badge_primary"
+                    app:cardBackgroundColor="@color/primary_500_10"
+                    app:cardCornerRadius="@dimen/radius_full"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp"
+                        android:text="@string/profile_badge_label"
+                        android:textAllCaps="true"
+                        android:textColor="@color/primary_300_text"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.2" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👤 Profil"
+                    android:textAppearance="@style/TextAppearance.App.Headline2"
+                    android:layout_marginBottom="@dimen/spacing_sm" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_header_description"
+                    android:textAppearance="@style/TextAppearance.App.Body2" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_xl"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/profile_avatar"
+                        android:layout_width="88dp"
+                        android:layout_height="88dp"
+                        android:background="@drawable/badge_primary"
+                        android:gravity="center"
+                        android:text="👤"
+                        android:textColor="@color/primary"
+                        android:textSize="40sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_lg"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/profile_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kullanıcı"
+                            android:textAppearance="@style/TextAppearance.App.Headline3" />
+
+                        <TextView
+                            android:id="@+id/profile_email"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_xs"
+                            android:text="email@example.com"
+                            android:textAppearance="@style/TextAppearance.App.Body2" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:text="@string/profile_stats_title"
+            android:textAppearance="@style/TextAppearance.App.Headline3" />
+
+        <!-- Stats Grid -->
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:alignmentMode="alignMargins"
+            android:columnCount="2"
+            android:layout_marginBottom="@dimen/section_margin"
+            android:useDefaultMargins="true">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnSpan="2"
+                android:layout_columnWeight="1"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="@dimen/radius_2xl"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_60">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_small">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_card_meals_label"
+                        android:textAppearance="@style/TextAppearance.App.CardTitle"
+                        android:layout_marginBottom="@dimen/spacing_sm" />
+
+                    <TextView
+                        android:id="@+id/total_meals"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textAppearance="@style/TextAppearance.App.ValueMedium" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="kayıtlı öğün"
+                        android:textAppearance="@style/TextAppearance.App.Body2" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnWeight="1"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="@dimen/radius_2xl"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_60">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_small">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_card_workouts_label"
+                        android:textAppearance="@style/TextAppearance.App.CardTitle"
+                        android:layout_marginBottom="@dimen/spacing_sm" />
+
+                    <TextView
+                        android:id="@+id/total_workouts"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textAppearance="@style/TextAppearance.App.ValueMedium" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="kayıtlı antrenman"
+                        android:textAppearance="@style/TextAppearance.App.Body2" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="160dp"
+                android:layout_columnWeight="1"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="@dimen/radius_2xl"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_60">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_small">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_card_habits_label"
+                        android:textAppearance="@style/TextAppearance.App.CardTitle"
+                        android:layout_marginBottom="@dimen/spacing_sm" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/profile_card_habits_value"
+                        android:textAppearance="@style/TextAppearance.App.ValueMedium"
+                        android:textColor="@color/primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="@string/profile_card_habits_hint"
+                        android:textAppearance="@style/TextAppearance.App.Body2" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </GridLayout>
+
+        <!-- Insight Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/section_margin"
+            android:background="@drawable/card_style"
+            app:cardBackgroundColor="@color/bg_gray_900_90"
+            app:cardCornerRadius="@dimen/radius_2xl"
+            app:cardElevation="8dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border_gray_800_60">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_insight_title"
+                    android:textAppearance="@style/TextAppearance.App.Headline3"
+                    android:layout_marginBottom="@dimen/spacing_sm" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_insight_subtitle"
+                    android:textAppearance="@style/TextAppearance.App.Body2" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:text="@string/profile_actions_title"
+            android:textAppearance="@style/TextAppearance.App.Headline3" />
+
+        <!-- Logout Button -->
+        <Button
+            android:id="@+id/btn_logout"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:text="🚪 Çıkış Yap"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_orange"
+            android:elevation="8dp"
+            android:stateListAnimator="@null" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

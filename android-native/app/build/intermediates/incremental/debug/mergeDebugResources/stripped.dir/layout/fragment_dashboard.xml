@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header Card - Web sitesiyle birebir -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/card_header"
+            app:cardBackgroundColor="@color/bg_gray_900_90"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="16dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border_gray_800_60">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="20dp"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- Badge -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:background="@drawable/badge_primary"
+                        app:cardBackgroundColor="@color/primary_500_10"
+                        app:cardCornerRadius="999dp"
+                        app:cardElevation="8dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="@color/primary_500_40">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp">
+
+                            <View
+                                android:layout_width="8dp"
+                                android:layout_height="8dp"
+                                android:background="@drawable/badge_dot"
+                                android:layout_marginEnd="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="SAĞLIK PANELİ"
+                                android:textColor="@color/primary_300_text"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.3" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Welcome Message -->
+                    <TextView
+                        android:id="@+id/welcome_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hoş geldiniz, Kullanıcı!"
+                        android:textColor="@color/text_primary"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- BMI Badge (conditional, will be shown if BMI data exists) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/bmi_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:background="@drawable/card_style"
+                    app:cardBackgroundColor="@color/bg_gray_900_90"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_gray_800_60">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="12dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="end"
+                            android:layout_marginEnd="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="BMI"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.1" />
+
+                            <TextView
+                                android:id="@+id/bmi_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="22.5"
+                                android:textColor="@color/text_primary"
+                                android:textSize="20sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="48dp"
+                            android:background="#80374151"
+                            android:layout_marginEnd="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/bmi_category"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Normal"
+                                android:textColor="@color/primary"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:background="@drawable/badge_primary"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp"
+                                android:paddingTop="4dp"
+                                android:paddingBottom="4dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Stats Grid - 8 Cards (2 columns on mobile) -->
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:rowCount="4"
+            android:alignmentMode="alignMargins"
+            android:useDefaultMargins="true">
+
+            <!-- Weight Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_weight"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_70">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MEVCUT KİLO"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/weight_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="— kg"
+                        android:textColor="@color/text_primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Target Weight Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_target_weight"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_70">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="HEDEF KİLO"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/target_weight_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="— kg"
+                        android:textColor="@color/text_primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Daily Steps Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_steps"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_70">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GÜNLÜK HEDEF"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/steps_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="— adım"
+                        android:textColor="@color/text_primary"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Today's Calories Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_calories"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_70">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="BUGÜN KALORİ"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/calories_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 kcal"
+                        android:textColor="@color/text_primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Today's Burned Calories Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_burned"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_70">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="YAKILAN KALORİ"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/burned_calories"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 kcal"
+                        android:textColor="@color/fitness_orange"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- BMR Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_bmr"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:visibility="gone"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_70">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="BMR"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/bmr_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="— kcal"
+                        android:textColor="@color/fitness_blue"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Daily Balance Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_balance"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:visibility="gone"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_70">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GÜNLÜK DENGE"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/balance_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 kcal"
+                        android:textColor="@color/primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Bowel Health Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_bowel"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:visibility="gone"
+                android:background="@drawable/card_style"
+                app:cardBackgroundColor="@color/bg_gray_900_80"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border_gray_800_70">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="BAĞIRSAK SAĞLIĞI"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/bowel_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="—"
+                        android:textColor="@color/primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </GridLayout>
+
+        <!-- Loading Indicator -->
+        <ProgressBar
+            android:id="@+id/loading_indicator"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone"
+            android:indeterminateTint="@color/primary"
+            android:indeterminateDrawable="@drawable/gradient_spinner" />
+
+        <!-- Quick Actions -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚡ Hızlı İşlemler"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:baselineAligned="false">
+
+            <Button
+                android:id="@+id/btn_add_meal"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="🍽️ Öğün Ekle"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_primary"
+                android:elevation="8dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_add_workout"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="💪 Antrenman Ekle"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_orange"
+                android:elevation="8dp"
+                android:stateListAnimator="@null" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getCountryFlag } from "@/lib/country-flags";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 type LeaderboardEntry = {
   userId: string;
@@ -19,23 +20,25 @@ interface LeaderboardCardProps {
   leaderboard: LeaderboardEntry[];
 }
 
-const headingsByMood = [
-  { title: "Öneri Kahramanları 🛠️", emoji: "🛠️" },
-  { title: "Topluluk MVP'leri 🌟", emoji: "🌟" },
-  { title: "İlham Verenler ✨", emoji: "✨" },
-];
-
 export default function LeaderboardCard({ leaderboard }: LeaderboardCardProps) {
+  const { t } = useLocale();
+  
+  const headingsByMood = [
+    { title: t("community.heroes"), emoji: "🛠️" },
+    { title: t("community.mvps"), emoji: "🌟" },
+    { title: t("community.inspirations"), emoji: "✨" },
+  ];
+  
   const randomHeading = headingsByMood[Math.floor(Math.random() * headingsByMood.length)];
   const headingLabel = leaderboard.length
     ? `${randomHeading.title}`
-    : "İlk kahramanı bekliyoruz 💫";
+    : t("community.waiting");
 
   if (leaderboard.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6 backdrop-blur-lg">
         <h3 className="mb-4 text-lg font-semibold text-white">{headingLabel}</h3>
-        <p className="text-sm text-gray-400">Henüz uygulanmış öneri yok. İlk öneriyi gönderen sen ol!</p>
+        <p className="text-sm text-gray-400">{t("community.noSuggestions")}</p>
       </div>
     );
   }
@@ -43,12 +46,12 @@ export default function LeaderboardCard({ leaderboard }: LeaderboardCardProps) {
   return (
     <div className="rounded-2xl border border-gray-800/60 bg-gray-900/80 p-6 backdrop-blur-lg">
       <div className="mb-4">
-        <p className="text-xs uppercase tracking-[0.3em] text-primary-200">Topluluk Gururu</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-primary-200">{t("community.leaderboard.title")}</p>
         <h3 className="text-lg font-semibold text-white mt-1 flex items-center gap-2">
           {randomHeading.emoji} {randomHeading.title}
         </h3>
         <p className="text-xs text-gray-400">
-          Uygulanan öneri sayısına göre haftalık motivasyon tablosu
+          {t("community.leaderboard.subtitle")}
         </p>
       </div>
       <div className="space-y-3">
@@ -88,7 +91,7 @@ export default function LeaderboardCard({ leaderboard }: LeaderboardCardProps) {
               </div>
               {entry.showStats && (
                 <p className="text-xs text-gray-400">
-                  {entry.implementedCount} öneri uygulandı • {new Date(entry.joinedAt).toLocaleDateString("tr-TR", { year: "numeric", month: "short" })}
+                  {entry.implementedCount} {t("community.leaderboard.description")} • {new Date(entry.joinedAt).toLocaleDateString(t("common.locale") || "en-US", { year: "numeric", month: "short" })}
                 </p>
               )}
             </div>

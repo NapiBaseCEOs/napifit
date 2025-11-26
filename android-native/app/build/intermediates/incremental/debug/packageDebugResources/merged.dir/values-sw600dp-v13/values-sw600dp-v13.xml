@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="card_padding">32dp</dimen>
+    <dimen name="card_padding_medium">28dp</dimen>
+    <dimen name="card_padding_small">24dp</dimen>
+    <dimen name="grid_gap">12dp</dimen>
+    <dimen name="grid_gap_large">16dp</dimen>
+    <dimen name="screen_padding">32dp</dimen>
+    <dimen name="screen_padding_small">24dp</dimen>
+    <dimen name="section_margin">32dp</dimen>
+    <dimen name="section_margin_small">24dp</dimen>
+</resources>

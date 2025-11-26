@@ -10,6 +10,7 @@ import {
   getWaterPlaceholderFeatureResponse,
   getWaterPlaceholderLeaderboardEntry,
 } from "@/lib/community/water-reminder";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 type FeatureRequest = {
   id: string;
@@ -60,6 +61,7 @@ const withFallbackLeaderboard = (items: LeaderboardEntry[]) =>
 
 export default function CommunityPage() {
   const supabase = useSupabaseClient<Database>();
+  const { t } = useLocale();
   const [requests, setRequests] = useState<FeatureRequest[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,9 +100,9 @@ export default function CommunityPage() {
 
   const isAdmin = isAdminEmail(currentUserEmail ?? undefined);
   const sortOptions: { id: typeof sortBy; label: string; emoji: string }[] = [
-    { id: "likes", label: "En Beğenilenler", emoji: "💚" },
-    { id: "newest", label: "En Yeni", emoji: "🆕" },
-    { id: "implemented", label: "Uygulananlar", emoji: "🚀" },
+    { id: "likes", label: t("community.sort.likes"), emoji: "💚" },
+    { id: "newest", label: t("community.sort.newest"), emoji: "🆕" },
+    { id: "implemented", label: t("community.sort.implemented"), emoji: "🚀" },
   ];
 
   const fetchRequests = async () => {
@@ -127,18 +129,31 @@ export default function CommunityPage() {
   };
 
   const handleDeleteRequest = async (id: string) => {
+    if (!isAdmin) return;
+    
+    const confirmed = window.confirm(
+      t("community.deleteConfirm") || "Bu öneriyi silmek istediğinize emin misiniz?"
+    );
+    if (!confirmed) return;
+
     try {
       const response = await fetch(`/api/feature-requests/${id}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reason: isAdmin ? (t("community.deleteReasonModeration") || "Moderation") : undefined,
+        }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Silme işlemi başarısız");
+        throw new Error(data.error || t("community.deleteFailed"));
       }
       await fetchRequests();
     } catch (error) {
       console.error("Failed to delete feature request:", error);
-      alert(error instanceof Error ? error.message : "Silme işlemi başarısız");
+      alert(error instanceof Error ? error.message : t("community.deleteFailed"));
     }
   };
 
@@ -185,11 +200,11 @@ export default function CommunityPage() {
           // Browser notification göster
           if ("Notification" in window && Notification.permission === "granted") {
             new Notification(
-              data.isFounder ? "👑 Kurucu Önerinizi Beğendi!" : "⭐ Admin Önerinizi Beğendi!",
+              data.isFounder ? t("community.founderLiked") : t("community.adminLiked"),
               {
                 body: data.isFounder
-                  ? "🎉 Kurucu önerinizi beğendi! Harika bir fikir, tebrikler!"
-                  : "⭐ Admin önerinizi beğendi! Güzel bir öneri, tebrikler!",
+                  ? t("community.founderLikedBody")
+                  : t("community.adminLikedBody"),
                 icon: "/icon-192.png",
                 badge: "/icon-192.png",
                 tag: `admin-like-${id}`,

@@ -1,73 +1,77 @@
-import Link from "next/link";
+"use client";
 
-const sections = [
-  {
-    title: "Topladığımız Veriler",
-    body: [
-      "Ad, soyad, e-posta adresi ve Supabase üzerinden saklanan profil bilgileriniz.",
-      "Girdiğiniz sağlık metrikleri (boy, kilo, günlük adım, hedefler).",
-      "Google ile giriş yaptığınızda Google'ın paylaştığı temel profil bilgileri.",
-    ],
-  },
-  {
-    title: "Verilerin Kullanım Amacı",
-    body: [
-      "Size kişiselleştirilmiş öneriler sunmak ve sağlık panelini oluşturmak.",
-      "Destek talebi veya bildirimler için sizinle iletişime geçmek.",
-      "Anonimleştirilmiş istatistikler üreterek ürün geliştirme kararları almak.",
-    ],
-  },
-  {
-    title: "Saklama Süresi ve Güvenlik",
-    body: [
-      "Veriler Supabase üzerinde saklanır ve istemci-sunucu arasında TLS ile şifrelenir.",
-      "Hesabınızı silmeniz halinde tüm profil kayıtları 30 gün içinde kalıcı olarak temizlenir.",
-      "Yalnızca yetkili ekip üyeleri ve sistemler bu verilere erişebilir.",
-    ],
-  },
-];
+import Link from "next/link";
+import { useLocale } from "@/components/i18n/LocaleProvider";
 
 export default function PrivacyPage() {
+  const { t } = useLocale();
+
+  const sections = [
+    {
+      title: t("privacy.sections.data.title"),
+      body: [
+        t("privacy.sections.data.items.0"),
+        t("privacy.sections.data.items.1"),
+        t("privacy.sections.data.items.2"),
+      ],
+    },
+    {
+      title: t("privacy.sections.usage.title"),
+      body: [
+        t("privacy.sections.usage.items.0"),
+        t("privacy.sections.usage.items.1"),
+        t("privacy.sections.usage.items.2"),
+      ],
+    },
+    {
+      title: t("privacy.sections.storage.title"),
+      body: [
+        t("privacy.sections.storage.items.0"),
+        t("privacy.sections.storage.items.1"),
+        t("privacy.sections.storage.items.2"),
+      ],
+    },
+  ];
+
   return (
     <main className="max-w-3xl mx-auto px-4 py-16 space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.4em] text-primary-300">Gizlilik İlkesi</p>
-        <h1 className="mt-2 text-4xl font-semibold text-white">Gizlilik Politikası</h1>
+        <p className="text-xs uppercase tracking-[0.4em] text-primary-300">{t("privacy.title")}</p>
+        <h1 className="mt-2 text-4xl font-semibold text-white">{t("privacy.subtitle")}</h1>
         <p className="mt-4 text-gray-300">
-          NapiFit olarak kişisel verilerinizi yalnızca ürün deneyimi sunmak ve iyileştirmek amacıyla işleriz. Aşağıdaki
-          başlıklar verilerinizi nasıl topladığımızı, sakladığımızı ve koruduğumuzu açıklar.
+          {t("privacy.description")}
         </p>
       </div>
 
-      {sections.map((section) => (
+      {sections.map((section, index) => (
         <section
-          key={section.title}
+          key={index}
           className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-3 backdrop-blur-xl shadow-[0_20px_60px_rgba(3,4,12,0.45)]"
         >
           <h2 className="text-xl font-semibold text-white">{section.title}</h2>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
-            {section.body.map((item) => (
-              <li key={item}>{item}</li>
+            {section.body.map((item, itemIndex) => (
+              <li key={itemIndex}>{item}</li>
             ))}
           </ul>
         </section>
       ))}
 
       <section className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-6 space-y-3">
-        <h3 className="text-lg font-semibold text-white">Haklarınız</h3>
+        <h3 className="text-lg font-semibold text-white">{t("privacy.rights.title")}</h3>
         <p className="text-gray-200">
-          Verilerinize erişme, düzeltme veya silme talepleri için{" "}
-          <a className="text-primary-200 underline" href="mailto:support@napibase.com">
-            support@napibase.com
+          {t("privacy.rights.content")}{" "}
+          <a className="text-primary-200 underline" href={`mailto:${t("privacy.rights.email")}`}>
+            {t("privacy.rights.email")}
           </a>{" "}
-          adresinden bize ulaşabilirsiniz. Talepler 15 gün içinde yanıtlanır.
+          {t("privacy.rights.responseTime")}
         </p>
         <p className="text-sm text-gray-400">
-          Daha fazla bilgi için{" "}
+          {t("privacy.rights.moreInfo")}{" "}
           <Link href="/terms" className="text-primary-200 underline">
-            Kullanım Şartları
+            {t("privacy.rights.termsLink")}
           </Link>{" "}
-          sayfasına göz atabilirsiniz.
+          {t("privacy.rights.moreInfoAction")}
         </p>
       </section>
     </main>

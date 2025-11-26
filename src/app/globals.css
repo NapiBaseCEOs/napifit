@@ -126,41 +126,116 @@ body.android-performance {
   animation: none !important;
   background-attachment: scroll;
   background-size: 200% 200%;
+  will-change: auto !important;
 }
 
 html.android-performance body::before,
 html.android-performance body::after,
 body.android-performance::before,
 body.android-performance::after {
-  opacity: 0.25;
-  filter: blur(30px);
+  opacity: 0.15;
+  filter: blur(20px) !important;
+  will-change: auto !important;
 }
 
 html.android-performance *,
 body.android-performance * {
-  transition-duration: 120ms !important;
+  transition-duration: 100ms !important;
+  transition-timing-function: ease !important;
+  will-change: auto !important;
 }
 
 html.android-performance .animate-gradient,
 body.android-performance .animate-gradient {
-  animation-duration: 18s !important;
+  animation: none !important;
+  background-size: 100% 100% !important;
 }
 
 html.android-performance .animate-float,
 body.android-performance .animate-float {
-  animation-duration: 6s !important;
+  animation: none !important;
   transform: translateY(0) !important;
+  will-change: auto !important;
 }
 
 html.android-performance .loading-shimmer,
 body.android-performance .loading-shimmer {
-  animation-duration: 2.6s !important;
+  animation: none !important;
 }
 
 html.android-performance [class*="backdrop-blur"],
 body.android-performance [class*="backdrop-blur"] {
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Transform optimizations - reduce GPU usage */
+html.android-performance [class*="transform"],
+html.android-performance [class*="translate"],
+html.android-performance [class*="scale"],
+html.android-performance [class*="rotate"] {
+  transform: none !important;
+  will-change: auto !important;
+}
+
+html.android-performance [class*="hover:scale"],
+html.android-performance [class*="hover:translate"] {
+  transform: none !important;
+}
+
+html.android-performance [class*="hover:scale"]:hover,
+html.android-performance [class*="hover:translate"]:hover {
+  transform: none !important;
+}
+
+/* Reduce shadow complexity */
+html.android-performance [class*="shadow"],
+body.android-performance [class*="shadow"] {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Disable complex gradients */
+html.android-performance [class*="gradient"],
+body.android-performance [class*="gradient"] {
+  background-image: linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary)) !important;
+  background-size: 100% 100% !important;
+}
+
+/* Low power device optimizations */
+html.low-power-device,
+body.low-power-device {
+  animation: none !important;
+  background-attachment: scroll !important;
+  background-size: 150% 150% !important;
+  will-change: auto !important;
+}
+
+html.low-power-device *,
+body.low-power-device * {
+  transition-duration: 80ms !important;
+  animation-duration: 0.01ms !important;
+  animation-delay: 0.01ms !important;
+  will-change: auto !important;
+}
+
+html.low-power-device [class*="backdrop-blur"],
+body.low-power-device [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.low-power-device [class*="transform"],
+html.low-power-device [class*="translate"],
+html.low-power-device [class*="scale"] {
+  transform: none !important;
+  will-change: auto !important;
+}
+
+html.low-power-device [class*="shadow"],
+body.low-power-device [class*="shadow"] {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  text-shadow: none !important;
 }
 
 /* Tema-spesifik text renkleri */
@@ -302,6 +377,108 @@ body.android-performance [class*="backdrop-blur"] {
   @media (max-width: 640px) {
     main {
       padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
+    }
+  }
+
+  /* Mobile-first responsive utilities */
+  .mobile-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .mobile-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .mobile-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .mobile-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+  }
+
+  /* Text overflow handling */
+  .text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .text-ellipsis-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .text-ellipsis-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Touch target optimization */
+  @media (max-width: 768px) {
+    button,
+    a,
+    input[type="button"],
+    input[type="submit"],
+    [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Mobile typography optimizations */
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 1.75rem;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      line-height: 1.3;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      line-height: 1.4;
+    }
+
+    p {
+      line-height: 1.5;
+    }
+  }
+
+  /* Container max-width utilities */
+  .container-mobile {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-mobile {
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container-mobile {
+      max-width: 768px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-mobile {
+      max-width: 1024px;
     }
   }
 }

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="center_horizontal">
+
+        <!-- Header Card - Web sitesi gibi -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/card_header"
+            app:cardBackgroundColor="@color/bg_gray_900_90"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="16dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/blue_500_20">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Badge -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/badge_primary"
+                    app:cardBackgroundColor="@color/blue_500_20"
+                    app:cardCornerRadius="999dp"
+                    app:cardElevation="8dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/blue_500_20">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp">
+
+                        <View
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:background="@drawable/badge_dot_blue"
+                            android:layout_marginEnd="8dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SU HATIRLATICISI"
+                            android:textColor="@color/blue_400_text"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.3" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💧 Su Tüketimi Takibi"
+                    android:textColor="@color/text_primary"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Günlük su tüketiminizi takip edin ve sağlıklı kalın!"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Water Glass Card - Web sitesi gibi -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/card_header"
+            app:cardBackgroundColor="@color/bg_gray_900_90"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="16dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/blue_500_20">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="32dp"
+                android:gravity="center">
+
+                <!-- Water Glass Animation Container -->
+                <FrameLayout
+                    android:id="@+id/water_glass_container"
+                    android:layout_width="192dp"
+                    android:layout_height="256dp"
+                    android:layout_marginBottom="24dp">
+
+                    <!-- Water Fill (animated) -->
+                    <View
+                        android:id="@+id/water_fill"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_gravity="bottom"
+                        android:background="@drawable/water_gradient" />
+
+                    <!-- Glass Frame -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/glass_frame" />
+                </FrameLayout>
+
+                <!-- Water Amount Display -->
+                <TextView
+                    android:id="@+id/water_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0ml"
+                    android:textColor="@color/text_primary"
+                    android:textSize="56sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/water_goal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="/ 2000 ml"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="20sp"
+                    android:layout_marginBottom="24dp" />
+
+                <!-- Progress Bar -->
+                <ProgressBar
+                    android:id="@+id/water_progress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp"
+                    android:max="2000"
+                    android:progress="0"
+                    android:progressTint="@color/primary"
+                    android:progressBackgroundTint="@color/border_gray_700"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:id="@+id/water_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hedefe 2000ml kaldı"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Quick Add Buttons - Web sitesi gibi -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚡ Hızlı Ekle"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:rowCount="2"
+            android:alignmentMode="alignMargins"
+            android:useDefaultMargins="true">
+
+            <Button
+                android:id="@+id/btn_add_100"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:text="💧\n+100 ml"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/button_blue"
+                android:elevation="8dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_add_250"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:text="💧\n+250 ml"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/button_blue"
+                android:elevation="8dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_add_500"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:text="💧\n+500 ml"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/button_blue"
+                android:elevation="8dp"
+                android:stateListAnimator="@null" />
+
+            <Button
+                android:id="@+id/btn_add_1000"
+                android:layout_width="0dp"
+                android:layout_height="64dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="8dp"
+                android:text="💧\n+1000 ml"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/button_blue"
+                android:elevation="8dp"
+                android:stateListAnimator="@null" />
+        </GridLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

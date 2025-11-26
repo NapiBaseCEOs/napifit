@@ -1,0 +1,7 @@
+com.napibase.napifit.test.app-jetified-core-1.5.0-0 C:\Users\Administrator\.gradle\caches\8.13\transforms\073fab165fb9ef02bfa8679ceae56e2c\transformed\jetified-core-1.5.0\res
+com.napibase.napifit.test.app-jetified-annotation-experimental-1.3.0-1 C:\Users\Administrator\.gradle\caches\8.13\transforms\7c512246dad7c644cc6b0546cd4bac5a\transformed\jetified-annotation-experimental-1.3.0\res
+com.napibase.napifit.test.app-androidTest-2 C:\Users\Administrator\Desktop\NapiBase\android-native\app\build\generated\res\resValues\androidTest\debug
+com.napibase.napifit.test.app-updated_navigation_xml-3 C:\Users\Administrator\Desktop\NapiBase\android-native\app\build\generated\updated_navigation_xml\debugAndroidTest
+com.napibase.napifit.test.app-mergeDebugAndroidTestResources-4 C:\Users\Administrator\Desktop\NapiBase\android-native\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+com.napibase.napifit.test.app-mergeDebugAndroidTestResources-5 C:\Users\Administrator\Desktop\NapiBase\android-native\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+com.napibase.napifit.test.app-debugAndroidTest-6 C:\Users\Administrator\Desktop\NapiBase\android-native\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources

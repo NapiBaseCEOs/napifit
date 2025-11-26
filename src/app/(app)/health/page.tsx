@@ -21,7 +21,7 @@ export default async function HealthPage({ searchParams }: HealthPageProps = {})
       supabase = createSupabaseServerClient();
     } catch (supabaseError) {
       console.error("Failed to create Supabase client:", supabaseError);
-      throw new Error("Database bağlantısı kurulamadı");
+      throw new Error("Database connection failed");
     }
 
     let userId: string | null = null;
