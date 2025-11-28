@@ -9,7 +9,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.widget.NestedScrollView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.google.android.material.card.MaterialCardView;
@@ -20,16 +20,13 @@ import java.lang.String;
 
 public final class FragmentDashboardBinding implements ViewBinding {
   @NonNull
-  private final NestedScrollView rootView;
+  private final SwipeRefreshLayout rootView;
 
   @NonNull
   public final TextView balanceValue;
 
   @NonNull
   public final MaterialCardView bmiBadge;
-
-  @NonNull
-  public final TextView bmiCategory;
 
   @NonNull
   public final TextView bmiValue;
@@ -74,6 +71,9 @@ public final class FragmentDashboardBinding implements ViewBinding {
   public final MaterialCardView cardTargetWeight;
 
   @NonNull
+  public final MaterialCardView cardWater;
+
+  @NonNull
   public final MaterialCardView cardWeight;
 
   @NonNull
@@ -83,7 +83,13 @@ public final class FragmentDashboardBinding implements ViewBinding {
   public final TextView stepsValue;
 
   @NonNull
+  public final SwipeRefreshLayout swipeRefresh;
+
+  @NonNull
   public final TextView targetWeightValue;
+
+  @NonNull
+  public final TextView waterIntake;
 
   @NonNull
   public final TextView weightValue;
@@ -91,22 +97,21 @@ public final class FragmentDashboardBinding implements ViewBinding {
   @NonNull
   public final TextView welcomeText;
 
-  private FragmentDashboardBinding(@NonNull NestedScrollView rootView,
+  private FragmentDashboardBinding(@NonNull SwipeRefreshLayout rootView,
       @NonNull TextView balanceValue, @NonNull MaterialCardView bmiBadge,
-      @NonNull TextView bmiCategory, @NonNull TextView bmiValue, @NonNull TextView bmrValue,
-      @NonNull TextView bowelStatus, @NonNull Button btnAddMeal, @NonNull Button btnAddWorkout,
-      @NonNull TextView burnedCalories, @NonNull TextView caloriesCount,
-      @NonNull MaterialCardView cardBalance, @NonNull MaterialCardView cardBmr,
-      @NonNull MaterialCardView cardBowel, @NonNull MaterialCardView cardBurned,
-      @NonNull MaterialCardView cardCalories, @NonNull MaterialCardView cardSteps,
-      @NonNull MaterialCardView cardTargetWeight, @NonNull MaterialCardView cardWeight,
+      @NonNull TextView bmiValue, @NonNull TextView bmrValue, @NonNull TextView bowelStatus,
+      @NonNull Button btnAddMeal, @NonNull Button btnAddWorkout, @NonNull TextView burnedCalories,
+      @NonNull TextView caloriesCount, @NonNull MaterialCardView cardBalance,
+      @NonNull MaterialCardView cardBmr, @NonNull MaterialCardView cardBowel,
+      @NonNull MaterialCardView cardBurned, @NonNull MaterialCardView cardCalories,
+      @NonNull MaterialCardView cardSteps, @NonNull MaterialCardView cardTargetWeight,
+      @NonNull MaterialCardView cardWater, @NonNull MaterialCardView cardWeight,
       @NonNull ProgressBar loadingIndicator, @NonNull TextView stepsValue,
-      @NonNull TextView targetWeightValue, @NonNull TextView weightValue,
-      @NonNull TextView welcomeText) {
+      @NonNull SwipeRefreshLayout swipeRefresh, @NonNull TextView targetWeightValue,
+      @NonNull TextView waterIntake, @NonNull TextView weightValue, @NonNull TextView welcomeText) {
     this.rootView = rootView;
     this.balanceValue = balanceValue;
     this.bmiBadge = bmiBadge;
-    this.bmiCategory = bmiCategory;
     this.bmiValue = bmiValue;
     this.bmrValue = bmrValue;
     this.bowelStatus = bowelStatus;
@@ -121,17 +126,20 @@ public final class FragmentDashboardBinding implements ViewBinding {
     this.cardCalories = cardCalories;
     this.cardSteps = cardSteps;
     this.cardTargetWeight = cardTargetWeight;
+    this.cardWater = cardWater;
     this.cardWeight = cardWeight;
     this.loadingIndicator = loadingIndicator;
     this.stepsValue = stepsValue;
+    this.swipeRefresh = swipeRefresh;
     this.targetWeightValue = targetWeightValue;
+    this.waterIntake = waterIntake;
     this.weightValue = weightValue;
     this.welcomeText = welcomeText;
   }
 
   @Override
   @NonNull
-  public NestedScrollView getRoot() {
+  public SwipeRefreshLayout getRoot() {
     return rootView;
   }
 
@@ -165,12 +173,6 @@ public final class FragmentDashboardBinding implements ViewBinding {
       id = R.id.bmi_badge;
       MaterialCardView bmiBadge = ViewBindings.findChildViewById(rootView, id);
       if (bmiBadge == null) {
-        break missingId;
-      }
-
-      id = R.id.bmi_category;
-      TextView bmiCategory = ViewBindings.findChildViewById(rootView, id);
-      if (bmiCategory == null) {
         break missingId;
       }
 
@@ -258,6 +260,12 @@ public final class FragmentDashboardBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.card_water;
+      MaterialCardView cardWater = ViewBindings.findChildViewById(rootView, id);
+      if (cardWater == null) {
+        break missingId;
+      }
+
       id = R.id.card_weight;
       MaterialCardView cardWeight = ViewBindings.findChildViewById(rootView, id);
       if (cardWeight == null) {
@@ -276,9 +284,17 @@ public final class FragmentDashboardBinding implements ViewBinding {
         break missingId;
       }
 
+      SwipeRefreshLayout swipeRefresh = (SwipeRefreshLayout) rootView;
+
       id = R.id.target_weight_value;
       TextView targetWeightValue = ViewBindings.findChildViewById(rootView, id);
       if (targetWeightValue == null) {
+        break missingId;
+      }
+
+      id = R.id.water_intake;
+      TextView waterIntake = ViewBindings.findChildViewById(rootView, id);
+      if (waterIntake == null) {
         break missingId;
       }
 
@@ -294,11 +310,11 @@ public final class FragmentDashboardBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentDashboardBinding((NestedScrollView) rootView, balanceValue, bmiBadge,
-          bmiCategory, bmiValue, bmrValue, bowelStatus, btnAddMeal, btnAddWorkout, burnedCalories,
-          caloriesCount, cardBalance, cardBmr, cardBowel, cardBurned, cardCalories, cardSteps,
-          cardTargetWeight, cardWeight, loadingIndicator, stepsValue, targetWeightValue,
-          weightValue, welcomeText);
+      return new FragmentDashboardBinding((SwipeRefreshLayout) rootView, balanceValue, bmiBadge,
+          bmiValue, bmrValue, bowelStatus, btnAddMeal, btnAddWorkout, burnedCalories, caloriesCount,
+          cardBalance, cardBmr, cardBowel, cardBurned, cardCalories, cardSteps, cardTargetWeight,
+          cardWater, cardWeight, loadingIndicator, stepsValue, swipeRefresh, targetWeightValue,
+          waterIntake, weightValue, welcomeText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

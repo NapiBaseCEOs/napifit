@@ -654,6 +654,7 @@
     <color name="bg_gray_900_90">#E6111827</color>
     <color name="blue_400_text">#60A5FA</color>
     <color name="blue_500_20">#333B82F6</color>
+    <color name="blur_overlay">#80000000</color>
     <color name="border">#374151</color>
     <color name="border_gray_700">#374151</color>
     <color name="border_gray_800">#1F2937</color>
@@ -721,6 +722,10 @@
     <color name="fitness_purple">#A855F7</color>
     <color name="foreground_material_dark">@android:color/white</color>
     <color name="foreground_material_light">@android:color/black</color>
+    <color name="glass_border">#40FFFFFF</color>
+    <color name="glass_dark">#30000000</color>
+    <color name="glass_dark_border">#20FFFFFF</color>
+    <color name="glass_white">#20FFFFFF</color>
     <color name="gradient_amber">#F59E0B</color>
     <color name="gradient_blue">#3B82F6</color>
     <color name="gradient_cyan">#06B6D4</color>
@@ -2078,6 +2083,7 @@
     <string name="abc_shareactionprovider_share_with">Share with</string>
     <string name="abc_shareactionprovider_share_with_application">Share with <ns2:g example="Mail" id="application_name">%s</ns2:g></string>
     <string name="abc_toolbar_collapse_description">Collapse</string>
+    <string name="add_action">Hızlı İşlem</string>
     <string name="androidx_startup" translatable="false">androidx.startup</string>
     <string name="app_name">NapiFit</string>
     <string name="appbar_scrolling_view_behavior" translatable="false">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
@@ -13154,6 +13160,10 @@
     </declare-styleable>
     <declare-styleable name="StateSet">
         <attr format="reference" name="defaultState"/>
+    </declare-styleable>
+    <declare-styleable name="SwipeRefreshLayout">
+        
+        <attr format="color" name="swipeRefreshLayoutProgressSpinnerBackgroundColor"/>
     </declare-styleable>
     <declare-styleable name="SwitchCompat">
         

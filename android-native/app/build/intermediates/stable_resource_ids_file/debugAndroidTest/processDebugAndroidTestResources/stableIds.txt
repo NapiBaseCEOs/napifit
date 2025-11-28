@@ -1,2 +1,0 @@
-com.napibase.napifit.test:style/WhiteBackgroundTheme = 0x7f010001
-com.napibase.napifit.test:style/WhiteBackgroundDialogTheme = 0x7f010000

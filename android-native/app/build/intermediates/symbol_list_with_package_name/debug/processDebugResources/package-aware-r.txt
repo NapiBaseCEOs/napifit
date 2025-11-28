@@ -1152,6 +1152,7 @@ attr suffixText
 attr suffixTextAppearance
 attr suffixTextColor
 attr suggestionRowLayout
+attr swipeRefreshLayoutProgressSpinnerBackgroundColor
 attr switchMinWidth
 attr switchPadding
 attr switchStyle
@@ -1410,6 +1411,7 @@ color bg_gray_900_80
 color bg_gray_900_90
 color blue_400_text
 color blue_500_20
+color blur_overlay
 color border
 color border_gray_700
 color border_gray_800
@@ -1481,6 +1483,10 @@ color fitness_orange
 color fitness_purple
 color foreground_material_dark
 color foreground_material_light
+color glass_border
+color glass_dark
+color glass_dark_border
+color glass_white
 color gradient_amber
 color gradient_blue
 color gradient_cyan
@@ -3150,6 +3156,8 @@ drawable error_message_background
 drawable float_circle_orange
 drawable float_circle_primary
 drawable glass_frame
+drawable glassmorphism_card
+drawable glassmorphism_dark
 drawable gradient_background
 drawable gradient_overlay
 drawable gradient_spinner
@@ -3251,6 +3259,7 @@ drawable notification_template_icon_low_bg
 drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
 drawable radial_gradient_overlay
+drawable shimmer_gradient
 drawable success_message_background
 drawable test_level_drawable
 drawable tooltip_frame_dark
@@ -3339,6 +3348,7 @@ id animateToEnd
 id animateToStart
 id antiClockwise
 id anticipate
+id app_bar_layout
 id arc
 id asConfigured
 id async
@@ -3354,7 +3364,6 @@ id beginning
 id bestChoice
 id blocking
 id bmi_badge
-id bmi_category
 id bmi_value
 id bmr_value
 id bottom
@@ -3399,6 +3408,7 @@ id card_meal
 id card_metric
 id card_steps
 id card_target_weight
+id card_water
 id card_weight
 id card_workout
 id carryVelocity
@@ -3426,6 +3436,7 @@ id code_input_4
 id code_input_5
 id code_input_6
 id collapseActionView
+id collapsing_toolbar
 id community_filters
 id community_header_card
 id community_recycler
@@ -3495,6 +3506,11 @@ id error_message
 id exitUntilCollapsed
 id expand_activities_button
 id expanded_menu
+id fab
+id fab_add_meal
+id fab_add_water
+id fab_add_workout
+id fab_overlay
 id fade
 id fill
 id fill_horizontal
@@ -3630,9 +3646,7 @@ id mtrl_picker_title_text
 id mtrl_view_tag_bottom_padding
 id multiply
 id nav_controller_view_tag
-id nav_host_fragment_activity_main
 id nav_host_fragment_container
-id nav_view
 id navigation_bar_item_active_indicator_view
 id navigation_bar_item_icon_container
 id navigation_bar_item_icon_view
@@ -3761,6 +3775,7 @@ id snapMargins
 id south
 id spacer
 id special_effects_controller_view_tag
+id speed_dial_container
 id spline
 id split_action_bar
 id spread
@@ -3784,7 +3799,9 @@ id submenuarrow
 id submit_area
 id success_message
 id supportScrollUp
+id swipe_refresh
 id tabMode
+id tab_layout
 id tab_meal
 id tab_metric
 id tab_workout
@@ -3844,6 +3861,7 @@ id useLogo
 id verify_code_card
 id vertical_only
 id view_offset_helper
+id view_pager
 id view_transition
 id view_tree_lifecycle_owner
 id view_tree_on_back_pressed_dispatcher_owner
@@ -3855,6 +3873,7 @@ id water_amount
 id water_fill
 id water_glass_container
 id water_goal
+id water_intake
 id water_progress
 id water_status
 id weight_value
@@ -4008,6 +4027,7 @@ layout design_navigation_menu
 layout design_navigation_menu_item
 layout design_text_input_end_icon
 layout design_text_input_start_icon
+layout fab_speed_dial_menu
 layout fragment_community
 layout fragment_dashboard
 layout fragment_health
@@ -4109,6 +4129,7 @@ string abc_searchview_description_voice
 string abc_shareactionprovider_share_with
 string abc_shareactionprovider_share_with_application
 string abc_toolbar_collapse_description
+string add_action
 string androidx_startup
 string app_name
 string appbar_scrolling_view_behavior
@@ -5573,6 +5594,7 @@ styleable State android_id constraints
 styleable StateListDrawable android_dither android_visible android_variablePadding android_constantSize android_enterFadeDuration android_exitFadeDuration
 styleable StateListDrawableItem android_drawable
 styleable StateSet defaultState
+styleable SwipeRefreshLayout swipeRefreshLayoutProgressSpinnerBackgroundColor
 styleable SwitchCompat android_textOn android_textOff android_thumb showText splitTrack switchMinWidth switchPadding switchTextAppearance thumbTextPadding thumbTint thumbTintMode track trackTint trackTintMode
 styleable SwitchMaterial useMaterialThemeColors
 styleable TabItem android_icon android_layout android_text

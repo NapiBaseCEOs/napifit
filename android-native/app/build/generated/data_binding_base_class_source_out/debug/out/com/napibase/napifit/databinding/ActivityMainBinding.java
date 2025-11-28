@@ -4,13 +4,17 @@ package com.napibase.napifit.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.FragmentContainerView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.viewpager2.widget.ViewPager2;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.napibase.napifit.R;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -18,30 +22,65 @@ import java.lang.String;
 
 public final class ActivityMainBinding implements ViewBinding {
   @NonNull
-  private final ConstraintLayout rootView;
+  private final CoordinatorLayout rootView;
 
   @NonNull
-  public final ConstraintLayout container;
+  public final AppBarLayout appBarLayout;
 
   @NonNull
-  public final FragmentContainerView navHostFragmentActivityMain;
+  public final CollapsingToolbarLayout collapsingToolbar;
 
   @NonNull
-  public final BottomNavigationView navView;
+  public final CoordinatorLayout container;
 
-  private ActivityMainBinding(@NonNull ConstraintLayout rootView,
-      @NonNull ConstraintLayout container,
-      @NonNull FragmentContainerView navHostFragmentActivityMain,
-      @NonNull BottomNavigationView navView) {
+  @NonNull
+  public final FloatingActionButton fab;
+
+  @NonNull
+  public final FloatingActionButton fabAddMeal;
+
+  @NonNull
+  public final FloatingActionButton fabAddWater;
+
+  @NonNull
+  public final FloatingActionButton fabAddWorkout;
+
+  @NonNull
+  public final View fabOverlay;
+
+  @NonNull
+  public final LinearLayout speedDialContainer;
+
+  @NonNull
+  public final TabLayout tabLayout;
+
+  @NonNull
+  public final ViewPager2 viewPager;
+
+  private ActivityMainBinding(@NonNull CoordinatorLayout rootView,
+      @NonNull AppBarLayout appBarLayout, @NonNull CollapsingToolbarLayout collapsingToolbar,
+      @NonNull CoordinatorLayout container, @NonNull FloatingActionButton fab,
+      @NonNull FloatingActionButton fabAddMeal, @NonNull FloatingActionButton fabAddWater,
+      @NonNull FloatingActionButton fabAddWorkout, @NonNull View fabOverlay,
+      @NonNull LinearLayout speedDialContainer, @NonNull TabLayout tabLayout,
+      @NonNull ViewPager2 viewPager) {
     this.rootView = rootView;
+    this.appBarLayout = appBarLayout;
+    this.collapsingToolbar = collapsingToolbar;
     this.container = container;
-    this.navHostFragmentActivityMain = navHostFragmentActivityMain;
-    this.navView = navView;
+    this.fab = fab;
+    this.fabAddMeal = fabAddMeal;
+    this.fabAddWater = fabAddWater;
+    this.fabAddWorkout = fabAddWorkout;
+    this.fabOverlay = fabOverlay;
+    this.speedDialContainer = speedDialContainer;
+    this.tabLayout = tabLayout;
+    this.viewPager = viewPager;
   }
 
   @Override
   @NonNull
-  public ConstraintLayout getRoot() {
+  public CoordinatorLayout getRoot() {
     return rootView;
   }
 
@@ -66,22 +105,71 @@ public final class ActivityMainBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
-      ConstraintLayout container = (ConstraintLayout) rootView;
-
-      id = R.id.nav_host_fragment_activity_main;
-      FragmentContainerView navHostFragmentActivityMain = ViewBindings.findChildViewById(rootView, id);
-      if (navHostFragmentActivityMain == null) {
+      id = R.id.app_bar_layout;
+      AppBarLayout appBarLayout = ViewBindings.findChildViewById(rootView, id);
+      if (appBarLayout == null) {
         break missingId;
       }
 
-      id = R.id.nav_view;
-      BottomNavigationView navView = ViewBindings.findChildViewById(rootView, id);
-      if (navView == null) {
+      id = R.id.collapsing_toolbar;
+      CollapsingToolbarLayout collapsingToolbar = ViewBindings.findChildViewById(rootView, id);
+      if (collapsingToolbar == null) {
         break missingId;
       }
 
-      return new ActivityMainBinding((ConstraintLayout) rootView, container,
-          navHostFragmentActivityMain, navView);
+      CoordinatorLayout container = (CoordinatorLayout) rootView;
+
+      id = R.id.fab;
+      FloatingActionButton fab = ViewBindings.findChildViewById(rootView, id);
+      if (fab == null) {
+        break missingId;
+      }
+
+      id = R.id.fab_add_meal;
+      FloatingActionButton fabAddMeal = ViewBindings.findChildViewById(rootView, id);
+      if (fabAddMeal == null) {
+        break missingId;
+      }
+
+      id = R.id.fab_add_water;
+      FloatingActionButton fabAddWater = ViewBindings.findChildViewById(rootView, id);
+      if (fabAddWater == null) {
+        break missingId;
+      }
+
+      id = R.id.fab_add_workout;
+      FloatingActionButton fabAddWorkout = ViewBindings.findChildViewById(rootView, id);
+      if (fabAddWorkout == null) {
+        break missingId;
+      }
+
+      id = R.id.fab_overlay;
+      View fabOverlay = ViewBindings.findChildViewById(rootView, id);
+      if (fabOverlay == null) {
+        break missingId;
+      }
+
+      id = R.id.speed_dial_container;
+      LinearLayout speedDialContainer = ViewBindings.findChildViewById(rootView, id);
+      if (speedDialContainer == null) {
+        break missingId;
+      }
+
+      id = R.id.tab_layout;
+      TabLayout tabLayout = ViewBindings.findChildViewById(rootView, id);
+      if (tabLayout == null) {
+        break missingId;
+      }
+
+      id = R.id.view_pager;
+      ViewPager2 viewPager = ViewBindings.findChildViewById(rootView, id);
+      if (viewPager == null) {
+        break missingId;
+      }
+
+      return new ActivityMainBinding((CoordinatorLayout) rootView, appBarLayout, collapsingToolbar,
+          container, fab, fabAddMeal, fabAddWater, fabAddWorkout, fabOverlay, speedDialContainer,
+          tabLayout, viewPager);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

@@ -6,7 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
+import androidx.viewpager2.widget.ViewPager2
+import com.napibase.napifit.ViewPagerAdapter
 import com.napibase.napifit.api.ApiError
 import com.napibase.napifit.databinding.FragmentDashboardBinding
 
@@ -28,6 +29,20 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+        viewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
+        
+        // Set up SwipeRefreshLayout
+        binding.swipeRefresh.setColorSchemeColors(
+            resources.getColor(com.napibase.napifit.R.color.primary, null),
+            resources.getColor(com.napibase.napifit.R.color.primary_500, null)
+        )
+        binding.swipeRefresh.setProgressBackgroundColorSchemeColor(
+            resources.getColor(com.napibase.napifit.R.color.bg_gray_900_90, null)
+        )
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.loadStats()
+        }
+        
         // Add fade-up animation to all cards (staggered)
         val cards = listOfNotNull(
             binding.cardWeight,
@@ -35,6 +50,7 @@ class DashboardFragment : Fragment() {
             binding.cardSteps,
             binding.cardCalories,
             binding.cardBurned,
+            binding.cardWater,
             binding.cardBmr.takeIf { it.visibility == View.VISIBLE },
             binding.cardBalance.takeIf { it.visibility == View.VISIBLE },
             binding.cardBowel.takeIf { it.visibility == View.VISIBLE }
@@ -49,8 +65,6 @@ class DashboardFragment : Fragment() {
                 .setStartDelay((index * 100).toLong())
                 .start()
         }
-        
-        viewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
         
         // Observe data
         viewModel.stats.observe(viewLifecycleOwner) { stats ->
@@ -70,6 +84,9 @@ class DashboardFragment : Fragment() {
         
         // Observe loading state
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            // Update SwipeRefreshLayout
+            binding.swipeRefresh.isRefreshing = isLoading
+            
             binding.loadingIndicator.visibility = if (isLoading) View.VISIBLE else View.GONE
             
             // Animate loading indicator
@@ -113,19 +130,17 @@ class DashboardFragment : Fragment() {
             }
         }
         
-        // Quick action buttons
+        // Quick action buttons - navigate to Health tab
         binding.btnAddMeal.setOnClickListener {
-            // Navigate to health fragment with meal tab
-            findNavController().navigate(
-                com.napibase.napifit.R.id.navigation_health
-            )
+            // Get ViewPager2 from activity and navigate to Health tab
+            val viewPager = activity?.findViewById<ViewPager2>(com.napibase.napifit.R.id.view_pager)
+            viewPager?.currentItem = ViewPagerAdapter.TAB_HEALTH
         }
         
         binding.btnAddWorkout.setOnClickListener {
-            // Navigate to health fragment with workout tab
-            findNavController().navigate(
-                com.napibase.napifit.R.id.navigation_health
-            )
+            // Get ViewPager2 from activity and navigate to Health tab
+            val viewPager = activity?.findViewById<ViewPager2>(com.napibase.napifit.R.id.view_pager)
+            viewPager?.currentItem = ViewPagerAdapter.TAB_HEALTH
         }
         
         // Load data

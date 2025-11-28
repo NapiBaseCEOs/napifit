@@ -19,8 +19,13 @@ android {
         
         // API base URL (must end with / for Retrofit)
         // For local development (emulator): http://10.0.2.2:3001/api/
-        // For Vercel production: https://your-vercel-url.vercel.app/api/
-        buildConfigField "String", "API_BASE_URL", "\"http://10.0.2.2:3001/api/\""
+        // For Vercel production: https://api-server-sefas-projects-21462460.vercel.app/api/
+        buildConfigField "String", "API_BASE_URL", "\"https://api-server-sefas-projects-21462460.vercel.app/api/\""
+        
+        // Vercel Deployment Protection Bypass Token
+        // Get from: Vercel Dashboard > api-server > Settings > Deployment Protection > Protection Bypass for Automation
+        // Set via environment variable: VERCEL_BYPASS_TOKEN=your-token
+        buildConfigField "String", "VERCEL_BYPASS_TOKEN", "\"${System.getenv('VERCEL_BYPASS_TOKEN') ?: ''}\""
     }
 
     signingConfigs {
@@ -43,7 +48,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
             // Production API URL
-            buildConfigField "String", "API_BASE_URL", "\"https://napifit-l1dp9pahz-sefas-projects-21462460.vercel.app/api/\""
+            buildConfigField "String", "API_BASE_URL", "\"https://api-server-sefas-projects-21462460.vercel.app/api/\""
         }
         debug {
             minifyEnabled false
@@ -96,6 +101,12 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.7.6'
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.6'
     
+    // ViewPager2 for swipeable tabs
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    
+    // SwipeRefreshLayout for pull-to-refresh
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    
     // Retrofit for API calls
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
@@ -118,6 +129,9 @@ dependencies {
     
     // Image Loading
     implementation 'com.github.bumptech.glide:glide:4.16.0'
+    
+    // MotionLayout for advanced animations
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
     // Testing
     testImplementation 'junit:junit:4.13.2'

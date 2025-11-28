@@ -105,5 +105,12 @@
     <!-- Radial gradient overlay colors -->
     <color name="radial_overlay_center">#1A111827</color>
     <color name="radial_overlay_edge">#00000000</color>
+    
+    <!-- Glassmorphism colors -->
+    <color name="glass_white">#20FFFFFF</color>
+    <color name="glass_border">#40FFFFFF</color>
+    <color name="glass_dark">#30000000</color>
+    <color name="glass_dark_border">#20FFFFFF</color>
+    <color name="blur_overlay">#80000000</color>
 </resources>
 

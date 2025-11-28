@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.napibase.napifit.app-mergeDebugResources-51:/values-port/values-port.xml",
+            "outputFile": "com.napibase.napifit.app-mergeDebugResources-52:/values-port/values-port.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Administrator\\.gradle\\caches\\8.13\\transforms\\b87b8315ec7a305dfb371eb752901671\\transformed\\appcompat-1.6.1\\res\\values-port\\values-port.xml",

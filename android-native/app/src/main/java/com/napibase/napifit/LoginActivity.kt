@@ -43,10 +43,14 @@ class LoginActivity : AppCompatActivity() {
     
     private fun setupUI() {
         try {
-            // Float animations for circles
+            // Enable hardware acceleration for animated views
+            binding.floatCircle1.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
+            binding.floatCircle2.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
+            
+            // Float animations for circles (optimized stagger)
             binding.floatCircle1.startAnimation(AnimationUtils.loadAnimation(this, R.anim.float_animation))
             binding.floatCircle2.startAnimation(AnimationUtils.loadAnimation(this, R.anim.float_animation).apply {
-                startOffset = 750 // Stagger animation
+                startOffset = 400 // Reduced from 750 for faster feel
             })
         } catch (e: Exception) {
             android.util.Log.e("LoginActivity", "Error in setupUI", e)
@@ -56,13 +60,19 @@ class LoginActivity : AppCompatActivity() {
     
     private fun setupAnimations() {
         try {
-            // Fade up animation for login card
+            // Enable hardware acceleration
+            binding.loginCard.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
+            
+            // Fade up animation for login card (optimized)
             binding.loginCard.alpha = 0f
-            binding.loginCard.translationY = 20f
+            binding.loginCard.translationY = 15f // Reduced from 20
             binding.loginCard.animate()
                 .alpha(1f)
                 .translationY(0f)
-                .setDuration(600)
+                .setDuration(400) // Reduced from 600
+                .withEndAction {
+                    binding.loginCard.setLayerType(android.view.View.LAYER_TYPE_NONE, null)
+                }
                 .start()
         } catch (e: Exception) {
             android.util.Log.e("LoginActivity", "Error in setupAnimations", e)

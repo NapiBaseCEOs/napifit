@@ -24,6 +24,7 @@
     <string name="loading">Yükleniyor...</string>
     <string name="error">Hata oluştu</string>
     <string name="success">Başarılı</string>
+    <string name="add_action">Hızlı İşlem</string>
     
     <!-- Profile -->
     <string name="profile_badge_label">Profil Özeti</string>

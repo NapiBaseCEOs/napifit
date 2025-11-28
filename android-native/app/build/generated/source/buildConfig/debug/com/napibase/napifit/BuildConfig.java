@@ -10,5 +10,7 @@ public final class BuildConfig {
   public static final int VERSION_CODE = 1;
   public static final String VERSION_NAME = "1.0.0";
   // Field from default config.
-  public static final String API_BASE_URL = "http://10.0.2.2:3001/api/";
+  public static final String API_BASE_URL = "https://api-server-sefas-projects-21462460.vercel.app/api/";
+  // Field from default config.
+  public static final String VERCEL_BYPASS_TOKEN = "";
 }

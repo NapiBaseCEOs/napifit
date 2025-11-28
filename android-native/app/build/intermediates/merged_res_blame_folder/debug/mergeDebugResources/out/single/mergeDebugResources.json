@@ -1,218 +1,234 @@
 [
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_vote_button_negative.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/vote_button_negative.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_glass_frame.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/glass_frame.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_ic_dashboard.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/ic_dashboard.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_badge_success.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/badge_success.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_float_circle_primary.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/float_circle_primary.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_animated_spinner.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/animated_spinner.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_activity_forgot_password.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/activity_forgot_password.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_button_purple.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/button_purple.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_vote_button_positive.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/vote_button_positive.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_badge_dot_blue.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/badge_dot_blue.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_button_blue.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/button_blue.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_input_field.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/input_field.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_activity_verify_code.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/activity_verify_code.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_water_gradient.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/water_gradient.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_badge_primary.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/badge_primary.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_activity_main.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/activity_main.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_activity_forgot_password.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/activity_forgot_password.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_badge_warning.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/badge_warning.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_ic_dashboard.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_dashboard.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/anim_fade_up.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/anim/fade_up.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_shimmer_gradient.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/shimmer_gradient.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_activity_splash.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/activity_splash.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_gradient_background.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/gradient_background.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_button_orange.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/button_orange.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_fab_speed_dial_menu.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fab_speed_dial_menu.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_badge_dot.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/badge_dot.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_card_header.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/card_header.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_code_input_background.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/code_input_background.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_gradient_overlay.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/gradient_overlay.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/mipmap-anydpi-v26/ic_launcher_round.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_login_card_background.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/login_card_background.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_code_input_background.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/code_input_background.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_activity_login.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/activity_login.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_success_message_background.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/success_message_background.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_button_purple.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/button_purple.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_button_gradient_login.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/button_gradient_login.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_success_message_background.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/success_message_background.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/anim_stagger.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/anim/stagger.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_ic_water.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/ic_water.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_badge_dot_blue.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/badge_dot_blue.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_gradient_background.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/gradient_background.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_badge_warning.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/badge_warning.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_button_blue.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/button_blue.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_activity_main.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/activity_main.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_ic_profile.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/ic_profile.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_radial_gradient_overlay.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/radial_gradient_overlay.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_button_gradient_login.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/button_gradient_login.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_login_card_background.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/login_card_background.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_badge_success.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/badge_success.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_fragment_health.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_health.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_badge_primary.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/badge_primary.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_ic_community.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_community.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/menu_bottom_nav_menu.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/menu/bottom_nav_menu.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_bottom_nav_background.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/bottom_nav_background.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_ic_community.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/ic_community.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_float_circle_orange.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/float_circle_orange.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_card_header.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/card_header.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_ic_profile.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_profile.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_card_background.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/card_background.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/anim_float_animation.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/anim/float_animation.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_bottom_nav_background.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/bottom_nav_background.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_float_circle_primary.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/float_circle_primary.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_vote_button_positive.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/vote_button_positive.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_fragment_profile.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_profile.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_activity_verify_code.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/activity_verify_code.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_card_style.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/card_style.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_button_primary.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/button_primary.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_fragment_water.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_water.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_fragment_water.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/fragment_water.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_gradient_spinner.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/gradient_spinner.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_fragment_health.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/fragment_health.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_input_field.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/input_field.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_radial_gradient_overlay.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/radial_gradient_overlay.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_item_feature_request.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/item_feature_request.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_error_message_background.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/error_message_background.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_card_style.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/card_style.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_vote_button_negative.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/vote_button_negative.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_fragment_dashboard.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/fragment_dashboard.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_ic_health.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_health.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_fragment_community.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/fragment_community.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_card_background.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/card_background.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/color_bottom_nav_item_color.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/color/bottom_nav_item_color.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_ic_water.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/ic_water.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/anim_float_animation.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/anim/float_animation.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/menu_bottom_nav_menu.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/menu/bottom_nav_menu.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_ic_health.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/ic_health.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_water_gradient.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/water_gradient.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_float_circle_orange.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/float_circle_orange.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_badge_dot.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/badge_dot.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_glass_frame.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/glass_frame.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_activity_login.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/activity_login.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_activity_reset_password.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/activity_reset_password.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/anim_fade_up.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/anim/fade_up.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_gradient_spinner.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/gradient_spinner.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_gradient_overlay.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/gradient_overlay.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_fragment_profile.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/fragment_profile.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/layout_fragment_community.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_community.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/layout_item_feature_request.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/layout/item_feature_request.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/color_bottom_nav_item_color.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/color/bottom_nav_item_color.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_error_message_background.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/error_message_background.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_button_orange.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/button_orange.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/anim_stagger.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/anim/stagger.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_button_primary.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/button_primary.xml"
     },
     {
-        "merged": "com.napibase.napifit.app-debug-53:/drawable_animated_spinner.xml.flat",
-        "source": "com.napibase.napifit.app-main-55:/drawable/animated_spinner.xml"
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_glassmorphism_card.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/glassmorphism_card.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-debug-54:/layout_activity_reset_password.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/activity_reset_password.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-debug-54:/drawable_glassmorphism_dark.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/drawable/glassmorphism_dark.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-debug-54:/layout_activity_splash.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/activity_splash.xml"
+    },
+    {
+        "merged": "com.napibase.napifit.app-debug-54:/layout_fragment_dashboard.xml.flat",
+        "source": "com.napibase.napifit.app-main-56:/layout/fragment_dashboard.xml"
     }
 ]

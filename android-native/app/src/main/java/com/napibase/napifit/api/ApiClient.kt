@@ -1,6 +1,7 @@
 package com.napibase.napifit.api
 
 import com.napibase.napifit.BuildConfig
+import okhttp3.ConnectionPool
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -45,6 +46,13 @@ object ApiClient {
         
         // Add platform header
         requestBuilder.header("x-platform", "android")
+        
+        // Add Vercel bypass token if available (for deployment protection)
+        val bypassToken = BuildConfig.VERCEL_BYPASS_TOKEN
+        if (bypassToken.isNotEmpty()) {
+            requestBuilder.header("x-vercel-protection-bypass", bypassToken)
+            Logger.d(TAG, "Vercel bypass token added to request")
+        }
         
         val newRequest = requestBuilder.build()
         val startTime = System.currentTimeMillis()
@@ -137,12 +145,27 @@ object ApiClient {
         }
     }
     
+    /**
+     * Optimized connection pool for better performance
+     * - 5 idle connections kept alive
+     * - 5 minutes keep-alive duration
+     */
+    private val connectionPool = ConnectionPool(
+        maxIdleConnections = 5,
+        keepAliveDuration = 5,
+        timeUnit = TimeUnit.MINUTES
+    )
+    
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        // Optimized timeouts (reduced from 30s)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(20, TimeUnit.SECONDS)
+        .writeTimeout(20, TimeUnit.SECONDS)
+        // Connection pooling for reuse
+        .connectionPool(connectionPool)
+        // Retry on failure
         .retryOnConnectionFailure(true)
         .build()
     

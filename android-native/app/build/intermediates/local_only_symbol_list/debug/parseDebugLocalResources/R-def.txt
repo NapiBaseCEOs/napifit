@@ -11,6 +11,7 @@ color bg_gray_900_80
 color bg_gray_900_90
 color blue_400_text
 color blue_500_20
+color blur_overlay
 color border
 color border_gray_700
 color border_gray_800
@@ -22,6 +23,10 @@ color fitness_blue
 color fitness_green
 color fitness_orange
 color fitness_purple
+color glass_border
+color glass_dark
+color glass_dark_border
+color glass_white
 color gradient_amber
 color gradient_blue
 color gradient_cyan
@@ -123,6 +128,8 @@ drawable error_message_background
 drawable float_circle_orange
 drawable float_circle_primary
 drawable glass_frame
+drawable glassmorphism_card
+drawable glassmorphism_dark
 drawable gradient_background
 drawable gradient_overlay
 drawable gradient_spinner
@@ -134,13 +141,14 @@ drawable ic_water
 drawable input_field
 drawable login_card_background
 drawable radial_gradient_overlay
+drawable shimmer_gradient
 drawable success_message_background
 drawable vote_button_negative
 drawable vote_button_positive
 drawable water_gradient
+id app_bar_layout
 id balance_value
 id bmi_badge
-id bmi_category
 id bmi_value
 id bmr_value
 id bowel_status
@@ -176,6 +184,7 @@ id card_meal
 id card_metric
 id card_steps
 id card_target_weight
+id card_water
 id card_weight
 id card_workout
 id code_input_1
@@ -184,6 +193,7 @@ id code_input_3
 id code_input_4
 id code_input_5
 id code_input_6
+id collapsing_toolbar
 id community_filters
 id community_header_card
 id community_recycler
@@ -193,6 +203,11 @@ id empty_state
 id empty_state_subtitle
 id empty_state_title
 id error_message
+id fab
+id fab_add_meal
+id fab_add_water
+id fab_add_workout
+id fab_overlay
 id float_circle_1
 id float_circle_2
 id forgot_password_card
@@ -206,8 +221,6 @@ id meal_name
 id metric_bowel
 id metric_weight
 id mobile_navigation
-id nav_host_fragment_activity_main
-id nav_view
 id navigation_community
 id navigation_dashboard
 id navigation_health
@@ -227,8 +240,11 @@ id request_user
 id request_version
 id resend_status
 id reset_password_card
+id speed_dial_container
 id steps_value
 id success_message
+id swipe_refresh
+id tab_layout
 id tab_meal
 id tab_metric
 id tab_workout
@@ -237,10 +253,12 @@ id title
 id total_meals
 id total_workouts
 id verify_code_card
+id view_pager
 id water_amount
 id water_fill
 id water_glass_container
 id water_goal
+id water_intake
 id water_progress
 id water_status
 id weight_value
@@ -254,6 +272,7 @@ layout activity_main
 layout activity_reset_password
 layout activity_splash
 layout activity_verify_code
+layout fab_speed_dial_menu
 layout fragment_community
 layout fragment_dashboard
 layout fragment_health
@@ -264,6 +283,7 @@ menu bottom_nav_menu
 mipmap ic_launcher
 mipmap ic_launcher_round
 navigation mobile_navigation
+string add_action
 string app_name
 string cancel
 string community_badge_label
