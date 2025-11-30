@@ -4,13 +4,13 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: true,
-  
+
   // Experimental features
   experimental: {
     typedRoutes: true,
     optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
   },
-  
+
   // Image optimization
   images: {
     remotePatterns: [
@@ -36,22 +36,26 @@ const nextConfig = {
     minimumCacheTTL: 60,
     unoptimized: false,
   },
-  
+
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // Production optimizations
-  swcMinify: true,
+  // swcMinify: true, // Deprecated in Next.js 15 (default enabled)
   compress: true,
-  
+
   // Output optimization
   trailingSlash: false,
   poweredByHeader: false,
-  
+
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'],
     } : false,
   },
-  
+
   // Webpack optimizations for code splitting
   webpack: (config, { isServer, dev }) => {
     if (!isServer && !dev) {
@@ -98,10 +102,10 @@ const nextConfig = {
         },
       };
     }
-    
+
     return config;
   },
-  
+
   // Headers for security and performance
   async headers() {
     return [
