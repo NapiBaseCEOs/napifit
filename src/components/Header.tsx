@@ -13,6 +13,7 @@ import type { Database } from "@/lib/supabase/types";
 import NetworkStatusIndicator from "./NetworkStatusIndicator";
 import LanguageSwitcher from "./i18n/LanguageSwitcher";
 import { useLocale } from "./i18n/LocaleProvider";
+import ThemeToggle from "./ThemeToggle";
 
 // Lazy load NotificationBell (only loads when user is authenticated)
 const NotificationBell = dynamic(() => import("./NotificationBell"), {
@@ -84,12 +85,15 @@ export default function Header() {
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
           {/* Language Switcher */}
           <LanguageSwitcher />
-          
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Network Status - Sadece desktop'ta, küçük */}
           <div className="hidden lg:block">
             <NetworkStatusIndicator />
           </div>
-          
+
           {/* Navigation */}
           <nav className="flex items-center gap-0.5 sm:gap-1 md:gap-1.5 lg:gap-2 text-[11px] sm:text-xs lg:text-sm">
             {isAuth && (
@@ -128,14 +132,14 @@ export default function Header() {
                 </Link>
               </>
             )}
-            
+
             {/* Bildirim Butonu - Nav'ın içinde, en sağda */}
             {isAuth && (
               <div className="ml-0.5 sm:ml-1 lg:ml-2">
                 <NotificationBell />
               </div>
             )}
-            
+
             {/* Auth Butonları */}
             {isAuth ? (
               <button
