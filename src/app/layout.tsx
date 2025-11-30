@@ -14,7 +14,6 @@ import MobilePerformanceTuner from "@/components/MobilePerformanceTuner";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { NetworkStatusProvider } from "@/context/NetworkStatusContext";
 import NetworkStatusOverlay from "@/components/NetworkStatusOverlay";
-import dynamicImport from "next/dynamic";
 import { headers } from "next/headers";
 import { defaultLocale, type Locale } from "@/lib/i18n/locales";
 import CountrySelectionWrapper from "@/components/CountrySelectionWrapper";
@@ -25,6 +24,7 @@ import SkipToContent from "@/components/accessibility/SkipToContent";
 
 // Lazy load heavy components
 import FloatingAIAssistantWrapper from "@/components/ai/FloatingAIAssistantWrapper";
+import WhatsNewModal from "@/components/WhatsNewModal";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://napifit.vercel.app";
 const metadataBase = new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`);
@@ -132,6 +132,7 @@ export default async function RootLayout({
                       </main>
                       <MobileInstallPrompt />
                       <FloatingAIAssistantWrapper />
+                      <WhatsNewModal />
                       <CountrySelectionWrapper />
                     </UpdateCheckerProvider>
                   </SupabaseProvider>
