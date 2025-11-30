@@ -24,10 +24,7 @@ import OfflineBanner from "@/components/OfflineBanner";
 import SkipToContent from "@/components/accessibility/SkipToContent";
 
 // Lazy load heavy components
-const FloatingAIAssistant = dynamicImport(() => import("@/components/ai/FloatingAIAssistant"), {
-  ssr: false,
-  loading: () => null,
-});
+import FloatingAIAssistantWrapper from "@/components/ai/FloatingAIAssistantWrapper";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://napifit.vercel.app";
 const metadataBase = new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`);
@@ -134,7 +131,7 @@ export default async function RootLayout({
                         {children}
                       </main>
                       <MobileInstallPrompt />
-                      <FloatingAIAssistant />
+                      <FloatingAIAssistantWrapper />
                       <CountrySelectionWrapper />
                     </UpdateCheckerProvider>
                   </SupabaseProvider>
