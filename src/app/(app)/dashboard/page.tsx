@@ -144,7 +144,7 @@ export default async function DashboardPage() {
     };
 
     // Kilo farkı hesapla
-    const weightDifference = user.weight && user.targetWeight 
+    const weightDifference = user.weight && user.targetWeight
       ? parseFloat((user.targetWeight - user.weight).toFixed(1))
       : null;
 
@@ -171,12 +171,12 @@ export default async function DashboardPage() {
   } catch (error) {
     // Log the error for debugging
     console.error("Dashboard page error:", error);
-    
+
     // If it's an authentication error, redirect to login
     if (error instanceof Error && (error.message.includes("auth") || error.message.includes("session"))) {
       redirect("/login");
     }
-    
+
     // For other errors, throw a proper error page
     // Next.js will catch this and show the error page
     throw error;
