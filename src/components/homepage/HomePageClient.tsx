@@ -8,6 +8,7 @@ import StatsSection from "@/components/homepage/StatsSection";
 import UserReviewsSection from "@/components/homepage/UserReviewsSection";
 import CommunitySection from "@/components/homepage/CommunitySection";
 import AdSenseAd from "@/components/ads/AdSenseAd";
+import { useSession } from "@supabase/auth-helpers-react";
 
 type LandingStats = {
   members: number;
@@ -23,6 +24,8 @@ interface HomePageClientProps {
 
 export default function HomePageClient({ initialStats }: HomePageClientProps) {
   const { t } = useLocale();
+  const session = useSession();
+  const isAuthenticated = !!session;
 
   return (
     <main className="relative min-h-screen px-4 py-16 sm:px-6 lg:px-8 overflow-hidden">
@@ -35,53 +38,53 @@ export default function HomePageClient({ initialStats }: HomePageClientProps) {
       <div className="absolute inset-0 -z-10 opacity-40 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.12),transparent_65%)]" />
 
       <div className="mx-auto flex flex-col gap-16 lg:gap-20 max-w-6xl">
-        <HeroSection t={t} />
-        
+        <HeroSection t={t} isAuthenticated={isAuthenticated} />
+
         {/* Reklam: Header altı */}
         <div className="flex justify-center py-4">
-          <AdSenseAd 
-            adSlot="1680336225" 
+          <AdSenseAd
+            adSlot="1680336225"
             adFormat="auto"
             fullWidthResponsive={true}
             className="min-h-[100px] w-full max-w-5xl"
           />
         </div>
-        
+
         <StatsSection initialStats={initialStats} />
         <SocialProof t={t} />
-        
+
         {/* Reklam: İçerik arası 1 */}
         <div className="flex justify-center py-4">
-          <AdSenseAd 
-            adSlot="2095269194" 
+          <AdSenseAd
+            adSlot="2095269194"
             adFormat="auto"
             fullWidthResponsive={true}
             className="min-h-[250px] w-full max-w-5xl"
           />
         </div>
-        
+
         <CommunitySection />
         <UserReviewsSection />
         <JourneySection t={t} />
         <ChangelogSection t={t} />
-        
+
         {/* Reklam: Footer üstü */}
         <div className="flex justify-center py-4">
-          <AdSenseAd 
-            adSlot="9614666567" 
+          <AdSenseAd
+            adSlot="9614666567"
             adFormat="auto"
             fullWidthResponsive={true}
             className="min-h-[250px] w-full max-w-5xl"
           />
         </div>
-        
-        <CallToAction t={t} />
+
+        <CallToAction t={t} isAuthenticated={isAuthenticated} />
       </div>
     </main>
   );
 }
 
-function HeroSection({ t }: { t: (key: any) => string }) {
+function HeroSection({ t, isAuthenticated }: { t: (key: any) => string; isAuthenticated: boolean }) {
   const perks = [
     t("features.aiPlans"),
     t("features.realTimeReports"),
@@ -115,23 +118,25 @@ function HeroSection({ t }: { t: (key: any) => string }) {
           ))}
         </ul>
 
-        <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 pt-4">
-          <Link
-            href="/register"
-            className="group relative inline-flex items-center justify-center gap-3 rounded-2xl px-8 py-4 text-base font-semibold text-white shadow-[0_25px_70px_rgba(15,23,42,0.5)] bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4,#7c3aed)] animate-gradient"
-          >
-            {t("homepage.cta.start")}
-            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
-          <Link
-            href="/login"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white/80 hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-300"
-          >
-            {t("homepage.cta.login")}
-          </Link>
-        </div>
+        {!isAuthenticated && (
+          <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4 pt-4">
+            <Link
+              href="/register"
+              className="group relative inline-flex items-center justify-center gap-3 rounded-2xl px-8 py-4 text-base font-semibold text-white shadow-[0_25px_70px_rgba(15,23,42,0.5)] bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4,#7c3aed)] animate-gradient"
+            >
+              {t("homepage.cta.start")}
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white/80 hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-300"
+            >
+              {t("homepage.cta.login")}
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -270,7 +275,7 @@ function ChangelogSection({ t }: { t: (key: any) => string }) {
   );
 }
 
-function CallToAction({ t }: { t: (key: any) => string }) {
+function CallToAction({ t, isAuthenticated }: { t: (key: any) => string; isAuthenticated: boolean }) {
   return (
     <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_top,#1a1038,transparent_70%)] p-8 text-center shadow-[0_30px_90px_rgba(3,4,12,0.6)]">
       <div className="absolute -left-24 top-1/2 h-56 w-56 rounded-full bg-primary-500/30 blur-3xl" />
@@ -279,20 +284,22 @@ function CallToAction({ t }: { t: (key: any) => string }) {
         <p className="text-xs uppercase tracking-[0.4em] text-primary-200">{t("cta.join")}</p>
         <h3 className="text-3xl font-semibold text-white">{t("cta.title")}</h3>
         <p className="text-gray-300 max-w-2xl mx-auto">{t("cta.description")}</p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <Link
-            href="/register"
-            className="rounded-2xl px-8 py-4 font-semibold text-white bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4)] animate-gradient shadow-[0_25px_70px_rgba(15,23,42,0.5)]"
-          >
-            {t("cta.join")}
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-2xl border border-white/20 text-white px-8 py-4 font-semibold bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            {t("cta.hasAccount")}
-          </Link>
-        </div>
+        {!isAuthenticated && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Link
+              href="/register"
+              className="rounded-2xl px-8 py-4 font-semibold text-white bg-[linear-gradient(120deg,#7c3aed,#f97316,#06b6d4)] animate-gradient shadow-[0_25px_70px_rgba(15,23,42,0.5)]"
+            >
+              {t("cta.join")}
+            </Link>
+            <Link
+              href="/login"
+              className="rounded-2xl border border-white/20 text-white px-8 py-4 font-semibold bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              {t("cta.hasAccount")}
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

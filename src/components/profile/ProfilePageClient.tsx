@@ -6,6 +6,7 @@ import { useLocale } from "@/components/i18n/LocaleProvider";
 import { getCountryFlag } from "@/lib/country-flags";
 import ProfileEditForm from "./ProfileEditForm";
 import CommunityStats from "./CommunityStats";
+import ChangePasswordSection from "./ChangePasswordSection";
 
 interface ProfilePageClientProps {
   user: {
@@ -139,6 +140,9 @@ export default function ProfilePageClient({
             }}
           />
         )}
+
+        {/* Change Password Section */}
+        {isOwnProfile && <ChangePasswordSection />}
 
         {/* Community Stats */}
         {showPublicProfile && <CommunityStats userId={user.id} />}
