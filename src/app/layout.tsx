@@ -24,10 +24,10 @@ import OfflineBanner from "@/components/OfflineBanner";
 import SkipToContent from "@/components/accessibility/SkipToContent";
 
 // Lazy load heavy components
-const FloatingAIAssistant = dynamicImport(() => import("@/components/ai/FloatingAIAssistant"), {
-  ssr: false,
-  loading: () => null,
-});
+// const FloatingAIAssistant = dynamicImport(() => import("@/components/ai/FloatingAIAssistant"), {
+//   ssr: false,
+//   loading: () => null,
+// });
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://napifit.vercel.app";
 const metadataBase = new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`);
@@ -102,7 +102,7 @@ export default async function RootLayout({
   }
 
   // Detect locale from middleware headers
-  const headersList = headers();
+  const headersList = await headers();
   const detectedLocale = (headersList.get("x-detected-locale") as Locale) || defaultLocale;
 
   return (
@@ -134,7 +134,7 @@ export default async function RootLayout({
                         {children}
                       </main>
                       <MobileInstallPrompt />
-                      <FloatingAIAssistant />
+                      {/* <FloatingAIAssistant /> */}
                       <CountrySelectionWrapper />
                     </UpdateCheckerProvider>
                   </SupabaseProvider>
