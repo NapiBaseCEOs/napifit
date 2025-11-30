@@ -7,7 +7,7 @@ import GoogleIcon from "../../../components/icons/GoogleIcon";
 import Spinner from "../../../components/icons/Spinner";
 import { useSession, useSessionContext, useSupabaseClient } from "@supabase/auth-helpers-react";
 import type { Database } from "@/lib/supabase/types";
-import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
+// import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
 import { AuthError } from "@supabase/supabase-js";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
     setInfoMessage(null);
     setResendFeedback(null);
     setLoading(true);
-    
+
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -143,17 +143,17 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const isMobile = isMobilePlatform();
+      // const isMobile = isMobilePlatform();
       const nextParam = "/dashboard";
       const redirectTo =
         typeof window !== "undefined"
           ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextParam)}`
           : undefined;
 
-      if (isMobile && redirectTo) {
-        await signInWithGoogleMobile(redirectTo);
-        return;
-      }
+      // if (isMobile && redirectTo) {
+      //   await signInWithGoogleMobile(redirectTo);
+      //   return;
+      // }
 
       const { error: oauthError, data } = await supabase.auth.signInWithOAuth({
         provider: "google",

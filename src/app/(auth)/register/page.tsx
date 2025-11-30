@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import GoogleIcon from "../../../components/icons/GoogleIcon";
 import Spinner from "../../../components/icons/Spinner";
-import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
+// import { isMobilePlatform, signInWithGoogleMobile } from "../../../lib/google-oauth-mobile";
 import type { Database } from "@/lib/supabase/types";
 import { useLocale } from "@/components/i18n/LocaleProvider";
 import CountrySelector from "@/components/i18n/CountrySelector";
@@ -45,7 +45,7 @@ export default function RegisterPage() {
           }
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const passwordPolicy = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -71,7 +71,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
     setResendFeedback(null);
-    
+
     // Validasyon
     if (!firstName.trim()) {
       setError(t("auth.register.errors.required").replace("{}", t("auth.register.firstName")));
@@ -85,12 +85,12 @@ export default function RegisterPage() {
       setError(t("auth.register.errors.required").replace("{}", t("auth.register.dateOfBirth")));
       return;
     }
-    
+
     if (!countryCode) {
       setError(t("country.required"));
       return;
     }
-    
+
     // Doğum tarihi kontrolü ve yaş hesaplama (18 yaşından küçük olmamalı)
     const birthDate = new Date(dateOfBirth);
     const today = new Date();
@@ -99,8 +99,8 @@ export default function RegisterPage() {
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       // Henüz doğum günü gelmemiş
       calculatedAge = calculatedAge - 1;
-      }
-    
+    }
+
     // 18 yaş kontrolü
     if (calculatedAge < 18) {
       setError("18 yaşından küçükler kayıt olamaz");
@@ -130,7 +130,7 @@ export default function RegisterPage() {
       setError("Lütfen cinsiyet seçin");
       return;
     }
-    
+
     setLoading(true);
     setSuccessMessage(null);
     try {
@@ -229,18 +229,18 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      // Mobil platform kontrolü
-      const isMobile = isMobilePlatform();
+      // Mobil platform kontrolü kaldırıldı (PWA excluded)
+      // const isMobile = isMobilePlatform();
       // Google OAuth için: Login sayfasında onboarding kontrolü yapılacak, bu yüzden dashboard'a yönlendir
       const redirectTo =
         typeof window !== "undefined"
           ? `${window.location.origin}/auth/callback?next=${encodeURIComponent("/dashboard")}`
           : undefined;
 
-      if (isMobile && redirectTo) {
-        await signInWithGoogleMobile(redirectTo);
-        return;
-      }
+      // if (isMobile && redirectTo) {
+      //   await signInWithGoogleMobile(redirectTo);
+      //   return;
+      // }
 
       const { error: oauthError, data } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -285,7 +285,7 @@ export default function RegisterPage() {
           24/7 destek ve Supabase koruması
         </div>
         <div className="relative z-10 space-y-6 rounded-3xl border border-white/10 bg-[#0f1424]/90 backdrop-blur-2xl p-8 shadow-[0_25px_90px_rgba(3,5,20,0.7)] sm:p-10 animate-fade-up">
-            <div className="space-y-3 text-center">
+          <div className="space-y-3 text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-fitness-orange/40 bg-fitness-orange/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-fitness-orange">
               NapiFit Topluluğuna Katıl
             </div>
@@ -380,54 +380,54 @@ export default function RegisterPage() {
                     Durarken yaktığın kaloriyi hesaplamak için boy, kilo, yaş ve cinsiyet bilgilerine ihtiyacımız var. Bu bilgiler dashboard'da günlük kalori dengesini görmek için kullanılacak.
                   </p>
                 </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-xs uppercase tracking-wide text-gray-400">
-                  Boy (cm) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  min={100}
-                  max={250}
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                  className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
-                  placeholder="175"
-                  required
-                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-xs uppercase tracking-wide text-gray-400">
+                    Boy (cm) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={100}
+                    max={250}
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                    placeholder="175"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs uppercase tracking-wide text-gray-400">
+                    Kilo (kg) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={30}
+                    max={300}
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
+                    placeholder="75"
+                    required
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="block text-xs uppercase tracking-wide text-gray-400">
-                  Kilo (kg) <span className="text-red-400">*</span>
+                  Cinsiyet <span className="text-red-400">*</span>
                 </label>
-                <input
-                  type="number"
-                  min={30}
-                  max={300}
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 placeholder:text-gray-500 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
-                  placeholder="75"
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
                   required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="block text-xs uppercase tracking-wide text-gray-400">
-                Cinsiyet <span className="text-red-400">*</span>
-              </label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="w-full rounded-xl border border-gray-800 bg-gray-900/70 px-4 py-3 text-sm text-gray-100 focus:border-fitness-orange focus:outline-none focus:ring-2 focus:ring-fitness-orange/40 transition-all duration-300"
-                required
-              >
-                <option value="">Seçiniz</option>
-                <option value="male">Erkek</option>
-                <option value="female">Kadın</option>
-                <option value="other">Diğer</option>
-              </select>
+                >
+                  <option value="">Seçiniz</option>
+                  <option value="male">Erkek</option>
+                  <option value="female">Kadın</option>
+                  <option value="other">Diğer</option>
+                </select>
                 <p className="text-xs text-gray-500">Yaş bilgisi doğum tarihinden otomatik hesaplanacak</p>
               </div>
             </div>
@@ -454,7 +454,7 @@ export default function RegisterPage() {
               required
             />
             <div className="space-y-2">
-                <label className="block text-xs uppercase tracking-wide text-gray-400">
+              <label className="block text-xs uppercase tracking-wide text-gray-400">
                 Şifre <span className="text-red-400">*</span>
               </label>
               <input
