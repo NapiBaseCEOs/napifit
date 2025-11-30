@@ -21,6 +21,7 @@ import CountrySelectionWrapper from "@/components/CountrySelectionWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ToastProvider";
 import OfflineBanner from "@/components/OfflineBanner";
+import SkipToContent from "@/components/accessibility/SkipToContent";
 
 // Lazy load heavy components
 const FloatingAIAssistant = dynamicImport(() => import("@/components/ai/FloatingAIAssistant"), {
@@ -115,6 +116,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-sans">
+        <SkipToContent />
         <ErrorBoundary>
           <ThemeProvider>
             <LocaleProvider initialLocale={detectedLocale}>
@@ -128,7 +130,9 @@ export default async function RootLayout({
                       <OfflineBanner />
                       <VersionUpdateBanner />
                       <Header />
-                      {children}
+                      <main id="main-content" tabIndex={-1}>
+                        {children}
+                      </main>
                       <MobileInstallPrompt />
                       <FloatingAIAssistant />
                       <CountrySelectionWrapper />
