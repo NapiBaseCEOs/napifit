@@ -18,6 +18,9 @@ import dynamicImport from "next/dynamic";
 import { headers } from "next/headers";
 import { defaultLocale, type Locale } from "@/lib/i18n/locales";
 import CountrySelectionWrapper from "@/components/CountrySelectionWrapper";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { ToastProvider } from "@/components/ToastProvider";
+import OfflineBanner from "@/components/OfflineBanner";
 
 // Lazy load heavy components
 const FloatingAIAssistant = dynamicImport(() => import("@/components/ai/FloatingAIAssistant"), {
@@ -112,25 +115,30 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-sans">
-        <ThemeProvider>
-          <LocaleProvider initialLocale={detectedLocale}>
-            <NetworkStatusProvider>
-              <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
-                <GoogleOAuthHandler />
-                <UpdateCheckerProvider>
-                  <MobilePerformanceTuner />
-                  <NetworkStatusOverlay />
-                  <VersionUpdateBanner />
-                  <Header />
-                  {children}
-                  <MobileInstallPrompt />
-                  <FloatingAIAssistant />
-                  <CountrySelectionWrapper />
-                </UpdateCheckerProvider>
-              </SupabaseProvider>
-            </NetworkStatusProvider>
-          </LocaleProvider>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider>
+            <LocaleProvider initialLocale={detectedLocale}>
+              <NetworkStatusProvider>
+                <ToastProvider>
+                  <SupabaseProvider initialSession={session} enabled={hasSupabaseClientEnv}>
+                    <GoogleOAuthHandler />
+                    <UpdateCheckerProvider>
+                      <MobilePerformanceTuner />
+                      <NetworkStatusOverlay />
+                      <OfflineBanner />
+                      <VersionUpdateBanner />
+                      <Header />
+                      {children}
+                      <MobileInstallPrompt />
+                      <FloatingAIAssistant />
+                      <CountrySelectionWrapper />
+                    </UpdateCheckerProvider>
+                  </SupabaseProvider>
+                </ToastProvider>
+              </NetworkStatusProvider>
+            </LocaleProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
